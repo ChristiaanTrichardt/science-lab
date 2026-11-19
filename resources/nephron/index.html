@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Nephron — Interactive 3D Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b14;--panel:rgba(12,18,32,.86);--line:rgba(255,255,255,.09);
+  --txt:#e9eef7;--mute:#97a3ba;--accent:#ffd36e;
+  --filt:#ffb347;--reab:#3ddc97;--secr:#ff5d8f;--water:#5fb4ff;--trans:#8fa0bf;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;color:var(--txt);
+  font-family:'Manrope',system-ui,sans-serif;
+  background:radial-gradient(1300px 900px at 55% 38%,#16223a 0%,#0b1222 50%,#05080f 100%)}
+button{font:inherit;color:inherit}
+#viewport{position:fixed;inset:0}
+#viewport canvas{display:block;outline:none;touch-action:none}
+.label-layer{position:absolute;inset:0;pointer-events:none}
+.panel{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.hidden{display:none!important}
+
+/* 3D labels */
+.lbl{pointer-events:auto;font:700 12px/1 'Manrope',sans-serif;color:#fff;cursor:pointer;white-space:nowrap;
+  background:rgba(9,14,26,.82);border:1px solid rgba(255,255,255,.16);border-left:3px solid var(--c);
+  padding:6px 9px;border-radius:6px;transition:opacity .25s,background .2s,color .2s}
+.lbl:hover{background:rgba(30,40,62,.95)}
+.lbl.active{background:var(--c);color:#0b0f1a;border-color:var(--c)}
+.lbl.dim{opacity:.28}
+.lbl.big{font-size:13px;padding:7px 11px}
+.tag{pointer-events:none;font:700 10.5px/1 'Manrope',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,212,235,.55);white-space:nowrap}
+.tag.zone{font-size:13px;letter-spacing:.3em;color:rgba(230,200,190,.5)}
+.tag.zone.med{color:rgba(215,185,225,.5)}
+
+/* header */
+header.top{position:fixed;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none;z-index:6}
+header.top>*{pointer-events:auto}
+.brand h1{font-family:'Fraunces',serif;font-weight:650;font-size:30px;margin:0;letter-spacing:-.01em;line-height:1}
+.brand h1 span{color:var(--accent)}
+.brand p{margin:6px 0 0;color:var(--mute);font-size:12.5px;letter-spacing:.02em}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{background:rgba(255,255,255,.06);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s;backdrop-filter:blur(8px)}
+.btn:hover{background:rgba(255,255,255,.13)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);color:#1a1405;border-color:transparent}
+.btn.primary:hover{background:#ffe08f}
+#btnParts{display:none}
+
+/* parts list */
+#parts{position:fixed;left:18px;top:92px;width:240px;padding:12px;z-index:4;max-height:calc(100vh - 176px);overflow:auto}
+#parts h3{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:12px 6px 6px;font-weight:800}
+#parts h3:first-child{margin-top:4px}
+.pi{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:7px 8px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer}
+.pi i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent);flex:none}
+.pi:hover{background:rgba(255,255,255,.06)}
+.pi.active{background:rgba(255,255,255,.11)}
+.pi.sub{padding-left:28px;font-size:13px;font-weight:500;color:#cfd7e6}
+.legend{border-top:1px solid var(--line);margin-top:12px;padding:10px 6px 2px}
+.legend div{display:flex;align-items:center;gap:9px;font-size:12px;color:#c9d2e3;margin:6px 0}
+.legend b{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);flex:none}
+
+/* info */
+#info{position:fixed;right:18px;top:92px;width:370px;max-height:calc(100vh - 176px);overflow:auto;padding:20px 22px 18px;z-index:4}
+#info .close{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.06);cursor:pointer;font-size:16px;line-height:1}
+#info .close:hover{background:rgba(255,255,255,.14)}
+.kicker{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:800;margin-right:30px}
+.kicker .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+#info h2{font-family:'Fraunces',serif;font-weight:650;font-size:25px;line-height:1.12;margin:8px 0 8px;letter-spacing:-.01em}
+#info .summary{font-size:15px;color:#fff;margin:0 0 6px;font-weight:600}
+#info h4{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:16px 0 6px;font-weight:800}
+#info p,#info li{font-size:13.6px;line-height:1.55;color:#d3dbea}
+#info ul{margin:0;padding-left:18px}
+#info li{margin:3px 0}
+.hap{margin:8px 0}
+.hap p{margin:5px 0 0}
+.ptag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#10131b}
+.ptag.filt{background:var(--filt)}.ptag.reab{background:var(--reab)}.ptag.secr{background:var(--secr)}
+.ptag.trans{background:var(--trans)}.ptag.none{background:#5b667b;color:#fff}
+.fact{margin-top:14px;padding:11px 13px;border-radius:10px;background:rgba(255,211,110,.08);border:1px solid rgba(255,211,110,.22);font-size:13px;line-height:1.5;color:#e9e1c9}
+.fact b{color:var(--accent)}
+.formula{margin:14px 0 4px;padding:12px;border-radius:10px;background:rgba(255,255,255,.05);text-align:center;font-weight:700;font-size:14px}
+.formula .f{color:var(--filt)}.formula .r{color:var(--reab)}.formula .s{color:var(--secr)}
+.proc3{display:grid;gap:8px;margin-top:10px}
+.proc3 button{display:block;text-align:left;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:13px;line-height:1.45;color:#d3dbea}
+.proc3 button:hover{background:rgba(255,255,255,.08)}
+.proc3 button b{display:block;font-size:13.5px;margin-bottom:2px}
+.syl{margin-top:14px;font-size:11.5px;color:var(--mute);line-height:1.5}
+.tournav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-4px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.tournav span{font-size:12px;color:var(--mute);font-weight:700}
+.tournav .btn{padding:6px 12px;font-size:12.5px}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.twocol div{background:rgba(255,255,255,.04);border-radius:10px;padding:9px 11px}
+.twocol h5{margin:0 0 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.twocol ul{padding-left:16px}
+
+/* toolbar */
+#toolbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;padding:6px;z-index:6;max-width:calc(100vw - 20px);overflow-x:auto;scrollbar-width:none}
+#toolbar::-webkit-scrollbar{display:none}
+.chip{border:0;background:transparent;padding:7px 11px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--mute);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.chip::before{content:'';width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor}
+.chip.on{color:#fff;background:rgba(255,255,255,.1)}
+.chip.on::before{background:var(--accent);border-color:var(--accent)}
+.chip.plain::before{display:none}
+.chip:hover{color:#fff}
+.sep{width:1px;height:22px;background:var(--line);margin:0 3px;flex:none}
+.seg{display:flex;background:rgba(0,0,0,.28);border-radius:999px;padding:2px;flex:none}
+.seg button{border:0;background:none;padding:6px 11px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--mute);cursor:pointer;white-space:nowrap}
+.seg button:hover{color:#fff}
+.seg button.on{background:rgba(255,255,255,.14);color:#fff}
+.seg button.on[data-p=filtration]{background:var(--filt);color:#1b1205}
+.seg button.on[data-p=reabsorption]{background:var(--reab);color:#06180f}
+.seg button.on[data-p=secretion]{background:var(--secr);color:#22050f}
+
+#hint{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--mute);z-index:3;white-space:nowrap;pointer-events:none;transition:opacity .6s}
+#tooltip{position:fixed;pointer-events:none;z-index:9;font-size:12px;font-weight:700;padding:5px 9px;border-radius:6px;background:rgba(9,14,26,.92);border:1px solid rgba(255,255,255,.18);transform:translate(12px,12px);white-space:nowrap}
+
+/* modal + quiz */
+#modal{position:fixed;inset:0;background:rgba(3,6,12,.6);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+#modal .panel{max-width:860px;width:100%;padding:26px;position:relative;max-height:calc(100vh - 40px);overflow:auto}
+#modal h2{font-family:'Fraunces',serif;font-size:28px;margin:0 0 6px}
+#modal .lead{color:var(--mute);margin:0 0 18px;font-size:14px}
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pcard{border-radius:12px;padding:16px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-top:4px solid var(--c)}
+.pcard h3{margin:0 0 2px;font-size:17px}
+.pcard .where{font-size:12px;color:var(--c);font-weight:800;margin-bottom:8px}
+.pcard p,.pcard li{font-size:13px;line-height:1.5;color:#d3dbea}
+.pcard ul{padding-left:17px;margin:6px 0}
+.pcard .btn{margin-top:8px;font-size:12px;padding:6px 12px}
+#modal .close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.07);cursor:pointer;font-size:17px}
+
+#quiz{position:fixed;top:92px;left:50%;transform:translateX(-50%);width:min(520px,calc(100vw - 24px));padding:16px 18px;z-index:7;text-align:center}
+#quiz .qn{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:800}
+#quiz .q{font-size:17px;font-weight:600;margin:8px 0 4px;line-height:1.4}
+#quiz .fb{font-size:14px;margin-top:10px;line-height:1.45}
+#quiz .fb.ok{color:var(--reab)}#quiz .fb.no{color:var(--secr)}
+#quiz .row{display:flex;justify-content:center;gap:8px;margin-top:12px}
+#quiz .score{font-family:'Fraunces',serif;font-size:44px;margin:4px 0}
+
+@media (max-width:860px){
+  .brand h1{font-size:22px}
+  .brand p{display:none}
+  .actions .btn{padding:7px 11px;font-size:12px}
+  #btnParts{display:inline-block}
+  #parts{display:none;top:70px;left:10px;max-height:calc(100vh - 150px)}
+  #parts.open{display:block;z-index:8}
+  #info{left:10px;right:10px;width:auto;top:auto;bottom:66px;max-height:40vh;padding:16px 16px 14px}
+  #info h2{font-size:21px}
+  #toolbar{bottom:10px}
+  #hint{display:none}
+  .pcards{grid-template-columns:1fr}
+  #quiz{top:auto;bottom:66px}
+}
+</style>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+</head>
+<body>
+<div id="viewport"></div>
+
+<header class="top">
+  <div class="brand">
+    <h1>The <span>Nephron</span></h1>
+    <p>Interactive 3D model · Year 11 Human Biology · Excretory system</p>
+  </div>
+  <div class="actions">
+    <button class="btn" id="btnParts">Parts</button>
+    <button class="btn primary" id="btnTour">▶ Follow the filtrate</button>
+    <button class="btn" id="btnProc">The 3 processes</button>
+    <button class="btn" id="btnQuiz">Test yourself</button>
+    <button class="btn hidden" id="btnInfo">Info</button>
+  </div>
+</header>
+
+<aside id="parts" class="panel"></aside>
+<section id="info" class="panel"></section>
+
+<div id="toolbar" class="panel">
+  <button class="chip on" data-t="labels">Labels</button>
+  <button class="chip on" data-t="caps">Capillaries</button>
+  <button class="chip on" data-t="flow">Flow</button>
+  <button class="chip on" data-t="exchange">Exchange</button>
+  <button class="chip on" data-t="regions">Cortex/medulla</button>
+  <span class="sep"></span>
+  <div class="seg" id="procSeg">
+    <button data-p="" class="on">All</button>
+    <button data-p="filtration">Filtration</button>
+    <button data-p="reabsorption">Reabsorption</button>
+    <button data-p="secretion">Secretion</button>
+  </div>
+  <span class="sep"></span>
+  <button class="chip plain" id="btnReset">⟲ Reset view</button>
+</div>
+
+<div id="hint">Drag to rotate · Scroll or pinch to zoom · Right-drag to pan · Click any part</div>
+<div id="tooltip" class="hidden"></div>
+<div id="modal" class="hidden"></div>
+<div id="quiz" class="panel hidden"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const $ = s => document.querySelector(s);
+const V = (x,y,z) => new THREE.Vector3(x,y,z);
+
+/* ------------------------------------------------------------------ content */
+const COL = {
+  afferent:'#e5484d', glomerulus:'#ff6b6b', efferent:'#c94f6d', peri:'#b05aa0',
+  capsule:'#f2c14e', pct:'#f39a3d', loop:'#3ec9b0', desc:'#3ec9b0', asc:'#4d9bff',
+  dct:'#b48cff', cd:'#e8dcc4'
+};
+
+const INFO = {
+  afferent:{name:'Afferent arteriole', kind:'Blood supply', zone:'Cortex',
+    summary:'Brings blood into the glomerulus.',
+    structure:['A small branch of the renal artery.','Wider than the efferent arteriole that leaves the glomerulus.'],
+    happens:[{p:'Transport',t:'Delivers blood that still carries metabolic wastes (urea, uric acid, creatinine) along with water, salts, glucose, amino acids, blood cells and plasma proteins.'}],
+    why:'Because the afferent arteriole is wider than the efferent arteriole, blood enters the glomerulus faster than it can leave. This builds up the high blood pressure that drives filtration.',
+    fact:'About 1.2 L of blood flows through the two kidneys every minute — roughly a fifth of everything the heart pumps.'},
+  glomerulus:{name:'Glomerulus', kind:'Blood supply', zone:'Cortex',
+    summary:'A knot of capillaries where filtration happens.',
+    structure:['A tight ball of capillaries sitting inside the glomerular (Bowman’s) capsule.','Capillary walls are one cell thick and full of tiny pores, so they are very leaky.','Blood pressure is high here because the efferent arteriole is narrower than the afferent arteriole.'],
+    happens:[
+      {p:'Filtration',t:'Pressure forces small molecules out of the blood into the capsule: water, glucose, amino acids, salts (Na⁺, Cl⁻, K⁺), urea, uric acid, creatinine and some vitamins. This fluid is the glomerular filtrate.'},
+      {p:'Not filtered',t:'Blood cells, platelets and plasma proteins are too large to pass through, so they stay in the blood.'}],
+    why:'Filtration is not selective — it sorts only by size. Useful substances such as glucose are filtered too, so they must be reabsorbed further along the tubule.',
+    fact:'The kidneys make about 180 L of filtrate a day, but only about 1.5 L leaves as urine — around 99% is reabsorbed.'},
+  capsule:{name:'Glomerular (Bowman’s) capsule', kind:'Renal tubule', zone:'Cortex',
+    summary:'A double-walled cup that collects the filtrate.',
+    structure:['The cup-shaped start of the renal tubule, wrapped around the glomerulus.','Its inner wall is made of podocytes — cells with foot-like extensions that leave filtration slits between them.','The glomerulus and capsule together form the renal corpuscle.'],
+    happens:[{p:'Filtration',t:'Receives the filtrate forced out of the glomerulus. The space between the two walls funnels the filtrate into the proximal convoluted tubule.'}],
+    why:'A very thin inner wall with filtration slits gives a short distance and large surface area, so filtration is fast.'},
+  efferent:{name:'Efferent arteriole', kind:'Blood supply', zone:'Cortex',
+    summary:'Carries blood away from the glomerulus.',
+    structure:['Narrower than the afferent arteriole.','Leads into the peritubular capillaries — a second capillary network around the tubule.'],
+    happens:[{p:'Transport',t:'Blood leaving the glomerulus has lost a lot of water and small solutes, but keeps its blood cells and plasma proteins.'}],
+    why:'The narrow outlet keeps pressure in the glomerulus high. The protein-rich blood it carries also helps draw water back in from the tubule later on.'},
+  pct:{name:'Proximal convoluted tubule', kind:'Renal tubule', zone:'Cortex',
+    summary:'Where most reabsorption happens.',
+    structure:['The longest, most coiled section of the tubule.','Lined with cuboidal epithelial cells covered in microvilli (a brush border), which greatly increase surface area.','Cells are packed with mitochondria to supply ATP for active transport.'],
+    happens:[
+      {p:'Reabsorption',t:'All glucose and amino acids (by active transport), about two-thirds of the sodium and water, plus potassium, chloride, vitamins and some urea move back into the blood.'},
+      {p:'Secretion',t:'Hydrogen ions (H⁺), creatinine, some drugs (e.g. penicillin) and other toxins are moved from the blood into the filtrate.'}],
+    why:'This is selective reabsorption: the body takes back what it needs and leaves the wastes behind in the filtrate.',
+    fact:'Glucose in urine means the glucose carriers here are overloaded because blood glucose is too high — a sign of untreated diabetes.'},
+  loop:{name:'Loop of Henle', kind:'Renal tubule', zone:'Cortex → medulla',
+    summary:'A hairpin loop that dips into the medulla and keeps it salty.',
+    structure:['A descending limb runs down into the medulla; an ascending limb comes back up to the cortex.','The two limbs have different permeability to water and salt.'],
+    happens:[{p:'Reabsorption',t:'Water leaves the descending limb. Na⁺ and Cl⁻ leave the ascending limb.'}],
+    why:'Moving salt out of the ascending limb makes the tissue fluid of the medulla very salty. Water can then be drawn out of the descending limb and the collecting duct by osmosis, so the body can make urine more concentrated than blood.',
+    fact:'Desert animals such as hopping mice have very long loops of Henle, so they can make extremely concentrated urine and save water.'},
+  desc:{name:'Descending limb', kind:'Loop of Henle', zone:'Medulla',
+    summary:'Water leaves; salts stay in.',
+    structure:['A thin-walled section running down into the medulla.','Permeable to water, but not very permeable to salts.'],
+    happens:[{p:'Reabsorption',t:'Water moves out by osmosis into the salty tissue fluid of the medulla and is carried away by nearby capillaries (the vasa recta).'}],
+    why:'As water leaves, the filtrate becomes more and more concentrated towards the bottom of the loop.'},
+  asc:{name:'Ascending limb', kind:'Loop of Henle', zone:'Medulla → cortex',
+    summary:'Salt leaves; water cannot.',
+    structure:['Runs back up towards the cortex.','Impermeable to water.','The upper part has thicker walls with cells that actively pump out salt.'],
+    happens:[{p:'Reabsorption',t:'Na⁺ and Cl⁻ move out into the medulla — by diffusion lower down and by active transport higher up. Water has to stay inside.'}],
+    why:'Losing salt but not water makes the filtrate more dilute as it rises, while keeping the medulla salty.'},
+  dct:{name:'Distal convoluted tubule', kind:'Renal tubule', zone:'Cortex',
+    summary:'Fine-tunes the composition of the filtrate.',
+    structure:['The second coiled section, back in the cortex.','Fewer microvilli than the proximal convoluted tubule.'],
+    happens:[
+      {p:'Reabsorption',t:'More Na⁺, Cl⁻ and water are reabsorbed — the amount varies with what the body needs.'},
+      {p:'Secretion',t:'H⁺ and K⁺ ions, and some drugs, are secreted into the filtrate. This helps control blood pH and potassium levels.'}],
+    why:'The PCT does the bulk of the work. The DCT makes the final adjustments that keep the composition of body fluids stable.'},
+  cd:{name:'Collecting duct', kind:'Shared duct', zone:'Cortex → medulla',
+    summary:'Collects urine and saves water.',
+    structure:['Receives fluid from many nephrons, so it is not part of a single nephron.','Runs down through the salty medulla to the renal pelvis.'],
+    happens:[
+      {p:'Reabsorption',t:'Water moves out by osmosis into the salty medulla, making the urine more concentrated.'},
+      {p:'Transport',t:'The remaining fluid — urine — drains into the renal pelvis, then down the ureter to the bladder.'}],
+    why:'Urine is mostly water with urea, salts, creatinine and uric acid. Healthy urine contains no glucose, protein or blood cells.'},
+  peri:{name:'Peritubular capillaries & vasa recta', kind:'Blood supply', zone:'Cortex & medulla',
+    summary:'The blood vessels that take back what is reabsorbed.',
+    structure:['A network of capillaries formed from the efferent arteriole and wrapped around the tubule.','The long, straight capillary loops beside the loop of Henle are the vasa recta.','Drain into venules and then the renal vein.'],
+    happens:[
+      {p:'Reabsorption',t:'Receive the water, glucose, amino acids, salts and other useful substances reabsorbed from the tubule.'},
+      {p:'Secretion',t:'Supply the H⁺, K⁺, creatinine, drugs and other substances that are secreted into the tubule.'}],
+    why:'Blood pressure here is low (it has already passed the glomerulus) and the vessels are in close contact with the tubule, so exchange is easy. Blood leaving in the renal vein has much less urea than blood that arrived.'}
+};
+for (const id in INFO) INFO[id].color = COL[id];
+
+const PROC = {
+  filtration:{name:'Filtration', css:'filt', color:'#ffb347', parts:['glomerulus','capsule'],
+    where:'Glomerulus → glomerular capsule',
+    text:'High blood pressure in the glomerulus forces water and small dissolved substances out of the blood and into the capsule. It is non-selective: anything small enough passes through, useful or not.',
+    yes:['Water','Glucose & amino acids','Salts (Na⁺, Cl⁻, K⁺)','Urea, uric acid, creatinine','Some vitamins'],
+    no:['Red & white blood cells','Platelets','Plasma proteins']},
+  reabsorption:{name:'Selective reabsorption', css:'reab', color:'#3ddc97', parts:['pct','loop','desc','asc','dct','cd','peri'],
+    where:'Renal tubule → peritubular capillaries',
+    text:'Useful substances are taken back from the filtrate into the blood. Most happens in the proximal convoluted tubule; the loop of Henle, distal tubule and collecting duct reclaim more water and salt.',
+    how:['Active transport — glucose, amino acids, Na⁺','Osmosis — water','Diffusion — Cl⁻ and some urea']},
+  secretion:{name:'Tubular secretion', css:'secr', color:'#ff5d8f', parts:['pct','dct','peri'],
+    where:'Peritubular capillaries → renal tubule',
+    text:'Substances are moved from the blood into the filtrate, mainly in the proximal and distal convoluted tubules. This removes substances that were not filtered and helps balance the blood.',
+    how:['H⁺ ions — controls blood pH','K⁺ ions','Creatinine','Drugs (e.g. penicillin) and toxins']}
+};
+
+const TOUR = ['afferent','glomerulus','capsule','efferent','pct','desc','asc','dct','cd','peri'];
+
+/* ------------------------------------------------------------------ three setup */
+const viewport = $('#viewport');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+viewport.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.className = 'label-layer';
+viewport.appendChild(labelRenderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 300);
+const HOME = {pos:V(4.5, 2.6, 33), target:V(-0.8, -1.4, 0)};
+camera.position.copy(HOME.pos);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(HOME.target);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 2.5; controls.maxDistance = 70; controls.rotateSpeed = 0.7;
+
+scene.add(new THREE.HemisphereLight(0xe6eeff, 0x221830, 1.15));
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(6, 10, 9); scene.add(key);
+const rim = new THREE.DirectionalLight(0x8fb4ff, 1.0); rim.position.set(-8, -3, -8); scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffe2c4, 0.6); fill.position.set(-6, 4, 10); scene.add(fill);
+
+/* ------------------------------------------------------------------ helpers */
+function mat(color, opacity = 1, extra = {}) {
+  const m = new THREE.MeshPhysicalMaterial({color, roughness:.36, metalness:0, clearcoat:.55, clearcoatRoughness:.3,
+    transparent:true, opacity, ...extra});
+  m.userData.baseOpacity = opacity; m.userData.baseColor = new THREE.Color(color);
+  return m;
+}
+function tube(pts, r, color, {segs = 260, opacity = 1, radial = 18} = {}) {
+  const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+  const m = mat(color, opacity);
+  const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, segs, r, radial, false), m);
+  const cap = new THREE.SphereGeometry(r, radial, 12);
+  for (const t of [0, 1]) { const c = new THREE.Mesh(cap, m); c.position.copy(curve.getPoint(t)); mesh.add(c); }
+  mesh.userData.curve = curve; mesh.userData.r = r;
+  return mesh;
+}
+function helix(curve, rad, turns, phase = 0, n = 420) {
+  const frames = curve.computeFrenetFrames(n, false); const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, a = phase + t * turns * Math.PI * 2, p = curve.getPointAt(t);
+    pts.push(p.clone().addScaledVector(frames.normals[i], Math.cos(a) * rad).addScaledVector(frames.binormals[i], Math.sin(a) * rad));
+  }
+  return pts;
+}
+const hexRGB = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+
+const parts = {}; const pickables = [];
+function reg(id, obj, pick = true) {
+  const p = parts[id] || (parts[id] = {id, objs:[], mats:new Set()});
+  obj.traverse(o => { o.userData.part = id; if (o.material) p.mats.add(o.material); });
+  p.objs.push(obj); scene.add(obj); if (pick) pickables.push(obj);
+  return obj;
+}
+parts.loop = {id:'loop', objs:[], mats:new Set()};
+
+/* ------------------------------------------------------------------ geometry */
+const C = V(-4, 3, 0);                       // centre of renal corpuscle
+const vdir = V(-1, 0.6, 0).normalize();      // vascular pole direction
+const at = (d, z = 0) => C.clone().addScaledVector(vdir, d).add(V(0, 0, z));
+
+// afferent arteriole
+const affPts = [V(-10, 6.2, 1.8), V(-8.2, 5.4, 1.2), V(-6.4, 4.4, 0.6), at(1.25, .25), at(.62, .18)];
+const afferent = reg('afferent', tube(affPts, .17, COL.afferent));
+
+// glomerulus: a knotted ball of capillary
+const glomPts = [at(.62, .18)];
+for (let i = 1; i < 170; i++) {
+  const t = i / 170, th = t * Math.PI * 17, ph = Math.PI * (0.5 + 0.42 * Math.sin(t * Math.PI * 9));
+  const r = 0.5 + 0.08 * Math.sin(t * Math.PI * 31);
+  glomPts.push(C.clone().add(V(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th))));
+}
+glomPts.push(at(.62, -.18));
+reg('glomerulus', tube(glomPts, .068, COL.glomerulus, {segs:900, radial:10}));
+
+// efferent arteriole
+const effPts = [at(.62, -.18), at(1.25, -.28), V(-5.6, 4.4, -0.9), V(-4.6, 5.0, -1.4), V(-3.3, 4.0, -1.4), V(-3.0, 2.8, -1.0)];
+reg('efferent', tube(effPts, .12, COL.efferent));
+
+// glomerular capsule: open cup facing the vascular pole
+const capGroup = new THREE.Group();
+const capOuter = new THREE.Mesh(new THREE.SphereGeometry(1.0, 48, 32, 0, Math.PI * 2, 0.58, Math.PI - 0.58),
+  mat(COL.capsule, .3, {side:THREE.DoubleSide, depthWrite:false}));
+const capInner = new THREE.Mesh(new THREE.SphereGeometry(0.9, 40, 28, 0, Math.PI * 2, 0.66, Math.PI - 0.66),
+  mat('#ffe39a', .14, {side:THREE.DoubleSide, depthWrite:false}));
+capGroup.add(capOuter, capInner);
+capGroup.position.copy(C);
+capGroup.quaternion.setFromUnitVectors(V(0, 1, 0), vdir);
+reg('capsule', capGroup);
+
+// renal tubule
+const pctPts = [at(-1.0), V(-2.5, 2.0, 0.6), V(-1.8, 2.6, 1.2), V(-1.4, 3.4, 0.6), V(-1.9, 3.9, -0.4), V(-1.0, 4.2, -1.0),
+  V(-0.2, 3.6, -0.6), V(-0.6, 2.8, 0.2), V(0.2, 2.3, 0.9), V(0.9, 2.9, 0.6), V(1.4, 2.5, -0.3), V(1.2, 1.6, 0)];
+const descPts = [V(1.2, 1.6, 0), V(1.2, 0, 0), V(1.2, -3, 0), V(1.2, -5.9, 0), V(1.28, -6.6, 0), V(1.6, -6.95, 0)];
+const ascPts = [V(1.6, -6.95, 0), V(1.92, -6.6, 0), V(2.0, -5.9, 0), V(2.0, -3, 0), V(2.0, 0, 0), V(2.0, 1.4, 0)];
+const dctPts = [V(2.0, 1.4, 0), V(2.3, 2.4, 0.6), V(3.0, 2.8, 1.1), V(3.6, 2.3, 0.5), V(3.3, 3.4, -0.5), V(4.0, 4.0, -0.9),
+  V(4.7, 3.5, -0.3), V(4.6, 2.7, 0.4), V(5.1, 2.3, 0.2), V(5.5, 2.6, 0)];
+const cdPts = [V(5.5, 5.0, 0), V(5.5, 2.6, 0), V(5.5, -3, 0), V(5.5, -9.3, 0)];
+
+const pct = reg('pct', tube(pctPts, .24, COL.pct, {segs:360}));
+const desc = reg('desc', tube(descPts, .13, COL.desc));
+const asc = reg('asc', tube(ascPts, .17, COL.asc));
+const dct = reg('dct', tube(dctPts, .2, COL.dct, {segs:320}));
+const cd = reg('cd', tube(cdPts, .32, COL.cd));
+const cone = new THREE.Mesh(new THREE.ConeGeometry(.36, .55, 24), cd.material);
+cone.position.set(5.5, -9.85, 0); cone.rotation.z = Math.PI; cd.add(cone);
+
+// other nephrons joining the collecting duct (decorative)
+for (const pts of [[V(8.4, 4.6, 1.0), V(7.0, 4.0, 0.5), V(5.6, 3.7, 0)], [V(8.4, -0.2, -1.0), V(7.0, -0.6, -0.5), V(5.6, -1.2, 0)]]) {
+  const s = tube(pts, .17, '#8b8578', {opacity:.45}); s.material.depthWrite = false; scene.add(s);
+}
+
+// peritubular capillaries + vasa recta + venule
+const capsObjs = [];
+const pctCurve = pct.userData.curve, dctCurve = dct.userData.curve;
+const pctH1 = helix(pctCurve, .44, 10, 0), pctH2 = helix(pctCurve, .44, 10, Math.PI);
+const vasaPts = [V(1.05, 1.2, .5), V(1.0, -3, .5), V(1.0, -6.4, .5), V(1.6, -7.5, .5), V(2.2, -6.4, .5), V(2.25, -3, .5), V(2.25, 1.1, .5)];
+const dctH1 = helix(dctCurve, .4, 7, 0, 320), dctH2 = helix(dctCurve, .4, 7, Math.PI, 320);
+const dEnd = dctH1[dctH1.length - 1];
+const venPts = [dEnd, V(5.0, 3.6, -1.2), V(3.2, 5.4, -2.0), V(-1.5, 5.9, -2.4), V(-6, 4.2, -2.4), V(-10, 2.4, -2.2)];
+const periMeshes = [
+  tube([effPts[effPts.length - 1], ...pctH1], .06, '#c4506e', {segs:900, radial:8}),
+  tube(pctH2, .06, '#c4506e', {segs:900, radial:8}),
+  tube(vasaPts, .075, '#a8508a', {segs:300, radial:10}),
+  tube(dctH1, .06, '#8d5aa8', {segs:700, radial:8}),
+  tube(dctH2, .06, '#8d5aa8', {segs:700, radial:8}),
+  tube(venPts, .15, '#4f6fd6', {segs:260})
+];
+for (const m of periMeshes) { reg('peri', m); capsObjs.push(m); }
+
+/* ------------------------------------------------------------------ regions */
+const regions = new THREE.Group(); scene.add(regions);
+function band(y0, y1, color, op) {
+  const p = new THREE.Mesh(new THREE.PlaneGeometry(27, y1 - y0),
+    new THREE.MeshBasicMaterial({color, transparent:true, opacity:op, depthWrite:false, side:THREE.DoubleSide}));
+  p.position.set(-0.8, (y0 + y1) / 2, -3.2); regions.add(p);
+}
+band(0.6, 8.2, '#c06a4f', .10); band(-10.6, 0.6, '#8a4f86', .11);
+const bline = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(-14.3, .6, -3.19), V(12.7, .6, -3.19)]),
+  new THREE.LineDashedMaterial({color:0xffffff, transparent:true, opacity:.22, dashSize:.4, gapSize:.3}));
+bline.computeLineDistances(); regions.add(bline);
+
+/* ------------------------------------------------------------------ labels */
+const labelObjs = [], tagObjs = [], regionTags = [];
+function addLabel(id, text, anchor, pos, cls = '') {
+  const el = document.createElement('button');
+  el.className = 'lbl ' + cls; el.textContent = text; el.style.setProperty('--c', COL[id]); el.dataset.part = id;
+  el.addEventListener('pointerdown', e => e.stopPropagation());
+  el.addEventListener('click', e => { e.stopPropagation(); if (state.quiz) return; select(id); });
+  const o = new CSS2DObject(el); o.position.copy(pos); scene.add(o);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([anchor, pos]),
+    new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:.4, depthTest:false}));
+  line.renderOrder = 5; scene.add(line);
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(.06, 10, 8), new THREE.MeshBasicMaterial({color:0xffffff, depthTest:false}));
+  dot.position.copy(anchor); dot.renderOrder = 6; scene.add(dot);
+  labelObjs.push({id, o, el, line, dot});
+}
+function addTag(text, pos, cls = '', list = tagObjs) {
+  const el = document.createElement('div'); el.className = 'tag ' + cls; el.textContent = text;
+  const o = new CSS2DObject(el); o.position.copy(pos); scene.add(o); list.push(o);
+}
+const periAnchor = pctH1[Math.round(pctH1.length * .3)];
+addLabel('afferent', 'Afferent arteriole', V(-8.2, 5.4, 1.2), V(-9.0, 3.6, 1.4));
+addLabel('glomerulus', 'Glomerulus', V(-4, 3.55, .15), V(-3.4, 8.3, .6));
+addLabel('efferent', 'Efferent arteriole', V(-4.6, 5.0, -1.4), V(-6.8, 7.6, -1.4));
+addLabel('capsule', 'Glomerular (Bowman’s) capsule', V(-4.5, 2.15, .3), V(-6.4, .5, 1));
+addLabel('pct', 'Proximal convoluted tubule', V(-1.0, 4.2, -1.0), V(0.6, 7.4, 0));
+addLabel('dct', 'Distal convoluted tubule', V(4.0, 4.0, -.9), V(5.4, 7.4, 0));
+addLabel('desc', 'Descending limb', V(1.2, -3.5, 0), V(-2.4, -3.5, .6));
+addLabel('asc', 'Ascending limb', V(2.0, -2.0, 0), V(3.8, -3.3, 1.4));
+addLabel('loop', 'Loop of Henle', V(1.6, -7.0, 0), V(1.6, -8.7, .8), 'big');
+addLabel('cd', 'Collecting duct', V(5.5, -4.5, 0), V(7.4, -6.0, .5));
+addLabel('peri', 'Peritubular capillaries', periAnchor, V(-5.6, -1.7, 1.0));
+addTag('from renal artery →', V(-8.3, 6.85, 1.8));
+addTag('→ to renal vein', V(-9.6, 1.6, -2.2));
+addTag('from other nephrons', V(7.0, 5.7, 1.0));
+addTag('↓ urine to renal pelvis', V(5.5, -10.6, 0));
+addTag('Cortex ↑', V(7.7, 1.15, -3.2), 'zone', regionTags);
+addTag('Medulla ↓', V(7.7, 0.05, -3.2), 'zone med', regionTags);
+
+/* ------------------------------------------------------------------ particles */
+const VS = `attribute vec3 acol; attribute float alpha; attribute float asize;
+uniform float uSize; uniform float uPR; varying vec3 vC; varying float vA;
+void main(){ vC=acol; vA=alpha; vec4 mv=modelViewMatrix*vec4(position,1.0);
+ gl_PointSize=uSize*asize*uPR*(260.0/-mv.z); gl_Position=projectionMatrix*mv; }`;
+const FS = `varying vec3 vC; varying float vA;
+void main(){ vec2 c=gl_PointCoord-0.5; float d=length(c); if(d>0.5) discard;
+ float core=smoothstep(0.5,0.0,d); float a=vA*smoothstep(0.5,0.3,d);
+ gl_FragColor=vec4(mix(vC,vec3(1.0),pow(core,5.0)*0.55),a); }`;
+function makePoints(n, size, {depthTest = true, additive = false} = {}) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  g.setAttribute('acol', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  g.setAttribute('alpha', new THREE.BufferAttribute(new Float32Array(n), 1));
+  g.setAttribute('asize', new THREE.BufferAttribute(new Float32Array(n).fill(1), 1));
+  const m = new THREE.ShaderMaterial({uniforms:{uSize:{value:size}, uPR:{value:renderer.getPixelRatio()}},
+    vertexShader:VS, fragmentShader:FS, transparent:true, depthWrite:false, depthTest,
+    blending:additive ? THREE.AdditiveBlending : THREE.NormalBlending});
+  const p = new THREE.Points(g, m); p.frustumCulled = false; p.renderOrder = 4; scene.add(p);
+  return p;
+}
+
+// exchange (substances moving between tubule and blood)
+const EXC = {water:'#5fb4ff', solute:'#3ddc97', secrete:'#ff5d8f', filtrate:'#ffb347'};
+const EXPROC = {water:'reabsorption', solute:'reabsorption', secrete:'secretion', filtrate:'filtration'};
+const emitters = [];
+function emitter(part, mesh, type, count, travel = .75) {
+  const curve = mesh.userData.curve, N = 160, frames = curve.computeFrenetFrames(N, false);
+  const pts = []; for (let i = 0; i <= N; i++) pts.push(curve.getPointAt(i / N));
+  emitters.push({part, type, count, travel, r:mesh.userData.r, N, pts, frames, out:type !== 'secrete'});
+}
+emitters.push({part:'glomerulus', type:'filtrate', count:70, radial:true, out:true});
+emitter('pct', pct, 'water', 70); emitter('pct', pct, 'solute', 70); emitter('pct', pct, 'secrete', 30);
+emitter('desc', desc, 'water', 55);
+emitter('asc', asc, 'solute', 55);
+emitter('dct', dct, 'water', 18); emitter('dct', dct, 'solute', 26); emitter('dct', dct, 'secrete', 26);
+emitter('cd', cd, 'water', 60, .85);
+
+const exParts = [];
+for (const e of emitters) for (let i = 0; i < e.count; i++)
+  exParts.push({e, t:Math.random(), a:Math.random() * 6.283, life:Math.random(), sp:.35 + Math.random() * .35,
+    dir:new THREE.Vector3().randomDirection()});
+const exPoints = makePoints(exParts.length, .85);
+{ const c = exPoints.geometry.attributes.acol.array; exParts.forEach((p, i) => c.set(hexRGB(EXC[p.e.type]), i * 3)); }
+
+// flow along tubule (filtrate → urine) and along blood vessels
+const filtPath = new THREE.CatmullRomCurve3([at(-.6), ...pctPts, ...descPts.slice(1), ...ascPts.slice(1), ...dctPts.slice(1),
+  V(5.5, 2.0, 0), V(5.5, -3, 0), V(5.5, -9.5, 0)], false, 'centripetal');
+const bloodSegs = [affPts, glomPts.slice(1), effPts.slice(1), pctH1, vasaPts, dctH1, venPts.slice(1)];
+const bloodAll = bloodSegs.flat();
+const bloodPath = new THREE.CatmullRomCurve3(bloodAll, false, 'centripetal');
+// fraction of blood path before peritubular network (for hiding when capillaries are off)
+const lens = (() => { const c = new THREE.CatmullRomCurve3([...affPts, ...glomPts.slice(1), ...effPts.slice(1)], false, 'centripetal'); return c.getLength(); })();
+const bloodCut = lens / bloodPath.getLength();
+
+const flows = [
+  {curve:filtPath, n:120, speed:1.5, a:'#fff2b8', b:'#ffbf2e', shrink:true, kind:'filtrate'},
+  {curve:bloodPath, n:150, speed:2.6, a:'#ff5a5a', b:'#7d8cff', shrink:false, kind:'blood'}
+];
+for (const f of flows) {
+  f.len = f.curve.getLength();
+  f.pts = f.curve.getSpacedPoints(2000);
+  f.dots = Array.from({length:f.n}, (_, i) => i / f.n + Math.random() * .002);
+  f.points = makePoints(f.n, f.kind === 'blood' ? .55 : .75, {depthTest:false, additive:true});
+  f.points.renderOrder = 8;
+}
+
+/* ------------------------------------------------------------------ state + visuals */
+const state = {labels:true, caps:true, flow:true, exchange:true, regions:true, proc:'', tour:null, quiz:null};
+let selected = null, selSet = [], hovered = null;
+
+function partDim(id) {
+  if (selSet.length && !selSet.includes(id)) return true;
+  if (state.proc && !PROC[state.proc].parts.includes(id)) return true;
+  return false;
+}
+function applyVisuals() {
+  for (const id in parts) {
+    const dim = partDim(id), isSel = selSet.includes(id), isHov = hovered === id || (hovered === 'loop' && (id === 'desc' || id === 'asc'));
+    for (const m of parts[id].mats) {
+      const bo = m.userData.baseOpacity;
+      m.opacity = dim ? bo * .22 : bo;
+      m.depthWrite = !dim && bo > .9;
+      m.emissive.copy(m.userData.baseColor).multiplyScalar(isSel ? .42 : isHov ? .25 : 0);
+    }
+  }
+  for (const L of labelObjs) {
+    L.el.classList.toggle('active', selSet.includes(L.id) && !state.quiz);
+    L.el.classList.toggle('dim', partDim(L.id));
+  }
+  document.querySelectorAll('.pi').forEach(b => b.classList.toggle('active', b.dataset.part === selected));
+}
+function setVisibility() {
+  const showLabels = state.labels && !state.quiz;
+  for (const L of labelObjs) { L.o.visible = showLabels; L.line.visible = showLabels; L.dot.visible = showLabels; }
+  for (const t of tagObjs) t.visible = showLabels;
+  for (const t of regionTags) t.visible = state.regions && !state.quiz;
+  regions.visible = state.regions;
+  for (const m of capsObjs) m.visible = state.caps;
+  exPoints.visible = state.exchange;
+  for (const f of flows) f.points.visible = state.flow;
+  document.querySelectorAll('#toolbar .chip[data-t]').forEach(b => b.classList.toggle('on', state[b.dataset.t]));
+}
+
+/* ------------------------------------------------------------------ camera */
+let tween = null;
+function homePose() {
+  const portrait = innerWidth / innerHeight < .85;
+  const k = portrait ? 1.55 : 1;
+  return {pos:HOME.target.clone().add(HOME.pos.clone().sub(HOME.target).multiplyScalar(k)), target:HOME.target.clone()};
+}
+function flyTo(pos, target, dur = 1) {
+  tween = {t:0, dur, p0:camera.position.clone(), t0:controls.target.clone(), p1:pos, t1:target};
+}
+function flyToPart(id) {
+  const ids = id === 'loop' ? ['desc', 'asc'] : [id];
+  const box = new THREE.Box3();
+  for (const x of ids) for (const o of parts[x].objs) box.expandByObject(o);
+  const c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()).length();
+  let dist = THREE.MathUtils.clamp(size * 1.25 + 2.5, 5.5, 26);
+  if (innerWidth / innerHeight < .85) dist *= 1.5;
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  if (dir.z < .25) { dir.z = .6; dir.normalize(); }
+  flyTo(c.clone().addScaledVector(dir, dist), c);
+}
+
+/* ------------------------------------------------------------------ UI: parts list */
+const LIST = [{h:'Blood supply'}, 'afferent', 'glomerulus', 'efferent', 'peri', {h:'Renal tubule'}, 'capsule', 'pct', 'loop', 'desc', 'asc', 'dct', {h:'Shared by many nephrons'}, 'cd'];
+{
+  let html = '';
+  for (const it of LIST) {
+    if (it.h) { html += `<h3>${it.h}</h3>`; continue; }
+    const sub = it === 'desc' || it === 'asc';
+    html += `<button class="pi${sub ? ' sub' : ''}" data-part="${it}" style="--c:${COL[it]}"><i></i>${INFO[it].name}</button>`;
+  }
+  html += `<div class="legend">
+    <div><b style="--c:#ffb347"></b>Filtered into capsule</div>
+    <div><b style="--c:#5fb4ff"></b>Water reabsorbed</div>
+    <div><b style="--c:#3ddc97"></b>Solutes reabsorbed</div>
+    <div><b style="--c:#ff5d8f"></b>Substances secreted</div>
+    <div><b style="--c:#ffd36e"></b>Filtrate → urine flow</div>
+    <div><b style="--c:#ff5a5a"></b>Blood flow</div></div>`;
+  $('#parts').innerHTML = html;
+  $('#parts').addEventListener('click', e => {
+    const b = e.target.closest('.pi'); if (!b || state.quiz) return;
+    select(b.dataset.part);
+    if (innerWidth < 860) $('#parts').classList.remove('open');
+  });
+}
+
+/* ------------------------------------------------------------------ UI: info panel */
+const PT = {Filtration:'filt', Reabsorption:'reab', Secretion:'secr', Transport:'trans', 'Not filtered':'none'};
+function partHTML(id) {
+  const d = INFO[id];
+  return `<div class="kicker"><span class="dot" style="--c:${d.color}"></span>${d.kind} · ${d.zone}</div>
+  <h2>${d.name}</h2><p class="summary">${d.summary}</p>
+  <h4>Structure</h4><ul>${d.structure.map(s => `<li>${s}</li>`).join('')}</ul>
+  <h4>What happens here</h4>${d.happens.map(h => `<div class="hap"><span class="ptag ${PT[h.p]}">${h.p}</span><p>${h.t}</p></div>`).join('')}
+  <h4>Why it matters</h4><p>${d.why}</p>
+  ${d.fact ? `<div class="fact"><b>Did you know?</b> ${d.fact}</div>` : ''}`;
+}
+function procHTML(k) {
+  const p = PROC[k];
+  let body = `<div class="kicker"><span class="dot" style="--c:${p.color}"></span>Process</div>
+  <h2>${p.name}</h2><p class="summary" style="color:${p.color}">${p.where}</p><p>${p.text}</p>`;
+  if (p.yes) body += `<div class="twocol"><div><h5 style="color:var(--reab)">Filtered</h5><ul>${p.yes.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    <div><h5 style="color:var(--secr)">Stays in blood</h5><ul>${p.no.map(x => `<li>${x}</li>`).join('')}</ul></div></div>`;
+  if (p.how) body += `<h4>${k === 'secretion' ? 'What is secreted' : 'How'}</h4><ul>${p.how.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  body += `<p class="syl">Highlighted in the model: ${p.parts.filter(x => x !== 'loop').map(x => INFO[x].name).join(', ')}.</p>`;
+  return body;
+}
+function introHTML() {
+  return `<div class="kicker"><span class="dot" style="--c:var(--accent)"></span>Excretory system</div>
+  <h2>The functional unit of the kidney</h2>
+  <p>Each kidney contains about a million nephrons. Every nephron makes urine from blood using three processes. Click any part of the model, or press <b>Follow the filtrate</b> for a guided tour.</p>
+  <div class="proc3">
+    <button data-proc="filtration"><b style="color:var(--filt)">1 · Filtration</b>Blood pressure forces small molecules out of the glomerulus into the capsule.</button>
+    <button data-proc="reabsorption"><b style="color:var(--reab)">2 · Reabsorption</b>Useful substances move from the tubule back into the blood.</button>
+    <button data-proc="secretion"><b style="color:var(--secr)">3 · Secretion</b>Extra wastes and ions move from the blood into the tubule.</button>
+  </div>
+  <div class="formula">Urine = <span class="f">filtered</span> − <span class="r">reabsorbed</span> + <span class="s">secreted</span></div>
+  <p class="syl">Watch the coloured particles: they show substances moving in and out of the tubule at each section. Use the toolbar to switch layers on and off.<br><br>Aligned to the Year 11 Human Biology ATAR syllabus (excretory system). Hormonal control is not required at this level and is not shown.</p>`;
+}
+function renderInfo() {
+  const info = $('#info');
+  let html = `<button class="close" aria-label="Close">×</button>`;
+  if (state.tour !== null) {
+    const i = state.tour;
+    html += `<div class="tournav"><button class="btn" data-tour="prev" ${i === 0 ? 'disabled style="opacity:.35"' : ''}>← Back</button>
+      <span>Step ${i + 1} of ${TOUR.length}</span>
+      <button class="btn primary" data-tour="next">${i === TOUR.length - 1 ? 'Finish' : 'Next →'}</button></div>`;
+  }
+  if (selected) html += partHTML(selected);
+  else if (state.proc) html += procHTML(state.proc);
+  else html += introHTML();
+  info.innerHTML = html;
+  info.scrollTop = 0;
+}
+$('#info').addEventListener('click', e => {
+  if (e.target.closest('.close')) { hideInfo(); return; }
+  const t = e.target.closest('[data-tour]');
+  if (t) { t.dataset.tour === 'next' ? tourStep(1) : tourStep(-1); return; }
+  const p = e.target.closest('[data-proc]');
+  if (p) setProc(p.dataset.proc);
+});
+function hideInfo() {
+  $('#info').classList.add('hidden'); $('#btnInfo').classList.remove('hidden');
+  if (state.tour !== null) state.tour = null;
+  layout();
+}
+function showInfo() {
+  $('#info').classList.remove('hidden'); $('#btnInfo').classList.add('hidden'); layout();
+}
+$('#btnInfo').onclick = () => { renderInfo(); showInfo(); };
+
+/* ------------------------------------------------------------------ selection / tour / process */
+function select(id, {fly = true} = {}) {
+  selected = id;
+  selSet = id ? (id === 'loop' ? ['loop', 'desc', 'asc'] : [id]) : [];
+  if (id === 'peri' && !state.caps) { state.caps = true; setVisibility(); }
+  if (id && state.proc && !PROC[state.proc].parts.includes(id)) state.proc = '', syncProcSeg();
+  if (id && fly) flyToPart(id);
+  if (!state.quiz) { renderInfo(); showInfo(); }
+  applyVisuals();
+}
+function tourStep(d) {
+  const n = state.tour + d;
+  if (n < 0) return;
+  if (n >= TOUR.length) { state.tour = null; select(null); flyHome(); return; }
+  state.tour = n; select(TOUR[n]);
+}
+$('#btnTour').onclick = () => { if (state.quiz) endQuiz(); state.proc = ''; syncProcSeg(); state.tour = 0; select(TOUR[0]); };
+function setProc(k) {
+  state.proc = k || ''; syncProcSeg();
+  selected = null; selSet = []; state.tour = null;
+  renderInfo(); showInfo(); applyVisuals();
+}
+function syncProcSeg() { document.querySelectorAll('#procSeg button').forEach(b => b.classList.toggle('on', b.dataset.p === state.proc)); }
+$('#procSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !state.quiz) setProc(b.dataset.p); });
+function flyHome() { const h = homePose(); flyTo(h.pos, h.target); }
+$('#btnReset').onclick = () => { state.tour = null; if (!state.quiz) { select(null, {fly:false}); } flyHome(); };
+document.querySelectorAll('#toolbar .chip[data-t]').forEach(b => b.onclick = () => { state[b.dataset.t] = !state[b.dataset.t]; setVisibility(); });
+$('#btnParts').onclick = () => $('#parts').classList.toggle('open');
+
+/* ------------------------------------------------------------------ processes modal */
+$('#btnProc').onclick = () => {
+  const card = k => { const p = PROC[k]; return `<div class="pcard" style="--c:${p.color}"><h3>${p.name}</h3><div class="where">${p.where}</div><p>${p.text}</p>
+    ${p.yes ? `<ul><li><b>Filtered:</b> ${p.yes.join(', ').toLowerCase()}</li><li><b>Not filtered:</b> ${p.no.join(', ').toLowerCase()}</li></ul>` : `<ul>${p.how.map(x => `<li>${x}</li>`).join('')}</ul>`}
+    <button class="btn" data-show="${k}">Show in model</button></div>`; };
+  $('#modal').innerHTML = `<div class="panel"><button class="close" aria-label="Close">×</button><h2>Making urine: three processes</h2>
+    <p class="lead">Urine = <b style="color:var(--filt)">filtered</b> − <b style="color:var(--reab)">reabsorbed</b> + <b style="color:var(--secr)">secreted</b></p>
+    <div class="pcards">${card('filtration')}${card('reabsorption')}${card('secretion')}</div></div>`;
+  $('#modal').classList.remove('hidden');
+};
+$('#modal').addEventListener('click', e => {
+  const s = e.target.closest('[data-show]');
+  if (s) { $('#modal').classList.add('hidden'); if (state.quiz) endQuiz(); setProc(s.dataset.show); flyHome(); return; }
+  if (e.target.closest('.close') || e.target.id === 'modal') $('#modal').classList.add('hidden');
+});
+
+/* ------------------------------------------------------------------ quiz */
+const QPARTS = ['afferent', 'glomerulus', 'capsule', 'efferent', 'pct', 'desc', 'asc', 'dct', 'cd', 'peri'];
+const NAMEQ = QPARTS.map(id => ({q:`Click the <b>${INFO[id].name.toLowerCase().replace('bowman', 'Bowman')}</b>.`, a:[id]}));
+const FUNCQ = [
+  {q:'Where are small molecules forced out of the blood, while blood cells and proteins stay behind?', a:['glomerulus']},
+  {q:'Where are <b>all</b> the glucose and amino acids reabsorbed?', a:['pct']},
+  {q:'Which section is permeable to water but not to salt?', a:['desc']},
+  {q:'Which section moves salt out but is impermeable to water?', a:['asc']},
+  {q:'Which vessel is narrower, keeping the pressure in the glomerulus high?', a:['efferent']},
+  {q:'Which part carries fluid from many nephrons down to the renal pelvis?', a:['cd']},
+  {q:'After the loop of Henle, where are H⁺ and K⁺ secreted to fine-tune the blood?', a:['dct']},
+  {q:'Which blood vessels pick up the reabsorbed water, glucose and salts?', a:['peri']},
+  {q:'Which structure’s inner wall is made of podocytes with filtration slits?', a:['capsule']},
+  {q:'Which vessel brings blood from the renal artery into the glomerulus?', a:['afferent']},
+  {q:'Which section has cells with microvilli and many mitochondria for active transport?', a:['pct']}
+];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function startQuiz() {
+  state.tour = null; state.proc = ''; syncProcSeg();
+  state.quiz = {qs:shuffle([...shuffle(NAMEQ).slice(0, 5), ...shuffle(FUNCQ).slice(0, 5)]), i:0, score:0, answered:false};
+  selected = null; selSet = [];
+  $('#info').classList.add('hidden'); $('#btnInfo').classList.add('hidden');
+  $('#quiz').classList.remove('hidden');
+  setVisibility(); applyVisuals(); renderQuiz(); flyHome(); layout();
+}
+function endQuiz() {
+  state.quiz = null; $('#quiz').classList.add('hidden');
+  selected = null; selSet = [];
+  setVisibility(); applyVisuals(); renderInfo(); showInfo();
+}
+function renderQuiz(fb = '') {
+  const Q = state.quiz, el = $('#quiz');
+  if (Q.i >= Q.qs.length) {
+    const msg = Q.score >= 9 ? 'Outstanding!' : Q.score >= 7 ? 'Great work.' : Q.score >= 5 ? 'Good start — revise the parts you missed.' : 'Keep exploring the model, then try again.';
+    el.innerHTML = `<div class="qn">Quiz complete</div><div class="score">${Q.score} / ${Q.qs.length}</div><div class="q">${msg}</div>
+      <div class="row"><button class="btn primary" data-q="again">Try again</button><button class="btn" data-q="exit">Back to model</button></div>`;
+    return;
+  }
+  const q = Q.qs[Q.i];
+  el.innerHTML = `<div class="qn">Question ${Q.i + 1} of ${Q.qs.length} · Score ${Q.score}</div><div class="q">${q.q}</div>
+    ${fb ? fb : `<div class="fb" style="color:var(--mute)">Rotate and zoom if you need to, then click your answer on the model.</div>`}
+    <div class="row">${Q.answered ? `<button class="btn primary" data-q="next">${Q.i === Q.qs.length - 1 ? 'See score' : 'Next question →'}</button>` : ''}
+    <button class="btn" data-q="exit">Exit quiz</button></div>`;
+}
+$('#quiz').addEventListener('click', e => {
+  const b = e.target.closest('[data-q]'); if (!b) return;
+  const a = b.dataset.q;
+  if (a === 'exit') endQuiz();
+  else if (a === 'again') startQuiz();
+  else if (a === 'next') { const Q = state.quiz; Q.i++; Q.answered = false; selected = null; selSet = []; applyVisuals(); renderQuiz(); }
+});
+function quizPick(id) {
+  const Q = state.quiz; if (Q.answered || !id || Q.i >= Q.qs.length) return;
+  const q = Q.qs[Q.i]; let ok = q.a.includes(id);
+  if (id === 'loop') ok = q.a.includes('desc') || q.a.includes('asc');
+  Q.answered = true; if (ok) Q.score++;
+  selected = q.a[0]; selSet = q.a.slice(); applyVisuals();
+  const ans = INFO[q.a[0]].name;
+  renderQuiz(ok ? `<div class="fb ok">✓ Correct — that’s the ${ans}.</div>`
+    : `<div class="fb no">✗ You clicked the ${INFO[id].name}. The answer, now highlighted, is the <b>${ans}</b>.</div>`);
+}
+$('#btnQuiz').onclick = () => state.quiz ? endQuiz() : startQuiz();
+
+/* ------------------------------------------------------------------ picking */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pick(x, y) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(pickables.filter(o => o.visible), true);
+  if (!hits.length) return null;
+  const ids = hits.map(h => h.object.userData.part).filter(Boolean);
+  if (ids[0] === 'capsule' && ids.includes('glomerulus')) return 'glomerulus';
+  // skip dimmed parts if something un-dimmed is behind
+  if (!state.quiz) { const und = ids.find(i => !partDim(i)); if (und && partDim(ids[0])) return und; }
+  return ids[0];
+}
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; $('#hint').style.opacity = 0; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down) return;
+  const moved = Math.hypot(e.clientX - down[0], e.clientY - down[1]); down = null;
+  if (moved > 6) return;
+  const id = pick(e.clientX, e.clientY);
+  if (state.quiz) { quizPick(id); return; }
+  if (id) { state.tour = TOUR.includes(id) && state.tour !== null ? TOUR.indexOf(id) : null; select(id); }
+});
+let hoverEvt = null;
+renderer.domElement.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') hoverEvt = e; });
+renderer.domElement.addEventListener('pointerleave', () => { hoverEvt = null; setHover(null); });
+function setHover(id, e) {
+  const tip = $('#tooltip');
+  if (id && !state.quiz && !down) {
+    tip.textContent = INFO[id].name; tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px';
+    tip.classList.remove('hidden'); renderer.domElement.style.cursor = 'pointer';
+  } else { tip.classList.add('hidden'); renderer.domElement.style.cursor = ''; }
+  if (state.quiz) id = null;
+  if (id !== hovered) { hovered = id; applyVisuals(); }
+}
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $('#modal').classList.add('hidden'); if (state.quiz) return; state.tour = null; select(null, {fly:false}); }
+  if (state.tour !== null && e.key === 'ArrowRight') tourStep(1);
+  if (state.tour !== null && e.key === 'ArrowLeft') tourStep(-1);
+});
+
+/* ------------------------------------------------------------------ layout */
+function layout() {
+  const W = innerWidth, H = innerHeight;
+  renderer.setSize(W, H); labelRenderer.setSize(W, H);
+  camera.aspect = W / H;
+  let sx = 0, sy = 0;
+  if (W >= 860) {
+    const left = 258, right = $('#info').classList.contains('hidden') ? 0 : 388;
+    sx = (right - left) / 2;
+  } else if (!$('#info').classList.contains('hidden')) sy = $('#info').offsetHeight * .45;
+  camera.setViewOffset(W, H, sx, sy, W, H);
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', layout);
+
+/* ------------------------------------------------------------------ animate */
+const clock = new THREE.Clock();
+const tmp = new THREE.Vector3();
+function updateExchange(dt) {
+  const pos = exPoints.geometry.attributes.position.array, al = exPoints.geometry.attributes.alpha.array;
+  const vis = new Map();
+  for (const e of emitters) {
+    let v = 1;
+    if (state.proc && EXPROC[e.type] !== state.proc) v = 0;
+    if (selSet.length && !selSet.includes(e.part)) v *= .1;
+    vis.set(e, v);
+  }
+  exParts.forEach((p, i) => {
+    const e = p.e;
+    p.life += dt * p.sp;
+    if (p.life > 1) { p.life -= 1; p.t = Math.random(); p.a = Math.random() * 6.283; p.dir.randomDirection(); }
+    const d = e.out ? p.life : 1 - p.life;
+    if (e.radial) tmp.copy(C).addScaledVector(p.dir, .6 + d * .32);
+    else {
+      const k = Math.round(p.t * e.N), N = e.frames.normals[k], B = e.frames.binormals[k];
+      const rr = e.r + .04 + d * e.travel;
+      tmp.copy(e.pts[k]).addScaledVector(N, Math.cos(p.a) * rr).addScaledVector(B, Math.sin(p.a) * rr);
+    }
+    pos[i * 3] = tmp.x; pos[i * 3 + 1] = tmp.y; pos[i * 3 + 2] = tmp.z;
+    al[i] = Math.sin(p.life * Math.PI) * .95 * vis.get(e);
+  });
+  exPoints.geometry.attributes.position.needsUpdate = true;
+  exPoints.geometry.attributes.alpha.needsUpdate = true;
+}
+const ca = new THREE.Color(), cb = new THREE.Color();
+function updateFlows(dt) {
+  for (const f of flows) {
+    const g = f.points.geometry, pos = g.attributes.position.array, col = g.attributes.acol.array, al = g.attributes.alpha.array, sz = g.attributes.asize.array;
+    const A = hexRGB(f.a), B = hexRGB(f.b), M = f.pts.length - 1;
+    let dimF = 1;
+    if (f.kind === 'filtrate' && state.proc === 'secretion') dimF = .35;
+    if (selSet.length) dimF = .35;
+    f.dots.forEach((t, i) => {
+      t += dt * f.speed / f.len; if (t > 1) t -= 1; f.dots[i] = t;
+      const p = f.pts[Math.round(t * M)];
+      pos[i * 3] = p.x; pos[i * 3 + 1] = p.y; pos[i * 3 + 2] = p.z;
+      for (let c = 0; c < 3; c++) col[i * 3 + c] = A[c] + (B[c] - A[c]) * t;
+      let a = .85 * dimF * Math.min(1, t * 30, (1 - t) * 30);
+      if (f.kind === 'blood' && !state.caps && t > bloodCut) a = 0;
+      al[i] = a;
+      sz[i] = f.shrink ? 1 - .5 * t : 1;
+    });
+    g.attributes.position.needsUpdate = g.attributes.acol.needsUpdate = g.attributes.alpha.needsUpdate = g.attributes.asize.needsUpdate = true;
+  }
+}
+function animate() {
+  const dt = Math.min(clock.getDelta(), .05);
+  if (tween) {
+    tween.t += dt; const k = Math.min(1, tween.t / tween.dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    camera.position.lerpVectors(tween.p0, tween.p1, e); controls.target.lerpVectors(tween.t0, tween.t1, e);
+    if (k >= 1) tween = null;
+  }
+  controls.update();
+  if (hoverEvt) { const e = hoverEvt; hoverEvt = null; setHover(pick(e.clientX, e.clientY), e); }
+  if (state.exchange) updateExchange(dt);
+  if (state.flow) updateFlows(dt);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+controls.addEventListener('start', () => { tween = null; });
+
+/* ------------------------------------------------------------------ go */
+{ const h = homePose(); camera.position.copy(h.pos); controls.target.copy(h.target); }
+renderInfo(); setVisibility(); applyVisuals(); layout();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

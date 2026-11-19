@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mr Trichardt's Science Lab</title>
+<meta name="description" content="3D models, interactives and websites to help students explore science.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+  <div id="bubbles"></div>
+</div>
+
+<div class="wrap">
+  <nav class="nav">
+    <div class="nav-inner glass">
+      <a class="brand" href="./">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="1.8" fill="#fff" stroke="none"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/></svg>
+        </span>
+        <span>Mr Trichardt<span class="full">'s Science Lab</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#categories">Topics</a>
+        <a href="#resources">Resources</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <span class="eyebrow glass"><span class="pulse">🔭</span>Explore · Interact · Discover</span>
+      <h1>Mr Trichardt's <span class="grad">Science Lab</span></h1>
+      <p class="lead" id="tagline"></p>
+      <label class="search glass">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search for a topic, like kidney or atoms…" autocomplete="off" aria-label="Search resources">
+        <kbd>/</kbd>
+      </label>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div id="spotlight"></div>
+  </header>
+
+  <section class="section" id="categories">
+    <div class="section-head">
+      <div>
+        <h2>Pick a topic</h2>
+        <p>Tap a bubble to see everything in that area.</p>
+      </div>
+    </div>
+    <div class="cats" id="cats"></div>
+  </section>
+
+  <section class="section" id="resources">
+    <div class="section-head">
+      <div>
+        <h2 id="list-title">All resources</h2>
+        <p id="list-blurb">Everything in the lab, newest first.</p>
+      </div>
+      <div class="seg glass" id="types" role="group" aria-label="Filter by type"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <footer>
+    <div class="foot glass">
+      <span><b>Mr Trichardt's Science Lab</b> · Made for curious minds</span>
+      <span id="foot-count"></span>
+    </div>
+  </footer>
+</div>
+
+<script src="resources.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
