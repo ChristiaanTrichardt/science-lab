@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Carbon Quest: Journey of a Carbon Atom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,43 +17,36 @@
   --body:'Nunito',ui-rounded,'Segoe UI',system-ui,sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;font-family:var(--body);color:var(--ink);
-  background:linear-gradient(#9fd4ff 0 50%,#3a3348 50%);-webkit-font-smoothing:antialiased}
+html,body{margin:0;height:100%;overflow:hidden;font-family:var(--body);color:var(--ink);background:#2a83cf;-webkit-font-smoothing:antialiased;
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input{-webkit-user-select:text;user-select:text}
 .hidden{display:none!important}
-#world{position:fixed;inset:0;width:100%;height:100%;display:block}
+#game{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block;cursor:pointer}
 .glass{background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
   border:1px solid var(--edge);box-shadow:var(--shadow),inset 0 1px 0 #fff}
 
-/* world animation */
-.cloud{animation:cloud 40s ease-in-out infinite alternate}
-.cloud.c2{animation-duration:55s;animation-delay:-20s}
-.cloud.c3{animation-duration:48s;animation-delay:-8s}
-@keyframes cloud{to{transform:translateX(70px)}}
-.floaty{animation:floaty 6s ease-in-out infinite alternate}
-@keyframes floaty{to{transform:translate(14px,-12px)}}
-.plank{animation:plank 5s ease-in-out infinite alternate}
-@keyframes plank{to{transform:translate(8px,10px)}}
-.smoke{animation:smoke 5s ease-out infinite;opacity:0;transform-box:fill-box;transform-origin:center}
-@keyframes smoke{0%{transform:translate(0,0) scale(.6);opacity:0}20%{opacity:.7}100%{transform:translate(30px,-90px) scale(1.6);opacity:0}}
-.waves{animation:waves 6s ease-in-out infinite alternate}
-@keyframes waves{to{transform:translateX(-40px)}}
-.bob{animation:bob 2.6s ease-in-out infinite}
+/* the player's atom (drawn over the canvas) */
+#me{position:fixed;left:0;top:0;width:0;height:0;z-index:3;pointer-events:none}
+#meInner{position:absolute;left:0;top:0;transform-origin:0 0}
+#meBob{position:absolute;left:-52px;top:-50px;width:104px;height:92px;animation:bob 2.4s ease-in-out infinite}
+#meSvg{width:104px;height:92px;display:block;overflow:visible}
+#meSvg.morph{animation:morph .7s cubic-bezier(.3,1.8,.5,1)}
+#meTag{position:absolute;left:0;top:-82px;transform:translateX(-50%);background:rgba(28,34,66,.9);color:#fff;font:800 13px var(--body);padding:4px 10px;border-radius:99px;white-space:nowrap}
+#meName{position:absolute;left:0;top:40px;transform:translateX(-50%);font:600 15px var(--head);color:#1c2242;white-space:nowrap;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 6px #fff,0 0 6px #fff}
 @keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes morph{0%{transform:scale(1)}35%{transform:scale(1.5)}100%{transform:scale(1)}}
 .eyes{animation:blink 4.5s infinite;transform-box:fill-box;transform-origin:center}
 @keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
-.morph{animation:morph .7s cubic-bezier(.3,1.8,.5,1)}
-@keyframes morph{0%{transform:scale(1)}35%{transform:scale(1.45)}100%{transform:scale(1)}}
-.ring{animation:ring .9s ease-out forwards}
-@keyframes ring{from{r:20;opacity:.9}to{r:90;opacity:0}}
-@media (prefers-reduced-motion:reduce){.cloud,.floaty,.plank,.smoke,.waves,.bob,.eyes{animation:none}}
+@media (prefers-reduced-motion:reduce){#meBob,.eyes{animation:none}}
 
 /* HUD */
 #hud{position:fixed;top:10px;left:10px;right:10px;display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:999px;z-index:10}
 .hud-atom{display:flex;align-items:center;gap:6px;font-family:var(--head);font-weight:600;font-size:1.02rem;padding-right:4px}
 .hud-atom svg{width:40px;height:36px;flex:none}
 .hud-level{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15;padding-left:4px}
-.hud-level small{font-size:.7rem;font-weight:800;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase}
+.hud-level small{font-size:.7rem;font-weight:800;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 .hud-level b{font-family:var(--head);font-weight:600;font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dots{display:flex;gap:5px;padding:0 4px}
 .dots i{width:11px;height:11px;border-radius:50%;background:rgba(28,34,66,.14)}
@@ -63,21 +56,31 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .chip.form{background:#1c2242;color:#fff;border-color:#1c2242}
 .chip.form small{opacity:.6;font-weight:700}
 button.chip:hover{background:#fff}
-@media (max-width:820px){.dots{display:none}}
-@media (max-width:640px){.hud-atom .nm,.chip .lbl,.chip.form small{display:none}.chip{padding:0 10px}}
+@media (max-width:900px){.dots{display:none}}
+@media (max-width:640px){.hud-atom .nm,.chip .lbl,.chip.form small{display:none}.chip{padding:0 9px}}
 
-/* banner + toast */
-#banner{position:fixed;top:76px;left:50%;transform:translate(-50%,-20px);opacity:0;z-index:8;padding:12px 26px;border-radius:999px;text-align:center;
-  transition:opacity .4s,transform .5s cubic-bezier(.2,1.4,.4,1);pointer-events:none;white-space:nowrap}
-#banner.show{opacity:1;transform:translate(-50%,0)}
-#banner small{display:block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
-#banner b{font-family:var(--head);font-weight:600;font-size:1.6rem}
-#toast{position:fixed;top:76px;left:50%;transform:translate(-50%,-14px);opacity:0;z-index:30;padding:11px 20px;border-radius:999px;font-weight:800;
+#goal{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:9;padding:9px 18px;border-radius:999px;font-weight:800;font-size:.95rem;
+  max-width:calc(100% - 20px);text-align:center;line-height:1.3}
+#goal small{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+#talk{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:8;height:54px;padding:0 24px;border-radius:999px;font-weight:800;font-size:1.05rem;
+  color:#fff;background:radial-gradient(circle at 30% 20%,#a5b4fc 0 8%,#6366f1 60%,#4f46e5 100%);box-shadow:0 14px 28px -10px rgba(79,70,229,.8),inset 0 1px 0 rgba(255,255,255,.4);
+  display:flex;align-items:center;gap:10px;animation:rise .3s cubic-bezier(.2,1.3,.4,1);white-space:nowrap}
+#talk kbd{font:800 .8rem var(--body);background:rgba(255,255,255,.25);border-radius:8px;padding:3px 8px}
+@media (pointer:coarse){#talk kbd{display:none}}
+
+#mini{position:fixed;left:10px;bottom:10px;z-index:7;border-radius:18px;padding:6px;line-height:0}
+#mini canvas{width:180px;height:135px;border-radius:13px}
+#help{position:fixed;right:10px;bottom:10px;z-index:7;padding:8px 14px;border-radius:999px;font-size:.8rem;font-weight:800;color:var(--ink2)}
+@media (max-width:640px){#mini{bottom:88px}#mini canvas{width:110px;height:82px}#help{display:none}}
+@media (max-height:520px){#mini{display:none}}
+
+#toast{position:fixed;top:122px;left:50%;transform:translate(-50%,-14px);opacity:0;z-index:30;padding:11px 20px;border-radius:999px;font-weight:800;
   transition:opacity .3s,transform .3s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* dialogue */
-#dialog{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(780px,calc(100% - 20px));padding:16px 18px 14px;border-radius:28px;display:flex;gap:14px;z-index:9;cursor:pointer;
+#dialog{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(780px,calc(100% - 20px));padding:16px 18px 14px;border-radius:28px;display:flex;gap:14px;z-index:12;cursor:pointer;
   animation:rise .35s cubic-bezier(.2,1.2,.4,1)}
 @keyframes rise{from{transform:translate(-50%,20px);opacity:0}}
 .who{flex:none;width:66px;height:66px;border-radius:50%;display:grid;place-items:center;font-size:2.3rem;line-height:1;
@@ -88,7 +91,6 @@ button.chip:hover{background:#fff}
 .say-text{font-size:1.1rem;line-height:1.5;font-weight:700;min-height:3.2em;margin-top:2px}
 .say-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
 .say-foot small{color:var(--ink3);font-weight:700;font-size:.78rem}
-@media (max-width:600px){.who{width:50px;height:50px;font-size:1.8rem}.who svg{width:48px;height:44px}.say-text{font-size:1rem}#dialog{padding:14px}}
 
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:999px;font-weight:800;font-size:1rem;
@@ -102,20 +104,18 @@ button.chip:hover{background:#fff}
 .btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
 
 /* modal cards */
-#modal{position:fixed;inset:0;display:grid;place-items:center;padding:16px;z-index:20;background:rgba(20,30,80,.2)}
-.card{background:rgba(255,255,255,.84);width:min(640px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;border-radius:30px;padding:24px;animation:pop .45s cubic-bezier(.2,1.3,.4,1)}
+#modal{position:fixed;inset:0;display:grid;place-items:center;padding:16px;z-index:20;background:rgba(20,30,80,.22)}
+.card{background:rgba(255,255,255,.86);width:min(640px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;border-radius:30px;padding:24px;animation:pop .45s cubic-bezier(.2,1.3,.4,1)}
 @keyframes pop{from{opacity:0;transform:scale(.92) translateY(10px)}}
 .card h2{font-family:var(--head);font-weight:600;font-size:1.65rem;line-height:1.15;margin:4px 0 6px;letter-spacing:-.01em}
 .card .sub{color:var(--ink2);margin:0 0 16px;font-weight:600}
 .kick{font-size:.74rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
 .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
-@media (max-width:600px){.card{padding:18px;border-radius:24px}.card h2{font-size:1.35rem}}
-
 .qbar{display:flex;gap:6px;margin:10px 0 4px}
 .qbar i{flex:1;height:7px;border-radius:9px;background:rgba(28,34,66,.12)}
 .qbar i.done{background:#22c55e}.qbar i.now{background:var(--accent)}
 .opts{display:grid;gap:10px;margin-top:14px}
-.opt{text-align:left;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.85);border:2px solid rgba(255,255,255,.9);font-weight:700;font-size:1rem;line-height:1.35;
+.opt{text-align:left;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.9);border:2px solid rgba(255,255,255,.95);font-weight:700;font-size:1rem;line-height:1.35;
   transition:border-color .2s,background .2s,transform .15s;box-shadow:0 4px 10px -8px rgba(30,40,110,.5)}
 .opt:hover:not(:disabled){border-color:#a5b4fc;transform:translateX(3px)}
 .opt:disabled{cursor:default}
@@ -136,8 +136,8 @@ button.chip:hover{background:#fff}
 .target{font-size:2.6rem;line-height:1}
 .arrow{font-size:1.4rem;color:var(--ink3);font-weight:800}
 .tokens{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.token{padding:14px 8px;border-radius:20px;background:rgba(255,255,255,.88);display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;font-size:.86rem;line-height:1.2;text-align:center;
-  border:2px solid rgba(255,255,255,.9);box-shadow:0 4px 10px -8px rgba(30,40,110,.5);transition:transform .15s,border-color .2s}
+.token{padding:14px 8px;border-radius:20px;background:rgba(255,255,255,.9);display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;font-size:.86rem;line-height:1.2;text-align:center;
+  border:2px solid rgba(255,255,255,.95);box-shadow:0 4px 10px -8px rgba(30,40,110,.5);transition:transform .15s,border-color .2s}
 .token:hover:not(:disabled){transform:translateY(-3px);border-color:#a5b4fc}
 .token .ic{font-size:2.1rem;line-height:1}
 .token .ic.f{font-size:1.25rem;font-weight:800;font-family:var(--head);height:2.1rem;display:grid;place-items:center}
@@ -146,9 +146,7 @@ button.chip:hover{background:#fff}
 .flip{min-height:150px;padding:16px 12px;justify-content:flex-start}
 .flip p{margin:4px 0 0;font-weight:600;font-size:.88rem;color:var(--ink2)}
 .flip .tap{color:var(--accent);font-size:.8rem}
-@media (max-width:600px){.cards3{grid-template-columns:1fr}.flip{min-height:0;flex-direction:row;text-align:left;gap:12px}.flip .ic{font-size:1.8rem}}
 .eq{margin-top:12px;padding:12px;border-radius:16px;background:rgba(255,255,255,.75);text-align:center;font-weight:800;font-size:1.02rem}
-
 .range{width:100%;margin:18px 0 6px;accent-color:#6366f1;height:28px}
 .rlabels{display:flex;justify-content:space-between;font-size:.8rem;font-weight:800;color:var(--ink3)}
 .readout{display:flex;align-items:center;gap:14px;padding:14px;border-radius:20px;background:rgba(255,255,255,.7);margin-top:10px}
@@ -159,9 +157,7 @@ button.chip:hover{background:#fff}
 .strata{display:flex;flex-direction:column-reverse;height:150px;border-radius:18px;overflow:hidden;background:#cfe8ff;margin-top:12px;position:relative}
 .strata i{display:block;flex:none;height:18px;border-top:1px solid rgba(0,0,0,.08)}
 .strata .me{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-size:1.4rem;transition:all .3s}
-
-.pond{position:relative;height:250px;border-radius:22px;overflow:hidden;background:linear-gradient(#a5e8ff,#3b9fd8 55%,#1e5f9e);
-  box-shadow:inset 0 2px 12px rgba(255,255,255,.6)}
+.pond{position:relative;height:250px;border-radius:22px;overflow:hidden;background:linear-gradient(#a5e8ff,#3b9fd8 55%,#1e5f9e);box-shadow:inset 0 2px 12px rgba(255,255,255,.6)}
 .plk{position:absolute;width:46px;height:46px;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#f7fee7 0 10%,#a3e635 40%,#22c55e 75%,#15803d);
   box-shadow:0 0 16px rgba(163,230,53,.7),inset -3px -4px 8px rgba(21,128,61,.5);animation:drift var(--d) ease-in-out infinite alternate;transition:transform .2s,opacity .2s}
@@ -173,21 +169,22 @@ button.chip:hover{background:#fff}
 .title{font-family:var(--head);font-weight:600;font-size:clamp(2.2rem,6vw,3.2rem);line-height:1;margin:6px 0 6px;letter-spacing:-.02em}
 .title .g{background:linear-gradient(100deg,#16a34a,#0ea5e9 55%,#6366f1);-webkit-background-clip:text;background-clip:text;color:transparent}
 .maker{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center;margin-top:16px}
-@media (max-width:520px){.maker{grid-template-columns:1fr}.preview{margin:0 auto}}
 .preview{width:150px;height:140px;border-radius:30px;background:radial-gradient(circle at 50% 40%,#fff,#dbeafe);display:grid;place-items:center;box-shadow:inset 0 0 0 1px #fff}
 .preview svg{width:140px;height:122px}
 .field label{display:block;font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:10px 0 6px}
-.field input{width:100%;height:46px;border-radius:16px;border:2px solid rgba(255,255,255,.95);background:rgba(255,255,255,.9);padding:0 14px;font:inherit;font-weight:800;font-size:1.05rem;color:var(--ink);outline:none}
+.field input{width:100%;height:46px;border-radius:16px;border:2px solid rgba(255,255,255,.95);background:rgba(255,255,255,.95);padding:0 14px;font:inherit;font-weight:800;font-size:1.05rem;color:var(--ink);outline:none}
 .field input:focus{border-color:#a5b4fc}
 .swatches{display:flex;gap:8px;flex-wrap:wrap}
 .sw{width:36px;height:36px;border-radius:50%;background:var(--c);box-shadow:inset -3px -4px 8px rgba(0,0,0,.2),inset 2px 3px 6px rgba(255,255,255,.5);border:3px solid #fff}
 .sw.on{outline:3px solid var(--c);outline-offset:2px}
 .accs{display:flex;gap:6px;flex-wrap:wrap}
-.ac{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.85);font-size:1.4rem;display:grid;place-items:center;border:2px solid #fff}
+.ac{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.9);font-size:1.4rem;display:grid;place-items:center;border:2px solid #fff}
 .ac.on{border-color:#6366f1;background:#eef2ff}
 .how{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
-.how div{background:rgba(255,255,255,.6);border-radius:16px;padding:10px;font-size:.82rem;font-weight:700;color:var(--ink2);text-align:center;line-height:1.3}
+.how div{background:rgba(255,255,255,.65);border-radius:16px;padding:10px;font-size:.82rem;font-weight:700;color:var(--ink2);text-align:center;line-height:1.3}
 .how b{display:block;font-size:1.4rem}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center;margin-top:6px;font-weight:700;color:var(--ink2)}
+.keys span:nth-child(odd){font-size:1.5rem;text-align:center}
 
 /* diary */
 #diary{position:fixed;top:66px;right:10px;bottom:10px;width:min(340px,calc(100% - 20px));border-radius:26px;padding:18px;z-index:15;overflow:auto;animation:pop .3s}
@@ -201,170 +198,48 @@ button.chip:hover{background:#fff}
 .tl em{font-style:normal;font-size:.72rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
 
 /* finale */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
-.stats div{background:rgba(255,255,255,.75);border-radius:18px;padding:12px;text-align:center;font-weight:700;font-size:.82rem;color:var(--ink2)}
-.stats b{display:block;font-family:var(--head);font-weight:600;font-size:1.6rem;color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.stats div{background:rgba(255,255,255,.75);border-radius:18px;padding:12px 6px;text-align:center;font-weight:700;font-size:.78rem;color:var(--ink2)}
+.stats b{display:block;font-family:var(--head);font-weight:600;font-size:1.45rem;color:var(--ink)}
 .cert{margin-top:16px;padding:18px;border-radius:22px;text-align:center;border:2px dashed #a5b4fc;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(224,231,255,.8))}
 .cert small{font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-size:.7rem}
 .cert h3{font-family:var(--head);font-weight:600;font-size:1.5rem;margin:4px 0}
 .paths{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .paths div{background:rgba(255,255,255,.65);border-radius:14px;padding:10px;font-size:.84rem;font-weight:600;color:var(--ink2);line-height:1.35}
 .paths b{color:var(--ink)}
-@media (max-width:520px){.paths{grid-template-columns:1fr}}
 .confetti{position:fixed;top:-40px;z-index:40;font-size:1.6rem;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 h4.sec{font-family:var(--head);font-weight:600;font-size:1.1rem;margin:18px 0 0}
+.factbig{font-size:3rem;text-align:center;line-height:1}
 
 /* phones */
-.hud-level small{white-space:nowrap}
 @media (max-width:600px){
+  .who{width:50px;height:50px;font-size:1.8rem}.who svg{width:48px;height:44px}.say-text{font-size:1rem}#dialog{padding:14px}
   .say-foot small{visibility:hidden}
+  .card{padding:18px;border-radius:24px}.card h2{font-size:1.35rem}
   .slots{gap:6px;padding:12px 8px;flex-wrap:nowrap}.slot{width:46px;height:46px;font-size:1.3rem;flex:none}.slot.txt{font-size:.8rem}
   .arrow{font-size:1rem}.target{font-size:1.9rem}
   .tokens{gap:8px}.token{padding:12px 4px;font-size:.8rem}.token .ic{font-size:1.8rem}
+  .cards3{grid-template-columns:1fr}.flip{min-height:0;flex-direction:row;text-align:left;gap:12px}
+  .maker{grid-template-columns:1fr}.preview{margin:0 auto}
+  .paths{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
+  #goal{font-size:.84rem;padding:7px 14px;top:62px}
 }
 </style>
 </head>
 <body>
 
-<svg id="world" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid meet" aria-label="Illustrated Earth showing the carbon cycle">
+<canvas id="game" aria-label="Carbon Quest island. Use arrow keys or tap to move."></canvas>
+
+<!-- shared gradients for the atom drawings -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ccbff"/><stop offset=".6" stop-color="#cdeaff"/><stop offset="1" stop-color="#f1faff"/></linearGradient>
-    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#67d0f3"/><stop offset=".45" stop-color="#2b8bd0"/><stop offset="1" stop-color="#103b74"/></linearGradient>
-    <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a06e48"/><stop offset="1" stop-color="#6b4630"/></linearGradient>
-    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d708c"/><stop offset="1" stop-color="#352e43"/></linearGradient>
-    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6d3a3"/><stop offset="1" stop-color="#b89c6a"/></linearGradient>
-    <radialGradient id="sunG" cx="40%" cy="35%"><stop offset="0" stop-color="#fffbd6"/><stop offset=".5" stop-color="#ffd84a"/><stop offset="1" stop-color="#ffae1a"/></radialGradient>
-    <radialGradient id="glowG"><stop offset="0" stop-color="#fff3a8" stop-opacity=".9"/><stop offset="1" stop-color="#fff3a8" stop-opacity="0"/></radialGradient>
     <radialGradient id="cG" cx="35%" cy="30%"><stop offset="0" stop-color="#737a90"/><stop offset=".55" stop-color="#3a3f52"/><stop offset="1" stop-color="#1b1e2b"/></radialGradient>
     <radialGradient id="oG" cx="35%" cy="30%"><stop offset="0" stop-color="#ffc2c2"/><stop offset=".6" stop-color="#ef4444"/><stop offset="1" stop-color="#a81c1c"/></radialGradient>
-    <radialGradient id="oilG" cx="40%" cy="35%"><stop offset="0" stop-color="#4a3b5e"/><stop offset="1" stop-color="#0f0b16"/></radialGradient>
-    <radialGradient id="leafG" cx="40%" cy="30%"><stop offset="0" stop-color="#7ee08a"/><stop offset="1" stop-color="#2f9e4f"/></radialGradient>
-    <radialGradient id="leafG2" cx="40%" cy="30%"><stop offset="0" stop-color="#9ae6a3"/><stop offset="1" stop-color="#3cae5d"/></radialGradient>
-    <radialGradient id="plkG" cx="35%" cy="30%"><stop offset="0" stop-color="#f7fee7"/><stop offset=".5" stop-color="#a3e635"/><stop offset="1" stop-color="#15803d"/></radialGradient>
-    <radialGradient id="lavaG"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#ff8a1f"/><stop offset="1" stop-color="#e0301e" stop-opacity="0"/></radialGradient>
   </defs>
-
-  <!-- sky -->
-  <rect width="1600" height="480" fill="url(#sky)"/>
-  <g transform="translate(250 105)">
-    <circle r="140" fill="url(#glowG)"/>
-    <circle r="58" fill="url(#sunG)"/>
-    <ellipse cx="-17" cy="-6" rx="5" ry="7" fill="#7a4a00"/><ellipse cx="17" cy="-6" rx="5" ry="7" fill="#7a4a00"/>
-    <path d="M-16 14 Q0 28 16 14" stroke="#7a4a00" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <circle cx="-30" cy="10" r="7" fill="#ff8a65" opacity=".5"/><circle cx="30" cy="10" r="7" fill="#ff8a65" opacity=".5"/>
-  </g>
-  <g class="cloud" fill="#fff" opacity=".95"><circle cx="600" cy="120" r="34"/><circle cx="642" cy="104" r="46"/><circle cx="690" cy="122" r="32"/><rect x="590" y="120" width="110" height="32" rx="16"/></g>
-  <g class="cloud c2" fill="#fff" opacity=".9"><circle cx="1080" cy="90" r="28"/><circle cx="1116" cy="76" r="38"/><circle cx="1158" cy="92" r="26"/><rect x="1070" y="90" width="98" height="26" rx="13"/></g>
-  <g class="cloud c3" fill="#fff" opacity=".85"><circle cx="1400" cy="170" r="24"/><circle cx="1432" cy="158" r="32"/><circle cx="1466" cy="172" r="22"/><rect x="1392" y="170" width="84" height="22" rx="11"/></g>
-  <!-- floating CO2 -->
-  <g id="co2deco">
-    <g transform="translate(820 230)"><g class="floaty"><circle cx="-12" r="6" fill="url(#oG)"/><circle cx="12" r="6" fill="url(#oG)"/><circle r="8" fill="url(#cG)"/></g></g>
-    <g transform="translate(980 300)"><g class="floaty" style="animation-delay:-2s"><circle cx="-12" r="6" fill="url(#oG)"/><circle cx="12" r="6" fill="url(#oG)"/><circle r="8" fill="url(#cG)"/></g></g>
-    <g transform="translate(560 260)"><g class="floaty" style="animation-delay:-4s"><circle cx="-12" r="6" fill="url(#oG)"/><circle cx="12" r="6" fill="url(#oG)"/><circle r="8" fill="url(#cG)"/></g></g>
-    <g transform="translate(1250 260)"><g class="floaty" style="animation-delay:-1s"><circle cx="-12" r="6" fill="url(#oG)"/><circle cx="12" r="6" fill="url(#oG)"/><circle r="8" fill="url(#cG)"/></g></g>
-    <g transform="translate(700 330)"><g class="floaty" style="animation-delay:-3s"><circle cx="-12" r="6" fill="url(#oG)"/><circle cx="12" r="6" fill="url(#oG)"/><circle r="8" fill="url(#cG)"/></g></g>
-  </g>
-
-  <!-- deep rock -->
-  <rect y="560" width="1600" height="440" fill="url(#rock)"/>
-  <g stroke="#ffffff" stroke-opacity=".08" stroke-width="3" fill="none">
-    <path d="M0 640 Q400 620 800 645 T1600 635"/><path d="M0 800 Q400 780 800 805 T1600 795"/><path d="M0 930 Q400 910 800 935 T1600 925"/>
-  </g>
-  <!-- coal seam -->
-  <path d="M0 705 Q200 690 420 708 T 880 700 L 880 732 Q 640 746 420 738 T 0 738 Z" fill="#17141d"/>
-  <text x="120" y="728" font-family="Nunito,sans-serif" font-weight="800" font-size="14" fill="#ffffff" opacity=".45" letter-spacing="3">COAL</text>
-  <!-- oil -->
-  <path d="M1110 880 q 60 -46 160 -26 q 96 20 74 66 q -30 44 -150 34 q -116 -10 -84 -74z" fill="url(#oilG)"/>
-  <ellipse cx="1210" cy="866" rx="46" ry="7" fill="#9b8cff" opacity=".25"/>
-  <text x="1230" y="935" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="14" fill="#ffffff" opacity=".5" letter-spacing="3">CRUDE OIL</text>
-
-  <!-- volcano -->
-  <path d="M-20 452 L 70 318 Q 95 304 120 318 L 215 452 Z" fill="#8a6c66"/>
-  <path d="M70 318 Q 95 304 120 318 L 108 340 Q 95 330 82 340 Z" fill="#e0472a"/>
-  <circle cx="95" cy="312" r="30" fill="url(#lavaG)"/>
-  <circle class="smoke" cx="95" cy="290" r="16" fill="#b7b0bf"/>
-  <circle class="smoke" style="animation-delay:-2.5s" cx="95" cy="290" r="13" fill="#c9c3d1"/>
-
-  <!-- soil / land -->
-  <path d="M0 442 Q150 408 300 434 T 600 430 Q 780 422 905 448 Q 935 520 960 600 L 960 600 L 0 600 Z" fill="url(#soil)"/>
-  <path d="M0 442 Q150 408 300 434 T 600 430 Q 780 422 905 448" stroke="#5cc94f" stroke-width="16" fill="none" stroke-linecap="round"/>
-  <path d="M0 442 Q150 408 300 434 T 600 430 Q 780 422 905 448" stroke="#8be36f" stroke-width="5" fill="none" transform="translate(0 -5)" stroke-linecap="round"/>
-  <g fill="#5b3a26" opacity=".35"><circle cx="160" cy="500" r="6"/><circle cx="520" cy="520" r="5"/><circle cx="700" cy="490" r="4"/><circle cx="300" cy="560" r="7"/><circle cx="820" cy="540" r="5"/></g>
-
-  <!-- sea + sediment -->
-  <path d="M960 600 Q 990 722 1080 760 L 1600 760 L 1600 845 L 1000 845 Q 955 760 935 600 Z" fill="url(#sand)"/>
-  <g stroke="#8b7349" stroke-opacity=".35" stroke-width="2" fill="none"><path d="M1000 790 L1600 790"/><path d="M1010 815 L1600 815"/></g>
-  <path d="M912 452 L1600 452 L1600 760 L1080 760 Q 990 722 960 600 Q 940 510 912 452 Z" fill="url(#sea)"/>
-  <g class="waves"><path d="M905 454 q 25 -10 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0 t 50 0" stroke="#e8fbff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/></g>
-  <!-- plankton -->
-  <g id="plankton">
-    <circle class="plank" cx="1010" cy="490" r="6" fill="url(#plkG)"/><circle class="plank" style="animation-delay:-1s" cx="1080" cy="520" r="5" fill="url(#plkG)"/>
-    <circle class="plank" style="animation-delay:-2s" cx="1150" cy="495" r="7" fill="url(#plkG)"/><circle class="plank" style="animation-delay:-3s" cx="1210" cy="560" r="5" fill="url(#plkG)"/>
-    <circle class="plank" style="animation-delay:-1.5s" cx="1280" cy="505" r="6" fill="url(#plkG)"/><circle class="plank" style="animation-delay:-2.5s" cx="1340" cy="545" r="5" fill="url(#plkG)"/>
-    <circle class="plank" style="animation-delay:-.5s" cx="1180" cy="530" r="4" fill="url(#plkG)"/><circle class="plank" style="animation-delay:-4s" cx="1260" cy="575" r="6" fill="url(#plkG)"/>
-    <circle class="plank" style="animation-delay:-3.5s" cx="1500" cy="500" r="6" fill="url(#plkG)"/><circle class="plank" style="animation-delay:-2.2s" cx="1110" cy="575" r="5" fill="url(#plkG)"/>
-  </g>
-  <!-- oil rig + pipe -->
-  <path d="M1440 760 L1440 850 L1320 872" stroke="#26222e" stroke-width="7" fill="none" stroke-linejoin="round"/>
-  <g stroke="#3d4454" stroke-width="6" fill="none"><path d="M1405 420 L1405 760"/><path d="M1475 420 L1475 760"/><path d="M1405 520 L1475 600 M1475 520 L1405 600"/></g>
-  <rect x="1390" y="408" width="100" height="16" rx="4" fill="#4b5263"/>
-  <path d="M1420 408 L1440 340 L1460 408" stroke="#e74c3c" stroke-width="5" fill="none"/>
-  <!-- sea life -->
-  <text x="1300" y="640" font-size="30" text-anchor="middle">🐟</text>
-  <text x="1500" y="640" font-size="56" text-anchor="middle">🐋</text>
-  <text x="1180" y="760" font-size="22" text-anchor="middle">🐚</text>
-  <text x="1560" y="758" font-size="24" text-anchor="middle">🦀</text>
-
-  <!-- trees -->
-  <g>
-    <rect x="218" y="372" width="16" height="66" rx="5" fill="#7a4b2a"/>
-    <circle cx="226" cy="350" r="40" fill="url(#leafG2)"/><circle cx="200" cy="370" r="26" fill="url(#leafG2)"/><circle cx="252" cy="368" r="28" fill="url(#leafG2)"/>
-  </g>
-  <g>
-    <rect x="320" y="320" width="26" height="118" rx="8" fill="#7a4b2a"/>
-    <path d="M333 380 L 300 352 M333 360 L 368 335" stroke="#7a4b2a" stroke-width="8" stroke-linecap="round"/>
-    <circle cx="333" cy="290" r="62" fill="url(#leafG)"/><circle cx="285" cy="318" r="42" fill="url(#leafG)"/><circle cx="382" cy="314" r="44" fill="url(#leafG)"/><circle cx="335" cy="248" r="40" fill="url(#leafG)"/>
-    <circle cx="312" cy="262" r="14" fill="#fff" opacity=".18"/>
-  </g>
-  <g>
-    <rect x="482" y="380" width="14" height="56" rx="5" fill="#7a4b2a"/>
-    <circle cx="489" cy="362" r="34" fill="url(#leafG2)"/><circle cx="466" cy="378" r="22" fill="url(#leafG2)"/><circle cx="512" cy="378" r="24" fill="url(#leafG2)"/>
-  </g>
-  <!-- meadow -->
-  <g fill="#4cb64a"><path d="M560 432 l6 -16 l4 16z"/><path d="M640 428 l5 -14 l4 14z"/><path d="M590 430 l4 -12 l4 12z"/><path d="M150 420 l5 -14 l4 14z"/></g>
-  <text x="556" y="432" font-size="20" text-anchor="middle">🌼</text>
-  <text x="520" y="434" font-size="34" text-anchor="middle">🦊</text>
-  <text id="rabbit" x="612" y="432" font-size="46" text-anchor="middle" style="transition:opacity 1s">🐇</text>
-  <!-- forest floor -->
-  <text x="410" y="452" font-size="22" text-anchor="middle">🍄</text>
-  <text x="438" y="456" font-size="26" text-anchor="middle">🍂</text>
-  <text x="462" y="452" font-size="28" text-anchor="middle">🍄</text>
-  <text x="470" y="510" font-size="24" text-anchor="middle">🪱</text>
-  <!-- road, car, factory -->
-  <rect x="680" y="424" width="210" height="16" rx="8" fill="#5b6170" transform="rotate(2 785 432)"/>
-  <path d="M695 432 L 875 438" stroke="#fff" stroke-width="2" stroke-dasharray="12 10" opacity=".8"/>
-  <text x="845" y="430" font-size="64" text-anchor="middle">🏭</text>
-  <circle class="smoke" cx="828" cy="360" r="14" fill="#9ca3af"/><circle class="smoke" style="animation-delay:-1.7s" cx="828" cy="360" r="12" fill="#b0b6c0"/><circle class="smoke" style="animation-delay:-3.3s" cx="828" cy="360" r="15" fill="#a3a9b4"/>
-  <text x="748" y="436" font-size="42" text-anchor="middle">🚗</text>
-  <text x="700" y="430" font-size="28" text-anchor="middle">⛽</text>
-
-  <!-- zone labels -->
-  <g font-family="Nunito,sans-serif" font-weight="800" font-size="15" letter-spacing="4" fill="#1c2242" opacity=".35" text-anchor="middle">
-    <text x="1300" y="40">ATMOSPHERE</text>
-    <text x="1250" y="720" fill="#ffffff" opacity=".7">OCEAN</text>
-    <text x="400" y="590" fill="#ffffff" opacity=".6">SOIL</text>
-    <text x="560" y="980" fill="#ffffff" opacity=".6">ROCKS &amp; FOSSIL FUELS</text>
-  </g>
-
-  <!-- the player's atom -->
-  <g id="atom" transform="translate(470 215)">
-    <circle id="atomRing" r="20" fill="none" stroke="#fff" stroke-width="4" opacity="0"/>
-    <g id="atomBob" class="bob"><g id="atomBody"></g></g>
-    <g id="formTag"></g>
-    <text id="atomName" y="50" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="600" font-size="15" fill="#1c2242" stroke="#fff" stroke-width="5" paint-order="stroke" stroke-linejoin="round"></text>
-  </g>
 </svg>
+
+<div id="me" class="hidden"><div id="meInner"><div id="meTag"></div><div id="meBob"><svg id="meSvg" viewBox="-52 -50 104 92"></svg></div><div id="meName"></div></div></div>
 
 <div id="hud" class="glass hidden">
   <div class="hud-atom"><svg id="hudAtom" viewBox="-52 -50 104 92"></svg><span class="nm" id="hudName"></span></div>
@@ -372,10 +247,13 @@ h4.sec{font-family:var(--head);font-weight:600;font-size:1.1rem;margin:18px 0 0}
   <div class="dots" id="dots"></div>
   <span class="chip form" id="hudForm"></span>
   <span class="chip" title="Bonus stars">⭐ <span id="hudStars">0</span></span>
+  <span class="chip" title="Fact bubbles found">🫧 <span id="hudFacts">0</span></span>
   <button class="chip" id="diaryBtn" type="button">📔 <span class="lbl">Diary</span></button>
 </div>
-
-<div id="banner" class="glass"><small id="bannerNo"></small><b id="bannerName"></b></div>
+<div id="goal" class="glass hidden"></div>
+<button id="talk" class="hidden" type="button"></button>
+<div id="mini" class="glass hidden"><canvas id="miniCv" width="360" height="270"></canvas></div>
+<div id="help" class="glass hidden">⌨️ WASD / arrows or click to move · E to talk</div>
 <div id="toast" class="glass"></div>
 
 <div id="dialog" class="glass hidden" role="dialog" aria-live="polite">
@@ -398,24 +276,44 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const SAVE_KEY = 'carbon-quest-v1';
+const SAVE_KEY = 'carbon-quest-v2';
+const EMOJI = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
 
-/* ---------------------------------------------------------------
+/* =================================================================
+   THE ISLAND
+   ================================================================= */
+const W = 3200, H = 2400;
+// Areas of the island. lv = how many gates you must pass to enter.
+const ZONES = [
+  {id:'hill',   name:'Windy Hill',        icon:'⛰️', lv:0, c:[1600,1100], r:[560,440]},
+  {id:'forest', name:'Whispering Forest', icon:'🌳', lv:1, c:[880,700],   r:[540,430]},
+  {id:'farm',   name:'Farm Fields',       icon:'🌾', lv:2, c:[1700,520],  r:[480,300]},
+  {id:'grove',  name:'Mushroom Grove',    icon:'🍄', lv:3, c:[520,1080],  r:[400,330]},
+  {id:'beach',  name:'Sunny Beach',       icon:'🏖️', lv:4, c:[1500,1700], r:[640,280]},
+  {id:'reef',   name:'Plankton Reef',     icon:'🪸', lv:5, c:[1100,1990], r:[540,260]},
+  {id:'trench', name:'Deep Trench',       icon:'🌊', lv:6, c:[2060,1930], r:[500,290]},
+  {id:'town',   name:'Carbon Town',       icon:'🏙️', lv:7, c:[2450,820],  r:[560,450]}
+];
+const LAND = [[1600,1100,600,470],[880,700,600,480],[1700,500,540,340],[520,1080,460,380],[2450,820,620,500],[1250,1050,500,400],[2000,1120,460,360],[1500,1400,620,260]];
+const FINISH = [1600,1060];
+
+/* =================================================================
    THE STORY: 8 levels, one carbon atom, the whole carbon cycle.
-   Each gate: 3 core questions (must get right) + 1 bonus (extension).
    In each question the FIRST option is the correct one (shuffled on screen).
-   --------------------------------------------------------------- */
+   ================================================================= */
 const LEVELS = [
-  { place:'The Atmosphere', icon:'☁️', anchor:[470,215], zoom:820,
+  { place:'Windy Hill', icon:'☀️', npc:[1600,1000], size:66,
+    goal:'☀️ Find Sunny the Sun on top of Windy Hill',
     speaker:{name:'Sunny the Sun', emoji:'☀️'},
+    again:'Fun fact: plants on land take in about 120 billion tonnes of carbon from the air every year!',
     intro:[
       "Good morning, {name}! You're a carbon atom, one of the most important atoms on Earth. Every living thing is built from atoms like you.",
       "Right now you're joined to two oxygen atoms. That makes you carbon dioxide, CO₂: a gas floating in the atmosphere.",
       "@Whoa, I'm a gas! So where am I going?",
-      "On a journey around the WHOLE carbon cycle! First stop: that big tree. Plants grab CO₂ from the air and use my light to turn it into food. That's called photosynthesis.",
-      "Help the leaf do photosynthesis. Give it the right ingredients!"
+      "On a journey around the WHOLE carbon cycle! See this little sapling? Plants grab CO₂ from the air and use my light to turn it into food. That's called photosynthesis.",
+      "Help the sapling do photosynthesis. Give it the right ingredients!"
     ],
-    task:{type:'combine', title:'Photosynthesis recipe', prompt:'Tap the 3 ingredients a leaf needs to make glucose.', target:'🍃', need:3,
+    task:{type:'combine', title:'Photosynthesis recipe', prompt:'Tap the 3 ingredients a leaf needs to make glucose.', target:'🌱', need:3,
       tokens:[
         {ic:'CO₂', f:true, label:'Carbon dioxide (you!)', ok:true},
         {ic:'☀️', label:'Light energy', ok:true},
@@ -426,28 +324,28 @@ const LEVELS = [
       ],
       result:'carbon dioxide + water → glucose + oxygen  (using light energy)', done:'Photosynthesise! 🌿'},
     formAfter:'C₆H₁₂O₆', diary:{icon:'🍃', form:'Glucose (C₆H₁₂O₆)', place:'Inside a leaf', process:'Photosynthesis'},
-    moveAfter:[362,292],
     outro:[
       "Brilliant! Chloroplasts in the leaf used my light energy to join you into a glucose molecule, C₆H₁₂O₆. The leaf let the spare oxygen out into the air.",
       "@I'm part of a sugar now! 🍬 This is so much sweeter than being a gas."
     ],
-    travel:'🍃 Into the leaf you go!', via:[420,180],
     gate:[
       {q:'In the atmosphere, carbon is mainly found as…', o:['Carbon dioxide gas (CO₂)','Glucose','Calcium carbonate','Crude oil'],
         ex:'Carbon in the air is mostly carbon dioxide. It only makes up about 0.04% of the air, but it\'s really important!', hint:'Think about what you were at the very start of the game. It\'s a gas.'},
       {q:'Which process takes carbon dioxide OUT of the atmosphere?', o:['Photosynthesis','Respiration','Combustion (burning)','Decomposition'],
-        ex:'Photosynthesis removes CO₂ from the air and locks the carbon into glucose. The other three all RELEASE CO₂.', hint:'Which process did the leaf just do with you?'},
+        ex:'Photosynthesis removes CO₂ from the air and locks the carbon into glucose. The other three all RELEASE CO₂.', hint:'Which process did the sapling just do with you?'},
       {q:'What are the products of photosynthesis?', o:['Glucose and oxygen','Carbon dioxide and water','Glucose and carbon dioxide','Oxygen and water'],
         ex:'Photosynthesis makes glucose (food) and oxygen. CO₂ and water are the reactants (ingredients).', hint:'Products are what is MADE. Remember the sugar and the gas the leaf released.'}
     ],
     bonus:{q:'Which is the balanced symbol equation for photosynthesis?', o:['6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂','C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O','CO₂ + H₂O → C₆H₁₂O₆ + O₂','6CO₂ + 6O₂ → C₆H₁₂O₆ + 6H₂O'],
       ex:'6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂. Six carbon dioxide and six water make one glucose and six oxygen. (The second option is respiration: the reverse!)'}
   },
-  { place:'The Leaf', icon:'🌳', anchor:[362,292], zoom:620,
+  { place:'Whispering Forest', icon:'🌳', npc:[820,640], size:100,
+    goal:'🌳 You\'re glucose now! Find Oakley the Tree in the Whispering Forest',
     speaker:{name:'Oakley the Tree', emoji:'🌳'},
+    again:'Fun fact: about half the dry mass of a tree trunk is carbon!',
     intro:[
-      "Welcome to my leaf, {name}! I'm a producer, which means I make my own food from sunlight, water and CO₂.",
-      "I can use glucose in a few different ways. Tap each card to see what could happen to you."
+      "Welcome to the Whispering Forest, {name}! That sapling on Windy Hill is one of my seedlings. I'm a producer too: I make my own food from sunlight, water and CO₂.",
+      "Plants can use glucose in a few different ways. Tap each card to see what could happen to you."
     ],
     task:{type:'cards', title:'What can a plant do with glucose?', prompt:'Tap all 3 cards to find out.',
       cards:[
@@ -457,11 +355,10 @@ const LEVELS = [
       ], done:'Got it!'},
     formAfter:'Cellulose', diary:{icon:'🧱', form:'Cellulose', place:'Leaf cell wall', process:'Plant growth'},
     outro:[
-      "Looks like I've used you to build cellulose in the wall of a nice juicy leaf. You're part of me now!",
-      "@Wait… is that a RABBIT coming this way? 🐇",
-      "Ha! Don't worry. You're about to join the food chain!"
+      "Looks like you've been built into cellulose in the wall of a nice juicy leaf. You're part of a plant now!",
+      "@Wait… is that a RABBIT? 🐇",
+      "Ha! A hungry rabbit from the Farm Fields just nibbled your leaf. Off you go into the food chain!"
     ],
-    travel:'🐇 Chomp! A rabbit ate your leaf.', via:[520,250],
     gate:[
       {q:'Why are plants called producers?', o:['They make their own food using light energy','They produce carbon dioxide all day','They eat other organisms','They break down dead things'],
         ex:'Producers make their own food (glucose) by photosynthesis. Almost every food chain starts with a producer.', hint:'Think about how Oakley gets food. Does it eat anything?'},
@@ -473,8 +370,10 @@ const LEVELS = [
     bonus:{q:'Cellulose and starch are both made from glucose. What type of molecule are they?', o:['Carbohydrates','Proteins','Lipids (fats)','Minerals'],
       ex:'Glucose, starch and cellulose are all carbohydrates: molecules made of carbon, hydrogen and oxygen.'}
   },
-  { place:'The Rabbit', icon:'🐇', anchor:[640,382], zoom:560,
+  { place:'Farm Fields', icon:'🐇', npc:[1760,500], size:60,
+    goal:'🐇 A rabbit ate your leaf! Find Bun the Rabbit in the Farm Fields',
     speaker:{name:'Bun the Rabbit', emoji:'🐇'},
+    again:'Fun fact: only about 10% of the energy at one level of a food chain passes on to the next level.',
     intro:[
       "Munch munch! Thanks for lunch, {name}! I'm a consumer. I can't make my own food, so I eat plants.",
       "When I digest the leaf, your carbon gets rebuilt into my body, like the protein in my muscles. 💪",
@@ -486,10 +385,9 @@ const LEVELS = [
     formAfter:'Protein', diary:{icon:'🐇', form:'Protein', place:'Rabbit muscle', process:'Feeding (consumption)'},
     outro:[
       "Every time I breathe out, some of the carbon from my food goes back into the air as CO₂. That's respiration! But you're stuck in my leg muscle for now.",
-      "One day, a long time from now, I'll grow old and my body will return to the soil. The forest's recyclers will take care of you then.",
+      "One day, a long time from now, I'll grow old and my body will return to the soil. The recyclers in the Mushroom Grove will take care of you then.",
       "@Recyclers? 🤔 Sounds like a team I'd like to meet."
     ],
-    travel:'🍂 Years later, the rabbit\'s body returns to the forest floor.', via:[540,360],
     gate:[
       {q:'How did your carbon get from the plant into the rabbit?', o:['Feeding: the rabbit ate the plant','Photosynthesis','The rabbit breathed it in','Decomposition'],
         ex:'Carbon moves along food chains by feeding (consumption). Animals get their carbon by eating.', hint:'What did Bun do with the leaf?'},
@@ -501,8 +399,10 @@ const LEVELS = [
     bonus:{q:'Which word equation shows aerobic respiration?', o:['glucose + oxygen → carbon dioxide + water (+ energy)','carbon dioxide + water → glucose + oxygen','glucose → oxygen + water','oxygen + water → glucose + energy'],
       ex:'Respiration: glucose + oxygen → carbon dioxide + water, releasing energy. It\'s the reverse of photosynthesis!'}
   },
-  { place:'The Forest Floor', icon:'🍄', anchor:[436,440], zoom:500,
+  { place:'Mushroom Grove', icon:'🍄', npc:[480,1100], size:60,
+    goal:'🍄 Years later, Bun\'s body returns to the soil. Find Fern in the Mushroom Grove',
     speaker:{name:'Fern the Fungus', emoji:'🍄'},
+    again:'Fun fact: without decomposers, the world would be buried under dead leaves and bodies!',
     intro:[
       "Hello down here, {name}! Bun lived a long, happy life. Now it's our turn to recycle what's left.",
       "We're decomposers. We break down dead plants, dead animals and waste. As we feed, our respiration releases the carbon back into the air as CO₂.",
@@ -520,9 +420,8 @@ const LEVELS = [
     formAfter:'CO₂', diary:{icon:'🍄', form:'Carbon dioxide (CO₂)', place:'Back in the air', process:'Decomposition and respiration'},
     outro:[
       "Chomp! I've digested you and breathed you out. You're carbon dioxide again!",
-      "@I'm a gas again! Wheee… the wind is carrying me out over the ocean! 🌬️"
+      "@I'm a gas again! Wheee… I could drift anywhere. Maybe down to the beach? 🌬️"
     ],
-    travel:'🌬️ The wind blows you out over the ocean.', via:[760,120],
     gate:[
       {q:'What are decomposers?', o:['Organisms like fungi and bacteria that break down dead material and waste','Animals that hunt other animals','Plants that grow on the forest floor','Rocks that break into soil'],
         ex:'Decomposers (mainly fungi and bacteria) break down dead organisms and waste, recycling carbon and nutrients.', hint:'Think of Fern and the bacteria you found.'},
@@ -534,8 +433,10 @@ const LEVELS = [
     bonus:{q:'Which conditions make decomposition happen fastest?', o:['Warm, moist and plenty of oxygen','Cold, dry and no oxygen','Freezing and dark','Hot and completely dry'],
       ex:'Decomposers work best when it\'s warm, moist and there\'s oxygen, just like the conditions in a compost bin.'}
   },
-  { place:'The Ocean Surface', icon:'🌊', anchor:[1060,476], zoom:620,
+  { place:'Sunny Beach', icon:'🌊', npc:[1500,1880], size:60,
+    goal:'🌊 You\'re CO₂ again! Drift down to Sunny Beach and find Marina the Wave',
     speaker:{name:'Marina the Wave', emoji:'🌊'},
+    again:'Fun fact: the ocean has soaked up about a quarter of all the CO₂ humans have released.',
     intro:[
       "Splash! Welcome to the ocean, {name}! Oceans soak up huge amounts of CO₂. About a quarter of the CO₂ that humans release ends up in the sea.",
       "CO₂ dissolves into seawater right here at the surface, but the temperature really matters.",
@@ -546,9 +447,8 @@ const LEVELS = [
     formAfter:'Dissolved CO₂', diary:{icon:'🌊', form:'Dissolved CO₂', place:'Ocean surface water', process:'Dissolving'},
     outro:[
       "You've dissolved! The ocean is a giant carbon sink. It holds about 40 times more carbon than the whole atmosphere.",
-      "@It's so roomy down here! Hey… what are all these tiny green specks? 🟢"
+      "@It's so roomy in here! Hey… what are all those tiny green specks out on the reef? 🟢"
     ],
-    travel:'🦠 Drifting toward the tiny green specks…', via:[1150,470],
     gate:[
       {q:'How does carbon dioxide get from the air into the ocean?', o:['It dissolves into the seawater at the surface','Fish breathe it in and carry it down','Rain turns it into salt','It can\'t: oceans don\'t store carbon'],
         ex:'CO₂ dissolves into seawater where the ocean meets the air.', hint:'What did you do at the surface in the mini-task?'},
@@ -560,8 +460,10 @@ const LEVELS = [
     bonus:{q:'As the oceans absorb extra CO₂ from human activity, the seawater becomes…', o:['More acidic, making it harder for animals to build shells','More alkaline and saltier','Completely fresh water','Full of extra oxygen'],
       ex:'Dissolved CO₂ forms a weak acid. This "ocean acidification" makes it harder for corals and shellfish to build shells from calcium carbonate.'}
   },
-  { place:'The Plankton Party', icon:'🦠', anchor:[1230,532], zoom:560,
-    speaker:{name:'Phyto the Phytoplankton', emoji:'🟢'},
+  { place:'Plankton Reef', icon:'🦠', npc:[1060,2010], size:58,
+    goal:'🟢 Swim out to the Plankton Reef and find Phyto',
+    speaker:{name:'Phyto the Phytoplankton', emoji:'🦠'},
+    again:'Fun fact: phytoplankton blooms can be so big they can be seen from space!',
     intro:[
       "Hi {name}! I'm phytoplankton: a tiny, plant-like living thing. Billions of us drift near the sunny surface.",
       "We photosynthesise just like trees do. Together we make about HALF of the oxygen on Earth!",
@@ -569,26 +471,27 @@ const LEVELS = [
     ],
     task:{type:'catch', title:'Plankton catch', prompt:'Tap 5 drifting phytoplankton.', count:5, done:'Get absorbed! 🟢'},
     formAfter:'Dead plankton', diary:{icon:'🟢', form:'Glucose, then dead plankton', place:'Sinking to the sea floor', process:'Photosynthesis, then sinking'},
-    moveAfter:[1205,782],
     outro:[
       "Gulp! You're glucose inside me now. Uh-oh… plankton only live a short time. When we die, we sink.",
-      "Down, down, down we go to the dark sea floor, where mud and sand slowly bury us.",
-      "@It's getting dark… and squishy down here. 😬"
+      "Down, down, down into the Deep Trench, where mud and sand slowly bury us.",
+      "@It's getting dark… and squishy. 😬"
     ],
-    travel:'⬇️ Buried deeper and deeper under the sea floor…', via:[1215,830],
+    autoTo:[2040,1950], autoMsg:'⬇️ Sinking down… down… into the Deep Trench!',
     gate:[
       {q:'Phytoplankton are…', o:['Tiny ocean organisms that photosynthesise','Small fish that eat seaweed','Bacteria that live in rocks','Bubbles of carbon dioxide'],
         ex:'Phytoplankton are microscopic producers. They are the base of most ocean food chains.', hint:'"Phyto" means plant. What do plants do?'},
       {q:'Some sea creatures use carbon to build shells. What are shells made of?', o:['Calcium carbonate','Glucose','Carbon dioxide gas','Crude oil'],
         ex:'Shells and coral are made of calcium carbonate (CaCO₃), which contains carbon taken from seawater.', hint:'The same chemical that makes chalk and limestone.'},
       {q:'What happens to plankton when they die?', o:['They sink to the sea floor and become part of the sediment','They float up into the clouds','They turn straight into oxygen','They become new plankton immediately'],
-        ex:'Dead plankton and shells rain down onto the sea floor and get buried in mud and sand.', hint:'What did YOU just do?'}
+        ex:'Dead plankton and shells rain down onto the sea floor and get buried in mud and sand.', hint:'What is about to happen to YOU?'}
     ],
     bonus:{q:'Roughly how much of Earth\'s oxygen do phytoplankton produce?', o:['About half','Less than 1%','All of it','None: only trees make oxygen'],
       ex:'Ocean phytoplankton produce about half of the oxygen in the atmosphere. Every second breath you take, thank a plankton!'}
   },
-  { place:'Deep Time', icon:'🪨', anchor:[1205,782], zoom:640,
+  { place:'Deep Trench', icon:'🪨', npc:[2120,1990], size:58,
+    goal:'🪨 You\'ve sunk into the Deep Trench! Find Sid the Sediment',
     speaker:{name:'Sid the Sediment', emoji:'🪨'},
+    again:'Fun fact: most of the oil we use today formed from plankton that lived more than 100 million years ago.',
     intro:[
       "Welcome to deep time, {name}. I'm sediment: layer upon layer of mud, sand and dead sea life.",
       "Over MILLIONS of years, more layers pile on top. The heat and pressure deep underground slowly cook ancient remains into fossil fuels.",
@@ -596,13 +499,12 @@ const LEVELS = [
     ],
     task:{type:'slider', kind:'time', title:'Fast-forward deep time', prompt:'Drag the slider through millions of years.', min:0, max:300, start:0, done:'Become oil 🛢️'},
     formAfter:'Hydrocarbon', diary:{icon:'🛢️', form:'Hydrocarbon in crude oil', place:'Deep underground', process:'Fossil fuel formation'},
-    moveAfter:[1235,884],
     outro:[
       "You've been locked away for hundreds of millions of years. This is the SLOW carbon cycle.",
       "Other carbon down here became coal from ancient swamp forests, or limestone rock from seashells.",
-      "@Wait… what's that giant drill?! ⛏️"
+      "@Wait… what's that giant drill on the oil rig?! ⛏️"
     ],
-    travel:'⛏️ Drilled, pumped up and refined into petrol!', via:[1440,320],
+    autoTo:[2330,950], autoMsg:'⛏️ Drilled, pumped and piped to Carbon Town as petrol!',
     gate:[
       {q:'Fossil fuels form from…', o:['Remains of ancient living things, buried and squashed under heat and pressure','Volcanic lava cooling down','Carbon dioxide freezing underground','Melted rocks mixing with seawater'],
         ex:'Coal, oil and natural gas formed from the remains of ancient plants and sea creatures, buried and changed by heat and pressure.', hint:'What were you before you were buried?'},
@@ -614,8 +516,10 @@ const LEVELS = [
     bonus:{q:'Shells buried on the sea floor can be squashed into which rock, storing carbon for millions of years?', o:['Limestone','Granite','Basalt','Marble glass'],
       ex:'Shells (calcium carbonate) form limestone. That carbon returns to the air very slowly, through volcanoes and weathering of rocks.'}
   },
-  { place:'The Car Engine', icon:'🚗', anchor:[752,392], zoom:600,
+  { place:'Carbon Town', icon:'🚗', npc:[2380,900], size:62,
+    goal:'🚗 You\'re petrol now! Find Revvy the Car at the petrol station in Carbon Town',
     speaker:{name:'Revvy the Car', emoji:'🚗'},
+    again:'Fun fact: burning one litre of petrol releases about 2.3 kg of CO₂.',
     intro:[
       "Vroom! Humans pumped up the oil, refined it into petrol, and now you're in my fuel tank, {name}!",
       "When fuel burns, that's called combustion. It releases energy to move me, and it releases carbon that's been locked away for millions of years.",
@@ -635,9 +539,8 @@ const LEVELS = [
     outro:[
       "VROOM! You've been burned and blown out of my exhaust pipe as CO₂!",
       "Humans are burning fossil fuels much faster than nature can lock the carbon away again. That extra CO₂ traps more heat. It's called the enhanced greenhouse effect.",
-      "@So I'm back where I started… but there's a LOT more CO₂ up here than before! 😮"
+      "@So I'm back in the air, just like at the start! I should float back up to Windy Hill and tell Sunny. ☀️"
     ],
-    travel:'💨 Out of the exhaust and back into the sky!', via:[760,240],
     gate:[
       {q:'Burning a fuel is called…', o:['Combustion','Photosynthesis','Decomposition','Dissolving'],
         ex:'Combustion is the scientific name for burning. It needs fuel, oxygen and heat.', hint:'Revvy told you the name!'},
@@ -650,7 +553,47 @@ const LEVELS = [
       ex:'Forests are carbon sinks, and renewable energy doesn\'t release fossil carbon. Both help slow down the enhanced greenhouse effect.'}
   }
 ];
-const SKY = [640,175];
+const FINISH_GOAL = '☁️ Float back to the top of Windy Hill to finish your journey';
+
+/* characters you can chat to while exploring */
+const AMBIENT = [
+  {e:'🐝', name:'Buzz the Bee', x:1820, y:1180, lines:["Bzzz! I help flowers make seeds, so more plants grow.", "More plants means more photosynthesis, and more CO₂ pulled out of the air!"]},
+  {e:'🦉', name:'Hoot the Owl', x:1060, y:520, lines:["Hoo! I'm a consumer too. I eat mice, and mice eat seeds.", "So the carbon in my feathers once floated in the air as CO₂!"]},
+  {e:'🐄', name:'Daisy the Cow', x:1520, y:430, lines:["Moo! Cows like me burp out methane (CH₄).", "Methane is another gas with carbon in it, and it traps even more heat than CO₂!"]},
+  {e:'🪱', name:'Wanda the Worm', x:640, y:1200, lines:["Wriggle wriggle! I pull dead leaves down into the soil and munch them up.", "That makes it easier for fungi and bacteria to finish the job."]},
+  {e:'🦀', name:'Pinch the Crab', x:1790, y:1720, lines:["Click click! My shell contains calcium carbonate.", "I build it using carbon that dissolved into the sea!"]},
+  {e:'🐋', name:'Wally the Whale', x:1300, y:2090, lines:["Hello, tiny one! Whale poo is full of nutrients that help plankton grow.", "More plankton means more carbon pulled out of the water. Poo power!"]},
+  {e:'🐙', name:'Octavia the Octopus', x:1940, y:2010, lines:["It's dark and cold down here in the trench.", "Dead stuff drifts down from above like snow. Scientists call it 'marine snow'!"]},
+  {e:'🚌', name:'Bea the Bus', x:2620, y:960, lines:["Beep beep! One full bus can take dozens of cars off the road.", "That means less fuel burned for every person who rides with me."]}
+];
+
+/* collectable fact bubbles */
+const FACTS = [
+  {x:1400, y:1260, t:'CO₂ makes up only about 0.04% of the air, but it has a big effect on Earth\'s temperature.'},
+  {x:1860, y:960,  t:'Wind turbines like the one on Windy Hill make electricity without burning any fuel, so they release no extra CO₂.'},
+  {x:640,  y:540,  t:'A big old tree can store several tonnes of carbon in its trunk, branches and roots.'},
+  {x:1110, y:830,  t:'Forests cover about a third of Earth\'s land and are one of our biggest carbon sinks.'},
+  {x:1960, y:610,  t:'Your body is about 18% carbon. Every bit of it came from plants that did photosynthesis!'},
+  {x:1430, y:600,  t:'Ploughing soil lets oxygen in, which helps decomposers release soil carbon as CO₂.'},
+  {x:380,  y:960,  t:'A single teaspoon of healthy soil can contain more than a billion bacteria.'},
+  {x:620,  y:1290, t:'Soils hold more carbon than all of the world\'s plants put together.'},
+  {x:1180, y:1660, t:'Mangroves and seagrass trap lots of carbon in their muddy roots. It\'s called "blue carbon".'},
+  {x:860,  y:1960, t:'Coral reefs are built from calcium carbonate: carbon locked into rock-like skeletons.'},
+  {x:2340, y:1860, t:'Chalk cliffs are made from the shells of trillions of tiny plankton that lived millions of years ago.'},
+  {x:2760, y:950,  t:'Electric cars charged with solar or wind power don\'t burn any fuel as they drive.'}
+];
+
+/* things to look at (emoji decorations) */
+const DECOR = [
+  ['🌱',1660,1030,36],['🌼',1450,1150,26],['🌼',1720,1220,24],['🌻',1380,980,32],['🌼',1540,1250,22],
+  ['🦌',1160,720,48],['🍄',1000,900,24],['🐿️',660,760,34],
+  ['🏠',1960,420,76],['🐇',1600,590,30],['🐇',1890,650,28],['🌻',1500,640,34],['🌻',1540,650,30],['🚜',2060,540,56],['🐓',1830,420,30],
+  ['🍄',420,1020,34],['🍄',560,980,30],['🍄',700,1060,28],['🍄',380,1180,32],['🍄',530,1250,26],['🍂',600,1150,28],['🍂',440,1160,26],['🪵',690,990,44],
+  ['⛱️',1250,1600,54],['⛱️',1760,1610,50],['🐚',1400,1780,24],['🐚',1650,1790,22],['🏄',1850,1880,40],
+  ['🪸',950,1910,40],['🪸',1210,1960,36],['🪸',1150,2120,42],['🪸',900,2060,34],['🐠',1000,1880,32],['🐟',1260,2010,28],['🐡',820,2000,30],
+  ['🦑',2250,2060,40],['🛢️',2150,2080,30],
+  ['🏭',2730,600,120],['🏠',2240,620,64],['🏠',2330,620,60],['🏠',2230,1020,60],['🏢',2640,1070,96],['⛽',2440,880,58],['🌳',2850,800,60],['🌳',2120,1050,52],['🏪',2600,620,64]
+];
 
 const COLORS = ['#22d3ee','#a78bfa','#f472b6','#facc15','#4ade80','#fb923c'];
 const ACCS = {
@@ -662,15 +605,26 @@ const ACCS = {
   shades:{e:'🕶️', x:0, y:7, s:26, icon:'🕶️'}
 };
 
-/* ---------- state ---------- */
-const fresh = () => ({ name:'Carbie', color:COLORS[0], acc:'none', level:0, stars:0, first:0, asked:0, form:'CO₂',
+/* =================================================================
+   STATE
+   ================================================================= */
+const START = [1600,1150];
+const fresh = () => ({ name:'Carbie', color:COLORS[0], acc:'none', level:0, stars:0, first:0, form:'CO₂', facts:[], pos:START.slice(),
   diary:[{icon:'☁️', form:'Carbon dioxide (CO₂)', place:'The atmosphere', process:'Starting point'}], done:false });
 let state = fresh();
 function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){} }
 function load(){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.name ? s : null; } catch(e){ return null; } }
 function wipe(){ try { localStorage.removeItem(SAVE_KEY); } catch(e){} }
 
-/* ---------- avatar ---------- */
+const unlocked = z => z.lv <= state.level;
+const inEll = (x, y, c, r, k) => { const dx = (x - c[0]) / (r[0] * (k || 1)), dy = (y - c[1]) / (r[1] * (k || 1)); return dx*dx + dy*dy <= 1; };
+const zoneAt = (x, y) => ZONES.find(z => inEll(x, y, z.c, z.r));
+const canGo = (x, y) => ZONES.some(z => unlocked(z) && inEll(x, y, z.c, z.r));
+const zoneOfNpc = (x, y) => ZONES.find(z => inEll(x, y, z.c, z.r));
+
+/* =================================================================
+   AVATAR
+   ================================================================= */
 function avatar(color, acc, form){
   const co2 = /CO₂/.test(form || '');
   let s = `<circle r="34" fill="${color}" opacity=".25"/>`;
@@ -687,105 +641,385 @@ function avatar(color, acc, form){
   return s;
 }
 const miniAtom = () => `<svg viewBox="-52 -50 104 92">${avatar(state.color, state.acc, state.form)}</svg>`;
-
-/* ---------- world: atom + camera ---------- */
-const svg = $('#world'), atomG = $('#atom');
-const pos = {x:470, y:215};
-function drawAtom(){
-  $('#atomBody').innerHTML = avatar(state.color, state.acc, state.form);
-  $('#atomName').textContent = state.name;
-  const t = state.form, w = t.length * 8.5 + 22;
-  $('#formTag').innerHTML = `<rect x="${-w/2}" y="-66" width="${w}" height="24" rx="12" fill="#1c2242" opacity=".88"/>
-    <text y="-49" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="13" fill="#fff">${esc(t)}</text>`;
+function drawMe(){
+  $('#meSvg').innerHTML = avatar(state.color, state.acc, state.form);
+  $('#meName').textContent = state.name;
+  $('#meTag').textContent = state.form;
 }
-function placeAtom(p){ pos.x = p[0]; pos.y = p[1]; atomG.setAttribute('transform', `translate(${pos.x} ${pos.y})`); }
 
-const VB = {x:0, y:0, w:1600, h:1000};
-function setVB(){ svg.setAttribute('viewBox', `${VB.x} ${VB.y} ${VB.w} ${VB.h}`); }
-function camRect(cx, cy, Wd){
-  const a = innerWidth > 0 && innerHeight > 0 ? innerWidth / innerHeight : 1.6;
-  const w = Math.min(1600, Wd * Math.min(1.15, Math.max(.55, a / 1.6)));
-  const h = w / a;
-  let x = cx - w / 2, y = cy - h * .42;
-  x = w >= 1600 ? (1600 - w) / 2 : Math.min(Math.max(0, x), 1600 - w);
-  y = h >= 1000 ? (1000 - h) / 2 : Math.min(Math.max(0, y), 1000 - h);
-  return {x, y, w, h};
+/* =================================================================
+   TERRAIN (drawn once)
+   ================================================================= */
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function ell(g, x, y, rx, ry, fill){ g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fillStyle = fill; g.fill(); }
+function tree(g, x, y, r, R){
+  ell(g, x + r * .25, y + r * .35, r * 1.05, r * .75, 'rgba(20,60,30,.22)');
+  const shades = ['#3f9e4f','#4cae58','#3a9447','#55b860'];
+  ell(g, x, y, r, r, shades[Math.floor(R() * shades.length)]);
+  ell(g, x - r * .25, y - r * .3, r * .55, r * .5, 'rgba(255,255,255,.14)');
 }
-const ease = k => k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2;
-let camTarget = {cx:800, cy:500, W:1600};
-function tweenCam(cx, cy, W, dur){
-  camTarget = {cx, cy, W};
-  const t = camRect(cx, cy, W), f = {...VB};
-  dur = REDUCED ? 1 : (dur || 1100);
-  return new Promise(res => {
-    const t0 = performance.now();
-    (function step(now){
-      const k = ease(Math.min(1, (now - t0) / dur));
-      VB.x = f.x + (t.x - f.x) * k; VB.y = f.y + (t.y - f.y) * k; VB.w = f.w + (t.w - f.w) * k; VB.h = f.h + (t.h - f.h) * k;
-      setVB();
-      k < 1 ? requestAnimationFrame(step) : res();
-    })(performance.now());
+function buildTerrain(){
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'), R = rng(42);
+  let gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#4cb3ea'); gr.addColorStop(1, '#1d69b8');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 3;
+  for (let i = 0; i < 320; i++) { const x = R() * W, y = R() * H; g.beginPath(); g.arc(x, y, 10 + R() * 16, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); }
+  // deep trench
+  gr = g.createRadialGradient(2080, 1960, 40, 2080, 1960, 520); gr.addColorStop(0, '#071c44'); gr.addColorStop(.7, 'rgba(10,40,100,.75)'); gr.addColorStop(1, 'rgba(10,40,100,0)');
+  g.fillStyle = gr; g.beginPath(); g.ellipse(2070, 1950, 540, 330, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 4;
+  for (let k = 1; k < 6; k++) { g.beginPath(); g.ellipse(2080, 1960, 80 * k, 48 * k, 0, 0, Math.PI * 2); g.stroke(); }
+  // shallows + reef
+  LAND.forEach(e => ell(g, e[0], e[1], e[2] + 160, e[3] + 160, 'rgba(130,220,245,.45)'));
+  LAND.forEach(e => ell(g, e[0], e[1], e[2] + 80, e[3] + 80, 'rgba(165,234,248,.65)'));
+  ell(g, 1100, 1990, 560, 280, 'rgba(110,230,215,.55)');
+  ell(g, 1100, 1990, 420, 200, 'rgba(140,240,220,.45)');
+  const coral = ['#fb7185','#f97316','#c084fc','#facc15','#f472b6'];
+  for (let i = 0; i < 70; i++) { const a = R() * Math.PI * 2, d = Math.sqrt(R()); const x = 1100 + Math.cos(a) * d * 470, y = 1990 + Math.sin(a) * d * 220;
+    ell(g, x, y, 8 + R() * 14, 8 + R() * 12, coral[Math.floor(R() * coral.length)]); }
+  // sand then grass
+  LAND.forEach(e => ell(g, e[0], e[1], e[2] + 40, e[3] + 40, '#f0dca4'));
+  ell(g, 1500, 1690, 700, 205, '#f0dca4');
+  LAND.forEach(e => ell(g, e[0], e[1], e[2], e[3], '#8fd46a'));
+  for (let i = 0; i < 900; i++) { const e = LAND[Math.floor(R() * LAND.length)]; const a = R() * Math.PI * 2, d = Math.sqrt(R()) * .95;
+    ell(g, e[0] + Math.cos(a) * d * e[2], e[1] + Math.sin(a) * d * e[3], 14 + R() * 30, 10 + R() * 20, R() < .5 ? 'rgba(255,255,255,.06)' : 'rgba(40,110,40,.07)'); }
+  // beach overlap
+  ell(g, 1500, 1720, 640, 150, '#f3e1ab');
+  g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 6;
+  g.beginPath(); g.ellipse(1500, 1700, 690, 200, 0, Math.PI * .15, Math.PI * .85); g.stroke();
+  // hill glow
+  gr = g.createRadialGradient(1600, 1040, 30, 1600, 1040, 420); gr.addColorStop(0, 'rgba(220,255,190,.75)'); gr.addColorStop(1, 'rgba(220,255,190,0)');
+  g.fillStyle = gr; g.beginPath(); g.ellipse(1600, 1060, 460, 360, 0, 0, Math.PI * 2); g.fill();
+  // paths
+  const paths = [[1600,1080, 1250,860, 900,740],[1600,1080, 1650,800, 1700,560],[900,740, 700,880, 540,1060],[1600,1080, 1560,1350, 1500,1620],[1600,1080, 2000,900, 2400,830]];
+  g.lineCap = 'round';
+  paths.forEach(p => { g.strokeStyle = '#d4b97f'; g.lineWidth = 52; g.beginPath(); g.moveTo(p[0], p[1]); g.quadraticCurveTo(p[2], p[3], p[4], p[5]); g.stroke();
+    g.strokeStyle = '#ead6a4'; g.lineWidth = 40; g.stroke(); });
+  // farm fields
+  g.save(); g.beginPath(); g.ellipse(1700, 520, 420, 250, 0, 0, Math.PI * 2); g.clip();
+  for (let x = 1290; x < 2120; x += 34) { g.fillStyle = (Math.floor((x - 1290) / 34) % 2) ? '#c8e386' : '#a6d26b'; g.fillRect(x, 300, 34, 160); }
+  for (let x = 1290; x < 2120; x += 34) { g.fillStyle = (Math.floor((x - 1290) / 34) % 2) ? '#f2d675' : '#e8c55a'; g.fillRect(x, 660, 34, 140); }
+  g.restore();
+  g.strokeStyle = '#9a6b3f'; g.lineWidth = 5; g.setLineDash([16, 10]);
+  g.beginPath(); g.ellipse(1700, 520, 430, 262, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+  // grove floor
+  gr = g.createRadialGradient(520, 1090, 20, 520, 1090, 330); gr.addColorStop(0, 'rgba(120,85,50,.75)'); gr.addColorStop(1, 'rgba(120,85,50,0)');
+  g.fillStyle = gr; g.beginPath(); g.ellipse(520, 1090, 360, 290, 0, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 160; i++) { const a = R() * Math.PI * 2, d = Math.sqrt(R()) * .85; ell(g, 520 + Math.cos(a) * d * 330, 1090 + Math.sin(a) * d * 260, 4 + R() * 5, 3 + R() * 3, ['#c2410c','#d97706','#a16207','#92400e'][Math.floor(R() * 4)]); }
+  // forest trees
+  for (let i = 0; i < 140; i++) {
+    const a = R() * Math.PI * 2, d = Math.sqrt(R()) * .98, x = 880 + Math.cos(a) * d * 590, y = 700 + Math.sin(a) * d * 470;
+    if (Math.hypot(x - 820, y - 640) < 150) continue;
+    if (Math.hypot(x - 900, y - 740) < 110) continue;
+    if (x > 1000 && y > 720 && Math.abs((y - 740) - (x - 900) * -.6) < 70) continue;
+    tree(g, x, y, 28 + R() * 26, R);
+  }
+  for (let i = 0; i < 26; i++) { const a = R() * Math.PI * 2, x = 520 + Math.cos(a) * (300 + R() * 120), y = 1090 + Math.sin(a) * (240 + R() * 110); if (x > 760 && y < 960) continue; tree(g, x, y, 26 + R() * 18, R); }
+  [[1250,1250],[1900,1300],[2050,1150],[1150,1080],[1330,1380]].forEach(p => tree(g, p[0], p[1], 34, R));
+  // Oakley: the giant tree
+  ell(g, 840, 670, 130, 95, 'rgba(20,60,30,.25)');
+  ell(g, 820, 640, 118, 118, '#2f8f46'); ell(g, 770, 600, 70, 64, '#3fa356'); ell(g, 870, 610, 66, 60, '#3fa356'); ell(g, 800, 580, 34, 28, 'rgba(255,255,255,.15)');
+  // town
+  ell(g, 2450, 820, 520, 410, '#d5dbe4');
+  g.strokeStyle = '#5a6170'; g.lineWidth = 70;
+  g.beginPath(); g.moveTo(1980, 800); g.lineTo(2960, 800); g.moveTo(2450, 430); g.lineTo(2450, 1220); g.stroke();
+  g.strokeStyle = '#fff'; g.lineWidth = 4; g.setLineDash([22, 18]);
+  g.beginPath(); g.moveTo(1990, 800); g.lineTo(2950, 800); g.moveTo(2450, 440); g.lineTo(2450, 1210); g.stroke(); g.setLineDash([]);
+  g.fillStyle = '#e9edf3'; g.fillRect(2320, 840, 170, 110); g.fillStyle = '#ef4444'; g.fillRect(2320, 830, 170, 16);
+  // wind turbine base on the hill
+  g.fillStyle = '#e5e7eb'; g.beginPath(); g.arc(1880, 1010, 14, 0, Math.PI * 2); g.fill();
+  // oil rig + pipeline
+  g.strokeStyle = 'rgba(80,60,40,.55)'; g.lineWidth = 8; g.setLineDash([18, 12]);
+  g.beginPath(); g.moveTo(2250, 1840); g.quadraticCurveTo(2420, 1400, 2400, 960); g.stroke(); g.setLineDash([]);
+  g.fillStyle = '#3d4454'; g.fillRect(2200, 1790, 100, 100);
+  g.strokeStyle = '#6b7280'; g.lineWidth = 6; g.beginPath(); g.moveTo(2200, 1790); g.lineTo(2300, 1890); g.moveTo(2300, 1790); g.lineTo(2200, 1890); g.stroke();
+  g.strokeStyle = '#e74c3c'; g.lineWidth = 7; g.beginPath(); g.moveTo(2220, 1830); g.lineTo(2250, 1770); g.lineTo(2280, 1830); g.stroke();
+  return c;
+}
+
+/* =================================================================
+   RENDER LOOP
+   ================================================================= */
+const cv = $('#game'), ctx = cv.getContext('2d');
+let DPR = 1, VW = 0, VH = 0, ZOOM = 1;
+let terrain = null;
+const cam = {x:0, y:0};
+const me = {x:START[0], y:START[1]};
+let target = null, keys = new Set(), busy = true, playing = false, trail = [], tNow = 0, lastSave = 0;
+const unlockAnim = {}; // zone id -> time it was unlocked
+const clouds = Array.from({length:7}, (_, i) => ({x: i * 520, y: 200 + (i * 337) % 1900, s: .8 + (i % 3) * .3, v: 14 + (i % 4) * 5}));
+
+function resize(){
+  DPR = Math.min(2, devicePixelRatio || 1); VW = innerWidth; VH = innerHeight;
+  cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
+  ZOOM = Math.max(.78, Math.min(1.1, Math.sqrt(VW * VH) / 1000));
+}
+addEventListener('resize', resize);
+
+const storyNpcs = () => LEVELS.map((L, i) => ({story:i, e:L.speaker.emoji, name:L.speaker.name, x:L.npc[0], y:L.npc[1], s:L.size}));
+const ambient = AMBIENT.map(a => ({...a, s:50}));
+function allNpcs(){ return storyNpcs().concat(ambient); }
+function objective(){ return state.level < LEVELS.length ? LEVELS[state.level].npc : FINISH; }
+
+function emo(e, x, y, s){ ctx.font = `${s}px ${EMOJI}`; ctx.fillStyle = '#000'; ctx.fillText(e, x, y); }
+function pill(text, x, y, bg, fg){
+  ctx.font = '600 15px Fredoka, Nunito, sans-serif';
+  const w = ctx.measureText(text).width + 20;
+  ctx.fillStyle = bg || 'rgba(255,255,255,.9)';
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - 13, w, 26, 13) : ctx.rect(x - w / 2, y - 13, w, 26); ctx.fill();
+  ctx.fillStyle = fg || '#1c2242'; ctx.fillText(text, x, y + 1);
+}
+function inView(x, y, m){ m = m || 120; const vw = VW / ZOOM, vh = VH / ZOOM; return x > cam.x - m && x < cam.x + vw + m && y > cam.y - m && y < cam.y + vh + m; }
+
+function update(dt){
+  tNow += dt;
+  clouds.forEach(c => { c.x += c.v * dt; if (c.x > W + 300) c.x = -300; });
+  if (playing && !busy) {
+    let dx = 0, dy = 0;
+    if (keys.has('arrowleft') || keys.has('a')) dx -= 1;
+    if (keys.has('arrowright') || keys.has('d')) dx += 1;
+    if (keys.has('arrowup') || keys.has('w')) dy -= 1;
+    if (keys.has('arrowdown') || keys.has('s')) dy += 1;
+    if (dx || dy) target = null;
+    else if (target) { const tx = target[0] - me.x, ty = target[1] - me.y, d = Math.hypot(tx, ty); if (d < 8) target = null; else { dx = tx / d; dy = ty / d; } }
+    if (dx || dy) {
+      const len = Math.hypot(dx, dy), sp = 330 * dt; dx = dx / len * sp; dy = dy / len * sp;
+      const ox = me.x, oy = me.y;
+      if (canGo(me.x + dx, me.y + dy)) { me.x += dx; me.y += dy; }
+      else if (canGo(me.x + dx, me.y)) me.x += dx;
+      else if (canGo(me.x, me.y + dy)) me.y += dy;
+      if (me.x === ox && me.y === oy) { if (target) { target = null; toast('🫧 A bubble wall blocks the way. Pass the next question gate to unlock it!', 2600); } }
+      else if (Math.random() < dt * 22) {
+        const z = zoneAt(me.x, me.y), wet = z && (z.id === 'reef' || z.id === 'trench' || (z.id === 'beach' && me.y > 1800));
+        trail.push({x: me.x + (Math.random() - .5) * 26, y: me.y + 14 + (Math.random() - .5) * 10, life: 1, wet});
+      }
+    }
+    // fact bubbles
+    FACTS.forEach((f, i) => {
+      if (!state.facts.includes(i) && Math.hypot(f.x - me.x, f.y - me.y) < 46) collectFact(i);
+    });
+    // finish line
+    if (state.level >= LEVELS.length && !state.done && Math.hypot(FINISH[0] - me.x, FINISH[1] - me.y) < 110) { state.done = true; save(); finale(); }
+    nearCheck();
+    if (tNow - lastSave > 2) { lastSave = tNow; state.pos = [Math.round(me.x), Math.round(me.y)]; save(); }
+  } else if (!busy || !playing) $('#talk').classList.add('hidden');
+  trail.forEach(p => p.life -= dt * 1.4); trail = trail.filter(p => p.life > 0);
+  // camera
+  const vw = VW / ZOOM, vh = VH / ZOOM;
+  let cx = me.x - vw / 2, cy = me.y - vh / 2;
+  cx = vw >= W ? (W - vw) / 2 : Math.max(0, Math.min(W - vw, cx));
+  cy = vh >= H ? (H - vh) / 2 : Math.max(0, Math.min(H - vh, cy));
+  cam.x += (cx - cam.x) * Math.min(1, dt * 6); cam.y += (cy - cam.y) * Math.min(1, dt * 6);
+}
+
+function draw(){
+  const t = tNow;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#1d69b8'; ctx.fillRect(0, 0, VW, VH);
+  ctx.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, -cam.x * DPR * ZOOM, -cam.y * DPR * ZOOM);
+  if (terrain) {
+    const vw = VW / ZOOM, vh = VH / ZOOM;
+    const sx = Math.max(0, cam.x), sy = Math.max(0, cam.y), sw = Math.min(W - sx, vw + 2), sh = Math.min(H - sy, vh + 2);
+    if (sw > 0 && sh > 0) ctx.drawImage(terrain, sx, sy, sw, sh, sx, sy, sw, sh);
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  // turbine blades
+  ctx.save(); ctx.translate(1880, 940); ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, 70); ctx.lineTo(0, 0); ctx.stroke();
+  ctx.rotate(REDUCED ? 0 : t * 2.2);
+  for (let k = 0; k < 3; k++) { ctx.rotate(Math.PI * 2 / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -58); ctx.stroke(); }
+  ctx.fillStyle = '#cbd5e1'; ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  // cars on the town roads
+  for (let k = 0; k < 3; k++) { const p = ((t * 90 + k * 330) % 980); if (inView(1980 + p, 780)) emo('🚙', 1980 + p, 780, 36); }
+  for (let k = 0; k < 2; k++) { const p = ((t * 70 + k * 400) % 790); if (inView(2470, 1220 - p)) emo('🚕', 2470, 1220 - p, 34); }
+  // factory smoke
+  for (let k = 0; k < 4; k++) { const p = ((t * .35 + k * .25) % 1); ctx.fillStyle = `rgba(160,166,178,${.45 * (1 - p)})`; ctx.beginPath(); ctx.arc(2700 + p * 60, 530 - p * 160, 14 + p * 26, 0, Math.PI * 2); ctx.fill(); }
+  // plankton glow
+  for (let k = 0; k < 26; k++) { const a = k * 2.399, d = Math.sqrt((k + .5) / 26); const x = 1100 + Math.cos(a) * d * 440 + Math.sin(t + k) * 8, y = 1990 + Math.sin(a) * d * 200 + Math.cos(t * .8 + k) * 6;
+    if (!inView(x, y)) continue; ctx.fillStyle = 'rgba(163,230,53,.35)'; ctx.beginPath(); ctx.arc(x, y, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#84cc16'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); }
+  // decorations + characters, sorted by y so nearer things draw on top
+  const things = [];
+  DECOR.forEach(d => { if (inView(d[1], d[2])) things.push({y: d[2], f: () => emo(d[0], d[1], d[2], d[3])}); });
+  const obj = objective();
+  allNpcs().forEach(n => {
+    if (!inView(n.x, n.y, 160)) return;
+    things.push({y: n.y, f: () => {
+      const bob = REDUCED ? 0 : Math.sin(t * 2.2 + n.x) * 4;
+      ell(ctx, n.x, n.y + n.s * .42, n.s * .42, n.s * .14, 'rgba(0,0,0,.18)');
+      emo(n.e, n.x, n.y + bob, n.s);
+      const near = Math.hypot(n.x - me.x, n.y - me.y) < 320;
+      if (n.story !== undefined || near) pill(n.name, n.x, n.y - n.s * .62 - 18 + bob);
+      if (n.story !== undefined && n.story < state.level) pill('✓', n.x + n.s * .45, n.y - n.s * .3, '#22c55e', '#fff');
+    }});
   });
-}
-addEventListener('resize', () => { Object.assign(VB, camRect(camTarget.cx, camTarget.cy, camTarget.W)); setVB(); });
-
-function moveAtom(to, via, dur){
-  const a = [pos.x, pos.y], c = via || [(a[0]+to[0])/2, Math.min(a[1], to[1]) - 120];
-  dur = REDUCED ? 1 : (dur || 1800);
-  return new Promise(res => {
-    const t0 = performance.now();
-    (function step(now){
-      const k = ease(Math.min(1, (now - t0) / dur)), u = 1 - k;
-      placeAtom([u*u*a[0] + 2*u*k*c[0] + k*k*to[0], u*u*a[1] + 2*u*k*c[1] + k*k*to[1]]);
-      k < 1 ? requestAnimationFrame(step) : res();
-    })(performance.now());
+  things.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  // fact bubbles
+  FACTS.forEach((f, i) => {
+    if (state.facts.includes(i) || !inView(f.x, f.y)) return;
+    const b = REDUCED ? 0 : Math.sin(t * 2 + i) * 6, x = f.x, y = f.y + b;
+    const gr = ctx.createRadialGradient(x - 7, y - 8, 2, x, y, 24); gr.addColorStop(0, '#fff'); gr.addColorStop(.35, 'rgba(219,234,254,.85)'); gr.addColorStop(1, 'rgba(129,140,248,.55)');
+    ctx.fillStyle = 'rgba(165,180,252,.35)'; ctx.beginPath(); ctx.arc(x, y, 30 + Math.sin(t * 3 + i) * 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#4f46e5'; ctx.font = '600 20px Fredoka, sans-serif'; ctx.fillText('?', x, y + 1);
   });
-}
-async function travel(to, via, msg){
-  if (Math.hypot(to[0] - pos.x, to[1] - pos.y) < 5) { toast(msg, 2600); await wait(REDUCED ? 300 : 1400); return; }
-  const xs = [pos.x, to[0], via[0]], ys = [pos.y, to[1], via[1]];
-  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
-  const W = Math.max(760, (Math.max(...xs) - Math.min(...xs)) * 1.5, (Math.max(...ys) - Math.min(...ys)) * 2.2);
-  toast(msg, 3200);
-  await tweenCam(cx, cy + 60, W, 900);
-  await moveAtom(to, via, 2000);
-}
-function sparkle(){
-  const ring = $('#atomRing');
-  ring.classList.remove('ring'); void ring.getBBox(); ring.classList.add('ring');
-  const b = $('#atomBody'); b.classList.remove('morph'); void b.getBBox(); b.classList.add('morph');
+  // objective marker
+  if (playing && !state.done) {
+    const pulse = (t * 1.2) % 1;
+    ctx.strokeStyle = `rgba(250,204,21,${1 - pulse})`; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.ellipse(obj[0], obj[1] + 30, 40 + pulse * 60, 14 + pulse * 22, 0, 0, Math.PI * 2); ctx.stroke();
+    const by = obj[1] - 100 + (REDUCED ? 0 : Math.sin(t * 4) * 8);
+    ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(obj[0], by, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#713f12'; ctx.font = '600 24px Fredoka, sans-serif'; ctx.fillText(state.level >= LEVELS.length ? '★' : '!', obj[0], by + 1);
+  }
+  // trail
+  trail.forEach(p => {
+    if (p.wet) { ctx.strokeStyle = `rgba(255,255,255,${p.life * .8})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - (1 - p.life) * 30, 4 + (1 - p.life) * 5, 0, Math.PI * 2); ctx.stroke(); }
+    else { ctx.globalAlpha = p.life * .8; ctx.fillStyle = state.color; ctx.beginPath(); ctx.arc(p.x, p.y, 3 + p.life * 3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; }
+  });
+  // locked areas: frosted bubble walls
+  ZONES.forEach(z => {
+    const open = unlocked(z), since = unlockAnim[z.id];
+    let a = open ? (since !== undefined ? 1 - (t - since) / 1.2 : 0) : 1;
+    if (a <= 0 || !inView(z.c[0], z.c[1], Math.max(z.r[0], z.r[1]))) return;
+    const k = open ? 1 + (1 - a) * .25 : 1;
+    ctx.save(); ctx.globalAlpha = Math.max(0, a);
+    const gr = ctx.createRadialGradient(z.c[0] - z.r[0] * .3, z.c[1] - z.r[1] * .4, 10, z.c[0], z.c[1], Math.max(z.r[0], z.r[1]));
+    gr.addColorStop(0, 'rgba(255,255,255,.72)'); gr.addColorStop(.8, 'rgba(226,232,255,.62)'); gr.addColorStop(1, 'rgba(199,210,254,.7)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(z.c[0], z.c[1], z.r[0] * .97 * k, z.r[1] * .97 * k, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 8; ctx.stroke();
+    ctx.strokeStyle = 'rgba(129,140,248,.45)'; ctx.lineWidth = 3; ctx.setLineDash([3, 14]);
+    ctx.beginPath(); ctx.ellipse(z.c[0], z.c[1], z.r[0] * .9 * k, z.r[1] * .9 * k, t * .05, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    emo('🔒', z.c[0], z.c[1] - 30, 54);
+    pill(`${z.icon} ${z.name}`, z.c[0], z.c[1] + 26);
+    ctx.font = '800 14px Nunito, sans-serif'; ctx.fillStyle = '#4f46e5'; ctx.fillText(`Unlocks after gate ${z.lv}`, z.c[0], z.c[1] + 56);
+    ctx.restore();
+  });
+  // clouds drifting over everything
+  clouds.forEach(c => {
+    if (!inView(c.x, c.y, 300)) return;
+    ell(ctx, c.x + 60, c.y + 110, 110 * c.s, 44 * c.s, 'rgba(20,40,80,.07)');
+    ctx.globalAlpha = .32;
+    [[0,0,46],[44,-14,54],[88,0,42],[44,14,46]].forEach(b => ell(ctx, c.x + b[0] * c.s, c.y + b[1] * c.s, b[2] * c.s, b[2] * .8 * c.s, '#fff'));
+    ctx.globalAlpha = 1;
+  });
+  // off-screen arrow to the objective
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (playing && !state.done) {
+    const sx = (obj[0] - cam.x) * ZOOM, sy = (obj[1] - cam.y) * ZOOM, m = 46;
+    if (sx < m || sy < 120 || sx > VW - m || sy > VH - m) {
+      const cx = VW / 2, cy = VH / 2, ang = Math.atan2(sy - cy, sx - cx);
+      const ex = Math.max(m, Math.min(VW - m, cx + Math.cos(ang) * VW)), ey = Math.max(130, Math.min(VH - m, cy + Math.sin(ang) * VH));
+      const k = Math.min((ex - cx) / Math.cos(ang) || 1e9, (ey - cy) / Math.sin(ang) || 1e9);
+      const ax = cx + Math.cos(ang) * Math.abs(k), ay = cy + Math.sin(ang) * Math.abs(k);
+      const px = Math.max(m, Math.min(VW - m, ax)), py = Math.max(130, Math.min(VH - m, ay));
+      ctx.save(); ctx.translate(px, py);
+      ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#facc15'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.rotate(ang); ctx.fillStyle = '#ca8a04'; ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(-6, -11); ctx.lineTo(-6, 11); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+  }
+  // the player's atom (HTML overlay)
+  const mx = (me.x - cam.x) * ZOOM, my = (me.y - cam.y) * ZOOM;
+  $('#meInner').style.transform = `translate(${mx}px,${my}px) scale(${ZOOM})`;
+  drawMini();
 }
 
-/* ---------- HUD, banner, toast ---------- */
+const mini = $('#miniCv'), mctx = mini.getContext('2d');
+function drawMini(){
+  const s = mini.width / W, g = mctx;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#3b9be0'; g.fillRect(0, 0, mini.width, mini.height);
+  g.setTransform(s, 0, 0, s, 0, 0);
+  LAND.forEach(e => ell(g, e[0], e[1], e[2] + 40, e[3] + 40, '#f0dca4'));
+  LAND.forEach(e => ell(g, e[0], e[1], e[2], e[3], '#86cf64'));
+  ell(g, 1100, 1990, 520, 250, '#6fe0cf'); ell(g, 2070, 1950, 460, 260, '#174a8f'); ell(g, 2450, 820, 500, 400, '#cbd2dc');
+  ZONES.forEach(z => { if (!unlocked(z)) { ell(g, z.c[0], z.c[1], z.r[0], z.r[1], 'rgba(255,255,255,.75)'); } });
+  const o = objective();
+  if (!state.done) { g.fillStyle = '#facc15'; g.beginPath(); g.arc(o[0], o[1], 70 + Math.sin(tNow * 5) * 15, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = '#1c2242'; g.beginPath(); g.arc(me.x, me.y, 60, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = state.color; g.lineWidth = 22; g.stroke();
+}
+
+let lastT = performance.now();
+function frame(now){
+  const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+  update(dt); draw();
+  requestAnimationFrame(frame);
+}
+
+/* =================================================================
+   INPUT
+   ================================================================= */
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (e.target && e.target.tagName === 'INPUT') return;
+  if ((k === ' ' || k === 'enter') && advance && $('#modal').classList.contains('hidden') && !$('#dialog').classList.contains('hidden')) { e.preventDefault(); advance(); return; }
+  if (['arrowleft','arrowright','arrowup','arrowdown','w','a','s','d'].includes(k)) { keys.add(k); e.preventDefault(); }
+  if ((k === 'e' || k === ' ' || k === 'enter') && nearNpc && !busy && playing) { e.preventDefault(); interact(nearNpc); }
+});
+addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+addEventListener('blur', () => keys.clear());
+let downAt = null;
+cv.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+cv.addEventListener('pointerup', e => {
+  if (!downAt || !playing || busy) return;
+  const wx = cam.x + e.clientX / ZOOM, wy = cam.y + e.clientY / ZOOM; downAt = null;
+  const hit = allNpcs().find(n => Math.hypot(n.x - wx, n.y - wy) < n.s * .7);
+  if (hit && Math.hypot(hit.x - me.x, hit.y - me.y) < 200) { interact(hit); return; }
+  target = hit ? [hit.x, hit.y + hit.s * .6] : [wx, wy];
+});
+
+let nearNpc = null;
+function nearCheck(){
+  let best = null, bd = 140;
+  allNpcs().forEach(n => { const d = Math.hypot(n.x - me.x, n.y - me.y); const z = zoneOfNpc(n.x, n.y); if (d < bd && (!z || unlocked(z))) { bd = d; best = n; } });
+  const tb = $('#talk');
+  if (best !== nearNpc) {
+    nearNpc = best;
+    if (best) tb.innerHTML = `💬 Talk to ${esc(best.name)} <kbd>E</kbd>`;
+  }
+  tb.classList.toggle('hidden', !best);
+}
+$('#talk').addEventListener('click', () => { if (nearNpc && !busy) interact(nearNpc); });
+
+/* =================================================================
+   HUD, TOAST, GOAL
+   ================================================================= */
 function hud(){
   $('#hud').classList.remove('hidden');
   $('#hudAtom').innerHTML = avatar(state.color, state.acc, state.form);
   $('#hudName').textContent = state.name;
   const i = Math.min(state.level, LEVELS.length - 1);
-  $('#hudLvlNo').textContent = state.done ? 'Journey complete' : `Level ${i + 1} of ${LEVELS.length}`;
-  $('#hudLvl').textContent = state.done ? 'Back in the atmosphere' : LEVELS[i].place;
+  $('#hudLvlNo').textContent = state.level >= LEVELS.length ? (state.done ? 'Journey complete' : 'Final stretch') : `Level ${i + 1} of ${LEVELS.length}`;
+  $('#hudLvl').textContent = state.level >= LEVELS.length ? 'Back to Windy Hill' : LEVELS[i].place;
   $('#hudForm').innerHTML = `<small>You are:</small> ${esc(state.form)}`;
   $('#hudStars').textContent = state.stars;
-  $('#dots').innerHTML = LEVELS.map((L, k) => `<i class="${k < state.level || state.done ? 'done' : k === state.level ? 'now' : ''}" title="${esc(L.place)}"></i>`).join('');
+  $('#hudFacts').textContent = `${state.facts.length}/${FACTS.length}`;
+  $('#dots').innerHTML = LEVELS.map((L, k) => `<i class="${k < state.level ? 'done' : k === state.level ? 'now' : ''}" title="${esc(L.place)}"></i>`).join('');
+  const g = $('#goal'); g.classList.remove('hidden');
+  const text = state.done ? '🎉 Journey complete! Keep exploring and find every fact bubble 🫧' : state.level >= LEVELS.length ? FINISH_GOAL : LEVELS[state.level].goal;
+  g.innerHTML = `<small>🎯 Your goal</small>${esc(text)}`;
+  drawMe();
 }
 let toastT;
 function toast(msg, ms){
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms || 2400);
 }
-async function banner(i){
-  $('#bannerNo').textContent = `Level ${i + 1} of ${LEVELS.length}`;
-  $('#bannerName').textContent = `${LEVELS[i].icon} ${LEVELS[i].place}`;
-  const b = $('#banner'); b.classList.add('show');
-  await wait(1700); b.classList.remove('show'); await wait(300);
-}
 function setForm(form, entry){
   state.form = form; state.diary.push(entry); save();
-  drawAtom(); hud(); sparkle();
+  hud();
+  const s = $('#meSvg'); s.classList.remove('morph'); void s.getBBox(); s.classList.add('morph');
   toast(`✨ You are now: ${entry.form}`, 2800);
 }
 
-/* ---------- dialogue ---------- */
+/* =================================================================
+   DIALOGUE
+   ================================================================= */
 let advance = null;
 function sayLine(sp, line){
   const isAtom = line[0] === '@';
@@ -801,16 +1035,15 @@ function sayLine(sp, line){
   });
 }
 async function say(sp, lines){
-  const d = $('#dialog'); d.classList.remove('hidden');
+  const d = $('#dialog'); d.classList.remove('hidden'); $('#talk').classList.add('hidden');
   for (const ln of lines) await sayLine(sp, ln);
   d.classList.add('hidden');
 }
 $('#dialog').addEventListener('click', () => advance && advance());
-addEventListener('keydown', e => {
-  if ((e.key === ' ' || e.key === 'Enter') && advance && $('#modal').classList.contains('hidden') && !$('#dialog').classList.contains('hidden')) { e.preventDefault(); advance(); }
-});
 
-/* ---------- modal ---------- */
+/* =================================================================
+   CARDS (mini-tasks, gates)
+   ================================================================= */
 function card(html){
   const m = $('#modal'); m.innerHTML = `<div class="card glass">${html}</div>`; m.classList.remove('hidden');
   return m.firstElementChild;
@@ -820,8 +1053,6 @@ function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classL
 function feedback(c, cls, html){ const f = c.querySelector('.fb'); f.className = 'fb ' + cls; f.innerHTML = html; }
 const head = (kick, title, sub) => `<div class="kick">${kick}</div><h2>${title}</h2>${sub ? `<p class="sub">${sub}</p>` : ''}`;
 const tokenIc = k => `<span class="ic${k.f ? ' f' : ''}">${k.ic}</span>`;
-
-/* ---------- mini-tasks ---------- */
 function runTask(t){ return ({combine:taskCombine, cards:taskCards, order:taskOrder, find:taskFind, slider:taskSlider, catch:taskCatch})[t.type](t); }
 
 function taskCombine(t){ return new Promise(res => {
@@ -837,16 +1068,12 @@ function taskCombine(t){ return new Promise(res => {
     if (k.ok) {
       b.disabled = true; b.classList.add('used');
       const s = c.querySelectorAll('.slot')[n++]; s.innerHTML = k.ic; s.classList.add('filled'); if (k.f) s.classList.add('txt');
-      if (n === t.need) {
-        c.querySelectorAll('.token').forEach(x => x.disabled = true);
-        feedback(c, 'good', `✓ Perfect!<div class="eq">${t.result}</div>`);
-        c.querySelector('#go').classList.remove('hidden');
-      } else feedback(c, 'good', `✓ Yes! ${t.need - n} more to go.`);
+      if (n === t.need) { c.querySelectorAll('.token').forEach(x => x.disabled = true); feedback(c, 'good', `✓ Perfect!<div class="eq">${t.result}</div>`); c.querySelector('#go').classList.remove('hidden'); }
+      else feedback(c, 'good', `✓ Yes! ${t.need - n} more to go.`);
     } else { shake(b); feedback(c, 'bad', '✗ ' + k.why); }
   });
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
-
 function taskCards(t){ return new Promise(res => {
   const c = card(head('🧪 Mini-task', t.title, t.prompt) +
     `<div class="tokens cards3">${t.cards.map((k, i) => `<button class="token flip" data-i="${i}"><span class="ic">${k.ic}</span><div><b>${k.t}</b><p class="tap">Tap to reveal</p></div></button>`).join('')}</div>
@@ -860,7 +1087,6 @@ function taskCards(t){ return new Promise(res => {
   });
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
-
 function taskOrder(t){ return new Promise(res => {
   const items = t.items.map((k, i) => ({...k, i})), mixed = shuffle(items);
   const c = card(head('🧪 Mini-task', t.title, t.prompt) +
@@ -879,7 +1105,6 @@ function taskOrder(t){ return new Promise(res => {
   });
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
-
 function taskFind(t){ return new Promise(res => {
   const items = shuffle(t.items);
   const c = card(head('🔎 Mini-task', t.title, t.prompt) +
@@ -897,7 +1122,6 @@ function taskFind(t){ return new Promise(res => {
   });
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
-
 const TIME_STAGES = [
   [0,   '🟢', 'Fresh dead plankton settles on the sea floor.'],
   [30,  '🟤', 'Buried under new layers of mud and sand.'],
@@ -908,9 +1132,7 @@ const TIME_STAGES = [
 function sliderView(kind, v){
   if (kind === 'temp') {
     const pct = Math.round(Math.max(6, 100 - v * 3.1));
-    const msg = v <= 8 ? '🥶 Brrr, perfect! Cold water is soaking you right up.'
-      : v <= 18 ? '😐 Some CO₂ dissolves… but you keep bubbling back out.'
-      : '🥵 Too warm! You keep escaping, like a warm fizzy drink going flat.';
+    const msg = v <= 8 ? '🥶 Brrr, perfect! Cold water is soaking you right up.' : v <= 18 ? '😐 Some CO₂ dissolves… but you keep bubbling back out.' : '🥵 Too warm! You keep escaping, like a warm fizzy drink going flat.';
     const col = v <= 8 ? '#3b82f6' : v <= 18 ? '#a855f7' : '#f97316';
     return {ok: v <= 8, html:`<div class="readout"><div class="big" style="color:${col}">${v}°C</div><div style="flex:1"><p>${msg}</p>
       <div class="meter"><i style="width:${pct}%"></i></div><p style="font-size:.8rem;color:var(--ink3);margin-top:4px">How much CO₂ the water can hold: ${pct}%</p></div></div>`};
@@ -932,7 +1154,6 @@ function taskSlider(t){ return new Promise(res => {
   r.addEventListener('input', upd); upd();
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
-
 function taskCatch(t){ return new Promise(res => {
   const c = card(head('🎯 Mini-task', t.title, t.prompt) + `<div class="pond"></div><div class="count">🟢 0 / ${t.count}</div>
     <div class="actions"><button class="btn green hidden" id="go">${t.done}</button></div>`);
@@ -952,14 +1173,13 @@ function taskCatch(t){ return new Promise(res => {
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
 
-/* ---------- question gates ---------- */
 function askQ(q, meta){ return new Promise(res => {
   const opts = shuffle(q.o.map((t, i) => ({t, ok: i === 0})));
   const bar = meta.bonus ? '' : `<div class="qbar">${Array.from({length: meta.n}, (_, i) => `<i class="${i < meta.k ? 'done' : i === meta.k ? 'now' : ''}"></i>`).join('')}</div>`;
   const kick = meta.bonus ? '⭐ Bonus challenge · one try only' : `${meta.gateName} · Question ${meta.k + 1} of ${meta.n}`;
   const c = card(`<div class="kick">${kick}</div>${bar}<h2>${esc(q.q)}</h2>
     <div class="opts">${opts.map((o, i) => `<button class="opt" data-i="${i}">${esc(o.t)}</button>`).join('')}</div>
-    <div class="fb hidden"></div><div class="actions"><button class="btn primary hidden" id="go">${meta.last ? 'Unlock! 🔓' : 'Next ▸'}</button></div>`);
+    <div class="fb hidden"></div><div class="actions"><button class="btn primary hidden" id="go">Next ▸</button></div>`);
   let tries = 0;
   c.querySelector('.opts').addEventListener('click', e => {
     const b = e.target.closest('.opt'); if (!b || b.disabled) return;
@@ -972,11 +1192,9 @@ function askQ(q, meta){ return new Promise(res => {
       c.querySelector('#go').classList.remove('hidden');
     } else if (o.ok) {
       if (tries === 1) state.first++;
-      state.asked++; save();
-      lock();
+      save(); lock();
       feedback(c, 'good', '✓ ' + esc(q.ex));
-      c.querySelector('#go').classList.remove('hidden');
-      c.querySelector('#go').focus();
+      c.querySelector('#go').classList.remove('hidden'); c.querySelector('#go').focus();
     } else {
       b.disabled = true; b.classList.add('wrong'); shake(b);
       feedback(c, 'bad', '✗ Not quite. 💡 ' + esc(q.hint) + ' Try again!');
@@ -984,81 +1202,93 @@ function askQ(q, meta){ return new Promise(res => {
   });
   c.querySelector('#go').addEventListener('click', () => { closeCard(); res(); });
 }); }
-
 function choose(html, a, b){ return new Promise(res => {
-  const c = card(html + `<div class="actions"><button class="btn" id="b">${b}</button><button class="btn primary" id="a">${a}</button></div>`);
+  const c = card(html + `<div class="actions">${b ? `<button class="btn" id="b">${b}</button>` : ''}<button class="btn primary" id="a">${a}</button></div>`);
   c.querySelector('#a').addEventListener('click', () => { closeCard(); res(true); });
-  c.querySelector('#b').addEventListener('click', () => { closeCard(); res(false); });
+  if (b) c.querySelector('#b').addEventListener('click', () => { closeCard(); res(false); });
 }); }
 
-/* ---------- main flow ---------- */
-async function playLevel(i){
-  const L = LEVELS[i];
-  state.level = i; save(); hud();
-  placeAtom(L.anchor); drawAtom();
-  $('#rabbit').style.opacity = i === 3 ? 0 : 1; // Bun has returned to the soil on the forest floor level
-  await tweenCam(L.anchor[0], L.anchor[1], L.zoom, 1200);
-  await banner(i);
-  let again = true;
-  while (again) {
-    await say(L.speaker, L.intro);
-    await runTask(L.task);
-    if (state.diary.length <= i + 1) setForm(L.formAfter, L.diary); else { state.form = L.formAfter; drawAtom(); hud(); }
-    if (L.moveAfter) {
-      await Promise.all([
-        moveAtom(L.moveAfter, [L.anchor[0] + 20, (L.anchor[1] + L.moveAfter[1]) / 2], 1600),
-        tweenCam(L.moveAfter[0], L.moveAfter[1], L.zoom, 1600)
-      ]);
-    }
-    await say(L.speaker, L.outro);
-    // "Hear the story again" replays the level before the questions
-    again = !(await gateReady(i));
-    if (again) { state.form = i ? LEVELS[i - 1].formAfter : 'CO₂'; placeAtom(L.anchor); drawAtom(); hud(); }
-  }
-  await runGateQuestions(i);
-  state.level = i + 1; save();
-  if (i < LEVELS.length - 1) {
-    const ok = await choose(head('🔓 Unlocked!', `Level ${i + 2}: ${LEVELS[i + 1].icon} ${LEVELS[i + 1].place}`, 'Gate open! Your atom is ready for the next part of its journey.'), 'Travel there ▸', 'Open diary');
-    if (!ok) { openDiary(); await waitDiaryClose(); }
-    await travel(LEVELS[i + 1].anchor, L.via, L.travel);
-    playLevel(i + 1);
-  } else {
-    state.done = true; save(); hud();
-    await travel(SKY, L.via, L.travel);
-    finale();
-  }
-}
-// split gate so "Hear it again" can replay the story before the questions
-function gateReady(i){
-  const L = LEVELS[i], last = i === LEVELS.length - 1;
-  return choose(head(last ? '🔒 Final gate' : `🔒 Gate to Level ${i + 2}`, last ? 'One last gate!' : `Unlock: ${LEVELS[i + 1].icon} ${LEVELS[i + 1].place}`,
-    `Answer ${L.gate.length} questions correctly to ${last ? 'finish your journey' : 'move on'}. Get one wrong? Read the hint and try again.`), "I'm ready! 🔓", '↺ Hear the story again');
-}
-async function runGateQuestions(i){
-  const L = LEVELS[i], last = i === LEVELS.length - 1;
-  const gateName = last ? '🔒 Final gate' : `🔒 Gate to Level ${i + 2}`;
-  for (let k = 0; k < L.gate.length; k++) await askQ(L.gate[k], {k, n: L.gate.length, gateName, last: false});
-  const tryIt = await choose(head('⭐ Bonus challenge', 'Want to earn a star?', 'This one is a harder extension question. You only get one try, and there\'s no penalty for getting it wrong.'), 'Try it ⭐', 'Skip');
-  if (tryIt) await askQ(L.bonus, {bonus: true});
+/* =================================================================
+   STORY + EXPLORING
+   ================================================================= */
+async function interact(n){
+  if (busy) return;
+  busy = true; target = null; keys.clear();
+  try {
+    if (n.story !== undefined) {
+      const L = LEVELS[n.story];
+      if (n.story === state.level) await playLevel(n.story);
+      else if (n.story < state.level) await say(L.speaker, [`Hi again, {name}! You've already passed my gate.`, L.again]);
+    } else await say({name: n.name, emoji: n.e}, n.lines);
+  } finally { busy = false; }
 }
 
-/* ---------- diary ---------- */
-let diaryClosed = null;
+async function playLevel(i){
+  const L = LEVELS[i];
+  await say(L.speaker, L.intro);
+  await runTask(L.task);
+  if (state.diary.length <= i + 1) setForm(L.formAfter, L.diary); else { state.form = L.formAfter; hud(); }
+  await say(L.speaker, L.outro);
+  while (!(await gateReady(i))) await say(L.speaker, L.intro.concat(L.outro));
+  const gateName = i === LEVELS.length - 1 ? '🔒 Final gate' : `🔒 Gate ${i + 1}`;
+  for (let k = 0; k < L.gate.length; k++) await askQ(L.gate[k], {k, n: L.gate.length, gateName});
+  if (await choose(head('⭐ Bonus challenge', 'Want to earn a star?', 'This one is a harder extension question. You only get one try, and there\'s no penalty for getting it wrong.'), 'Try it ⭐', 'Skip'))
+    await askQ(L.bonus, {bonus: true});
+  state.level = i + 1; save();
+  const nz = ZONES.find(z => z.lv === i + 1);
+  if (nz) unlockAnim[nz.id] = tNow;
+  hud();
+  if (i < LEVELS.length - 1) {
+    await choose(head('🔓 Gate open!', `${nz.icon} ${nz.name} is unlocked`, esc(LEVELS[i + 1].goal) + '. Follow the yellow marker, or explore and look for fact bubbles 🫧 on the way.'), L.autoTo ? 'Go! ▸' : 'Let\'s explore ▸');
+    if (L.autoTo) await autoMove(L.autoTo, L.autoMsg);
+  } else {
+    await choose(head('🔓 Final gate open!', 'One last trip', esc(FINISH_GOAL) + '. Every area of the island is open now.'), 'Let\'s go ▸');
+  }
+}
+function gateReady(i){
+  const L = LEVELS[i], last = i === LEVELS.length - 1;
+  return choose(head(last ? '🔒 Final gate' : `🔒 Gate ${i + 1}`, last ? 'One last gate!' : `Unlock: ${ZONES[i + 1].icon} ${ZONES[i + 1].name}`,
+    `Answer ${L.gate.length} questions correctly to ${last ? 'finish your journey' : 'open the bubble wall'}. Get one wrong? Read the hint and try again.`), "I'm ready! 🔓", '↺ Hear the story again');
+}
+function autoMove(to, msg){
+  toast(msg, 3400);
+  const from = [me.x, me.y], dur = REDUCED ? 10 : 2600, t0 = performance.now();
+  return new Promise(res => {
+    (function step(now){
+      const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      me.x = from[0] + (to[0] - from[0]) * e; me.y = from[1] + (to[1] - from[1]) * e;
+      if (Math.random() < .5) trail.push({x: me.x, y: me.y + 14, life: 1, wet: me.y > 1700});
+      k < 1 ? requestAnimationFrame(step) : (state.pos = [Math.round(me.x), Math.round(me.y)], save(), res());
+    })(t0);
+  });
+}
+async function collectFact(i){
+  if (busy) return;
+  busy = true; target = null; keys.clear();
+  state.facts.push(i); save(); hud();
+  await choose(`<div class="factbig">🫧</div>` + head(`Fact bubble ${state.facts.length} of ${FACTS.length}`, 'Did you know?', esc(FACTS[i].t)), 'Cool! ✨');
+  if (state.facts.length === FACTS.length) toast('🏆 You found every fact bubble!', 3000);
+  busy = false;
+}
+
+/* =================================================================
+   DIARY + FINALE
+   ================================================================= */
+let diaryOpen = false;
 function openDiary(){
-  const d = $('#diary');
+  const d = $('#diary'); diaryOpen = true;
   d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h3>📔 ${esc(state.name)}'s diary</h3><button class="btn small" id="dx">Close</button></div>
     <p class="sub" style="margin:0;color:var(--ink2);font-weight:600;font-size:.9rem">Every form your atom has taken so far.</p>
     <ol class="tl">${state.diary.map((e, k) => `<li><span class="ti">${e.icon}</span><div><em>${k ? 'Stop ' + k : 'Start'} · ${esc(e.process)}</em><b>${esc(e.form)}</b><span>${esc(e.place)}</span></div></li>`).join('')}</ol>
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="restart">↺ Start a new atom</button></div>`;
+    <p style="font-weight:700;color:var(--ink2);margin-top:14px">🫧 Fact bubbles found: ${state.facts.length} / ${FACTS.length}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="restart">↺ Start a new atom</button></div>`;
   d.classList.remove('hidden');
   d.querySelector('#dx').onclick = closeDiary;
   d.querySelector('#restart').onclick = () => { if (confirm('Start again with a new atom? Your progress will be lost.')) { wipe(); location.reload(); } };
 }
-function closeDiary(){ $('#diary').classList.add('hidden'); if (diaryClosed) { diaryClosed(); diaryClosed = null; } }
-function waitDiaryClose(){ return new Promise(r => diaryClosed = r); }
-$('#diaryBtn').addEventListener('click', () => $('#diary').classList.contains('hidden') ? openDiary() : closeDiary());
+function closeDiary(){ $('#diary').classList.add('hidden'); diaryOpen = false; }
+$('#diaryBtn').addEventListener('click', () => diaryOpen ? closeDiary() : openDiary());
 
-/* ---------- finale ---------- */
 function confetti(){
   if (REDUCED) return;
   const bits = ['🎉','✨','🌿','💨','🌊','⭐','🟢','🍃'];
@@ -1069,13 +1299,11 @@ function confetti(){
   }
 }
 async function finale(){
-  hud();
-  await tweenCam(800, 500, 1600, 1600);
-  confetti();
+  busy = true; hud(); confetti();
   const date = new Date().toLocaleDateString(undefined, {day:'numeric', month:'long', year:'numeric'});
   const total = LEVELS.reduce((n, L) => n + L.gate.length, 0);
-  const c = card(head('🏁 Journey complete!', `Amazing work, ${esc(state.name)}! 🎉`, 'Your carbon atom travelled all the way around the carbon cycle and ended up back in the atmosphere where it started.') +
-    `<div class="stats"><div><b>8 / 8</b>places visited</div><div><b>${state.first} / ${total}</b>right first try</div><div><b>⭐ ${state.stars}</b>bonus stars</div></div>
+  await choose(head('🏁 Journey complete!', `Amazing work, ${esc(state.name)}! 🎉`, 'Your carbon atom travelled all the way around the carbon cycle and ended up back in the atmosphere where it started.') +
+    `<div class="stats"><div><b>8 / 8</b>places visited</div><div><b>${state.first} / ${total}</b>right first try</div><div><b>⭐ ${state.stars}</b>bonus stars</div><div><b>🫧 ${state.facts.length}/${FACTS.length}</b>fact bubbles</div></div>
     <h4 class="sec">Your atom's journey</h4>
     <ol class="tl">${state.diary.map((e, k) => `<li><span class="ti">${e.icon}</span><div><em>${k ? esc(e.process) : 'Start'}</em><b>${esc(e.form)}</b><span>${esc(e.place)}</span></div></li>`).join('')}</ol>
     <h4 class="sec">Other paths a carbon atom could take</h4>
@@ -1083,27 +1311,46 @@ async function finale(){
       <div><b>🌋 Volcanoes</b><br>Carbon in rocks deep underground can be released as CO₂ when volcanoes erupt.</div>
       <div><b>🔥 Bushfires</b><br>Burning trees is combustion. It releases carbon from wood straight back into the air.</div>
       <div><b>🪨 Limestone</b><br>Shells can become limestone, storing carbon for millions of years until rocks weather away.</div>
-      <div><b>⚡ Shortcut!</b><br>The leaf could have used you for respiration straight away, and you'd be CO₂ again in minutes.</div>
+      <div><b>⚡ Shortcut!</b><br>The sapling could have used you for respiration straight away, and you'd be CO₂ again in minutes.</div>
     </div>
     <div class="cert"><small>Certificate of achievement</small><h3>Carbon Cycle Explorer</h3>
       <div style="display:flex;justify-content:center;margin:4px 0"><svg viewBox="-52 -50 104 92" style="width:70px;height:62px">${avatar(state.color, state.acc, state.form)}</svg></div>
-      <b>${esc(state.name)}</b><br><span style="color:var(--ink2);font-weight:600;font-size:.9rem">completed Carbon Quest · ${esc(date)}</span></div>
-    <div class="actions"><button class="btn" id="diaryEnd">📔 Diary</button><button class="btn primary" id="again">↺ Play again</button></div>`);
-  c.querySelector('#again').onclick = () => { wipe(); location.reload(); };
-  c.querySelector('#diaryEnd').onclick = () => openDiary();
+      <b>${esc(state.name)}</b><br><span style="color:var(--ink2);font-weight:600;font-size:.9rem">completed Carbon Quest · ${esc(date)}</span></div>`,
+    'Keep exploring 🗺️', '↺ Play again').then(keep => { if (!keep) { wipe(); location.reload(); } });
+  busy = false; hud();
 }
 
-/* ---------- start screen ---------- */
+/* =================================================================
+   START
+   ================================================================= */
+function beginPlaying(){
+  playing = true; busy = false;
+  me.x = state.pos[0]; me.y = state.pos[1];
+  if (!canGo(me.x, me.y)) { me.x = START[0]; me.y = START[1]; }
+  ['#me','#mini','#help'].forEach(s => $(s).classList.remove('hidden'));
+  if (matchMedia('(pointer:coarse)').matches) $('#help').textContent = '👆 Tap to move · tap a character to talk';
+  hud();
+}
+function howTo(){
+  return choose(head('🗺️ How to play', 'Explore the island', 'Your atom can float anywhere that isn\'t behind a bubble wall.') +
+    `<div class="keys">
+      <span>⌨️</span><span>Move with <b>W A S D</b> or the <b>arrow keys</b>, or click / tap where you want to go.</span>
+      <span>💬</span><span>Walk up to a character and press <b>E</b> (or tap them) to talk.</span>
+      <span>🎯</span><span>Follow the <b>yellow ! marker</b> to the next story stop.</span>
+      <span>🔒</span><span>Pass each <b>question gate</b> to pop the next bubble wall.</span>
+      <span>🫧</span><span>Collect <b>fact bubbles</b> hidden around the island.</span>
+    </div>`, "Let's go! ▸");
+}
 function startScreen(){
   const saved = load();
   let draft = {name: saved ? saved.name : 'Carbie', color: saved ? saved.color : COLORS[0], acc: saved ? saved.acc : 'none'};
   const c = card(`<div class="kick">Mr Trichardt's Science Lab</div>
     <h1 class="title">Carbon <span class="g">Quest</span></h1>
-    <p class="sub" style="margin:0">You are a carbon atom. Travel through air, plants, animals, soil, oceans and deep time, and pass the question gates to unlock each level.</p>
-    <div class="how"><div><b>🗺️</b>8 levels around the carbon cycle</div><div><b>🧪</b>A mini-task in every level</div><div><b>🔒</b>Answer questions to unlock the next level</div></div>
+    <p class="sub" style="margin:0">You are a carbon atom. Explore an island of forests, farms, beaches, reefs and towns, and follow the carbon cycle all the way around.</p>
+    <div class="how"><div><b>🗺️</b>Free-roam island with 8 areas</div><div><b>💬</b>Characters, mini-tasks and fact bubbles</div><div><b>🔒</b>Answer questions to unlock new areas</div></div>
     ${saved ? `<div class="fb info" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-       <span>Welcome back, <b>${esc(saved.name)}</b>! ${saved.done ? 'You finished the journey.' : `You were up to Level ${saved.level + 1}: ${esc(LEVELS[Math.min(saved.level, 7)].place)}.`}</span>
-       <button class="btn primary small" id="cont">${saved.done ? 'See results' : 'Continue ▸'}</button></div>` : ''}
+       <span>Welcome back, <b>${esc(saved.name)}</b>! ${saved.done ? 'You finished the journey.' : saved.level >= LEVELS.length ? 'You\'re on the final stretch.' : `You were up to Level ${saved.level + 1}: ${esc(LEVELS[saved.level].place)}.`}</span>
+       <button class="btn primary small" id="cont">Continue ▸</button></div>` : ''}
     <div class="maker">
       <div class="preview"><svg id="pv" viewBox="-52 -50 104 92"></svg></div>
       <div class="field">
@@ -1121,29 +1368,36 @@ function startScreen(){
   c.querySelector('.swatches').onclick = e => { const b = e.target.closest('.sw'); if (b) { draft.color = b.dataset.c; paint(); } };
   c.querySelector('.accs').onclick = e => { const b = e.target.closest('.ac'); if (b) { draft.acc = b.dataset.a; paint(); } };
   paint();
-  c.querySelector('#startBtn').onclick = () => {
+  c.querySelector('#startBtn').onclick = async () => {
     state = fresh();
     state.name = (c.querySelector('#nm').value.trim() || 'Carbie').slice(0, 16);
     state.color = draft.color; state.acc = draft.acc;
-    save(); closeCard(); drawAtom(); hud(); playLevel(0);
+    save(); closeCard(); drawMe();
+    me.x = START[0]; me.y = START[1];
+    await howTo(); beginPlaying();
+    toast('🎯 Follow the yellow marker to Sunny the Sun!', 3000);
   };
   const cont = c.querySelector('#cont');
-  if (cont) cont.onclick = () => {
-    state = Object.assign(fresh(), saved); closeCard(); drawAtom(); hud();
-    if (state.done) { placeAtom(SKY); finale(); } else playLevel(Math.min(state.level, LEVELS.length - 1));
-  };
+  if (cont) cont.onclick = () => { state = Object.assign(fresh(), saved); closeCard(); drawMe(); beginPlaying(); };
 }
 
-/* ---------- boot ---------- */
-drawAtom();
-Object.assign(VB, camRect(800, 500, 1600)); setVB();
+/* =================================================================
+   BOOT
+   ================================================================= */
+resize();
+terrain = buildTerrain();
+me.x = START[0]; me.y = START[1];
+drawMe();
+requestAnimationFrame(frame);
 const jump = parseInt(new URLSearchParams(location.search).get('level'), 10);
 if (jump >= 1 && jump <= LEVELS.length) {
-  // Teacher shortcut: ?level=5 jumps straight to that level
+  // Teacher shortcut: ?level=5 jumps straight to that level, standing next to the right character
   state = fresh(); state.level = jump - 1;
   for (let k = 0; k < jump - 1; k++) state.diary.push(LEVELS[k].diary);
   state.form = jump > 1 ? LEVELS[jump - 2].formAfter : 'CO₂';
-  drawAtom(); hud(); playLevel(jump - 1);
+  const n = LEVELS[jump - 1].npc;
+  state.pos = [[0,100],[0,-100],[100,0],[-100,0]].map(o => [n[0] + o[0], n[1] + o[1]]).find(p => canGo(p[0], p[1])) || START.slice();
+  drawMe(); beginPlaying();
 } else startScreen();
 })();
 </script>

@@ -61,8 +61,8 @@ window.RESOURCES = [
   {
     id: "carbon-quest",
     title: "Carbon Quest",
-    subtitle: "Adventure game",
-    description: "Become a carbon atom and travel the whole carbon cycle: air, plants, animals, soil, ocean, fossil fuels and back again. Answer the questions at each gate to unlock the next level.",
+    subtitle: "Open-world adventure game",
+    description: "Become a carbon atom and explore an island of forests, farms, reefs and towns. Follow the carbon cycle all the way around, chat to characters, collect fact bubbles, and answer questions to unlock each new area.",
     category: "biology",
     type: "interactive",
     path: "resources/carbon-quest/index.html",
