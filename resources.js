@@ -59,6 +59,20 @@ window.CATEGORIES = [
    --------------------------------------------------------------------- */
 window.RESOURCES = [
   {
+    id: "carbon-quest",
+    title: "Carbon Quest",
+    subtitle: "Adventure game",
+    description: "Become a carbon atom and travel the whole carbon cycle: air, plants, animals, soil, ocean, fossil fuels and back again. Answer the questions at each gate to unlock the next level.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/carbon-quest/index.html",
+    years: "Year 9–10",
+    tags: ["carbon cycle", "photosynthesis", "respiration", "decomposition", "combustion", "fossil fuels", "ocean", "climate change", "game"],
+    added: "2026-11-20",
+    thumb: "resources/carbon-quest/thumb.svg",
+    emoji: "🌍"
+  },
+  {
     id: "nephron",
     title: "The Nephron",
     subtitle: "Interactive 3D model",
