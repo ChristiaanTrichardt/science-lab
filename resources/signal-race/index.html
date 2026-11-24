@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signal Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+:root{--theme:#8b5cf6;--g1:#8b5cf6;--g2:#f43f5e;--b1:#c4b5fd;--b2:#fda4af;--b3:#93c5fd}
+.diagram svg{display:block;width:100%;height:auto;border-radius:22px}
+#aSvg{max-width:820px;margin:0 auto}
+.labels{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:center}
+.lab{padding:9px 14px;border-radius:999px;background:#fff;border:2px solid #ddd6fe;font-weight:800;font-size:.9rem;transition:all .2s;box-shadow:0 4px 10px -8px rgba(30,40,110,.5)}
+.lab:hover:not(:disabled){border-color:#8b5cf6}
+.lab.sel{background:#8b5cf6;color:#fff;border-color:#8b5cf6;transform:translateY(-2px)}
+.lab.used{background:#dcfce7;border-color:#22c55e;color:#14532d}
+.lab:disabled{cursor:default}
+.mk{cursor:pointer}
+.mk circle{fill:#fff;stroke:#8b5cf6;stroke-width:3;transition:all .2s}
+.mk:hover circle{fill:#ede9fe}
+.mk.ok circle{fill:#22c55e;stroke:#fff}
+.mk circle.hit,.mk:hover circle.hit,.mk.ok circle.hit{fill:transparent;stroke:none}
+@media (max-width:600px){.mk circle:not(.hit){r:20}.mk text{font-size:20px}}
+.mk text{pointer-events:none}
+.nerve{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lit{animation:lit 1.2s ease-out}
+@keyframes lit{0%{stroke:#facc15;filter:drop-shadow(0 0 6px #facc15)}100%{}}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.timer{font-family:var(--head);font-weight:600;font-size:2rem;text-align:center}
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media (max-width:700px){.cards3{grid-template-columns:1fr}}
+.cards3 .tile b{font-family:var(--head);font-weight:600;font-size:1.05rem;display:block}
+.cards3 .tile p{margin:4px 0 0;font-size:.9rem;color:var(--ink2);font-weight:600}
+.react{height:180px;border-radius:22px;display:grid;place-items:center;text-align:center;font-family:var(--head);font-weight:600;font-size:1.4rem;cursor:pointer;user-select:none;transition:background .15s;padding:10px}
+.react.wait{background:#fecaca;color:#7f1d1d}.react.go{background:#4ade80;color:#14532d}.react.idle{background:#e0e7ff;color:#312e81}
+.react small{display:block;font-family:var(--body);font-size:.85rem;font-weight:700;opacity:.8}
+.ex-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+/* hormones */
+.body-wrap{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start}
+@media (max-width:760px){.body-wrap{grid-template-columns:1fr}.body-wrap svg{max-width:240px;margin:0 auto}}
+.gland{cursor:pointer}
+.gland circle{stroke:#fff;stroke-width:3;transition:r .2s}
+.gland:hover circle.c{r:15}
+.gland.seen circle.c{stroke:#22c55e;stroke-width:4}
+.ginfo{display:grid;gap:8px}
+.ginfo .tile b{font-family:var(--head);font-weight:600;font-size:1.15rem}
+.ginfo dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:8px 0 0;font-size:.92rem}
+.ginfo dt{font-weight:800;color:var(--ink3)}.ginfo dd{margin:0;font-weight:700}
+.blood{position:relative;height:56px;border-radius:999px;background:linear-gradient(90deg,#fecaca,#fca5a5,#fecaca);overflow:hidden;margin:6px 0 14px;box-shadow:inset 0 2px 6px rgba(127,29,29,.25)}
+.blood span{position:absolute;top:50%;font-size:1.5rem;animation:flow 6s linear infinite;transform:translateY(-50%)}
+@keyframes flow{from{left:-10%}to{left:105%}}
+.cells{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:560px){.cells{grid-template-columns:repeat(2,1fr)}}
+.cell{border-radius:20px;background:rgba(255,255,255,.9);border:2px solid #fff;padding:12px 8px;text-align:center;font-weight:800;font-size:.86rem;box-shadow:0 4px 10px -8px rgba(30,40,110,.5);transition:all .2s}
+.cell:hover:not(:disabled){border-color:#c4b5fd}
+.cell svg{width:56px;height:56px;display:block;margin:0 auto 6px}
+.cell.yes{background:#dcfce7;border-color:#22c55e}
+.cell.no{background:#ffe4e6;border-color:#fb7185}
+.hormone-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#fff;font-weight:800;border:2px solid #fda4af}
+/* race */
+.track{display:grid;gap:12px}
+.lane{position:relative;height:64px;border-radius:999px;overflow:hidden;display:flex;align-items:center;padding-left:120px}
+.lane.n{background:linear-gradient(90deg,#fef9c3,#fde68a)}
+.lane.h{background:linear-gradient(90deg,#ffe4e6,#fecaca)}
+.lane .nm{position:absolute;left:14px;font-weight:800;font-size:.88rem}
+.lane .runner{position:absolute;left:110px;font-size:2rem;transition:left linear}
+.lane .finish{position:absolute;right:14px;font-size:1.6rem}
+.lane .t{position:absolute;right:56px;font-family:var(--head);font-weight:600}
+.predict{display:grid;gap:10px}
+.predict .q{font-weight:800}
+.predict .row{justify-content:flex-start;margin-top:6px}
+.chart svg{display:block;width:100%;max-width:760px;margin:0 auto;height:auto}
+.sort{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+@media (max-width:700px){.sort{grid-template-columns:1fr}}
+.bin{border-radius:22px;padding:12px;min-height:120px}
+.bin.n{background:rgba(254,240,138,.55)}.bin.h{background:rgba(254,205,211,.6)}
+.bin h4{margin:0 0 8px;font-family:var(--head);font-weight:600;font-size:1.1rem}
+.bin .placed{display:block;padding:7px 12px;margin:5px 0;border-radius:14px;background:#fff;font-weight:700;font-size:.88rem;animation:lkPop .35s}
+.deck .sc{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;padding:12px 14px;border-radius:18px;background:#fff;margin-bottom:8px;font-weight:800;box-shadow:0 4px 10px -8px rgba(30,40,110,.5)}
+.deck .sc .bt{display:flex;gap:6px}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const NS = 'http://www.w3.org/2000/svg';
+const EMO = 'Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif';
+
+/* send a glowing dot along an SVG path */
+function pulse(svg, path, color, dur, reduced){
+  return new Promise(res => {
+    if (reduced) dur = 1;
+    const L = path.getTotalLength(), dot = document.createElementNS(NS, 'circle');
+    dot.setAttribute('r', 9); dot.setAttribute('fill', color); dot.setAttribute('stroke', '#fff'); dot.setAttribute('stroke-width', 3);
+    dot.style.filter = `drop-shadow(0 0 8px ${color})`;
+    svg.appendChild(dot); path.classList.remove('lit'); void path.getBBox(); path.classList.add('lit');
+    const t0 = performance.now();
+    (function f(now){ const k = Math.min(1, (now - t0) / dur), p = path.getPointAtLength(L * k);
+      dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+      k < 1 ? requestAnimationFrame(f) : (dot.remove(), res()); })(t0);
+  });
+}
+/* tap-a-label-then-tap-a-spot labelling */
+function labelling(root, items, onDone, kit){
+  let sel = null; const done = new Set();
+  root.querySelectorAll('.lab').forEach(b => b.onclick = () => { if (b.disabled) return; root.querySelectorAll('.lab').forEach(x => x.classList.remove('sel')); sel = b.dataset.k; b.classList.add('sel'); });
+  root.querySelectorAll('.mk').forEach(m => {
+    const go = () => {
+      if (done.has(m.dataset.k)) return;
+      if (!sel) { kit.toast('👆 Tap a label first, then tap where it goes'); return; }
+      if (sel === m.dataset.k) {
+        done.add(sel); m.classList.add('ok'); m.querySelector('text').textContent = '✓';
+        const it = items.find(i => i.k === sel);
+        m.insertAdjacentHTML('beforeend', `<text x="${it.lx}" y="${it.ly}" text-anchor="middle" font-size="15" font-weight="800" fill="#4c1d95" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(it.name)}</text>`);
+        const b = root.querySelector(`.lab[data-k="${sel}"]`); b.classList.remove('sel'); b.classList.add('used'); b.disabled = true; sel = null;
+        kit.toast('✓ ' + it.name + ': ' + it.tip, 3200);
+        if (done.size === items.length) onDone();
+      } else { kit.shake(m); kit.toast('✗ Not there. Try another spot!'); }
+    };
+    m.addEventListener('click', go); m.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+}
+
+/* ================================================================
+   MISSION 1: THE NEURON
+   ================================================================ */
+const NEURON_PARTS = [
+  {k:'den', name:'Dendrites', x:48, y:72, lx:48, ly:40, tip:'branches that receive messages from other neurons'},
+  {k:'body', name:'Cell body', x:130, y:130, lx:130, ly:196, tip:'contains the nucleus and controls the cell'},
+  {k:'axon', name:'Axon', x:200, y:130, lx:206, ly:98, tip:'the long fibre that carries the impulse away from the cell body'},
+  {k:'myel', name:'Myelin sheath', x:350, y:130, lx:350, ly:178, tip:'a fatty layer that insulates the axon and speeds up the impulse'},
+  {k:'term', name:'Axon terminals', x:712, y:96, lx:690, ly:60, tip:'pass the message on to the next cell'}
+];
+function neuronSVG(){
+  const myelin = [260, 330, 400, 470, 540, 610].map(x => `<rect x="${x - 28}" y="117" width="56" height="26" rx="13" fill="#fbcfe8" stroke="#f472b6" stroke-width="2"/>`).join('');
+  return `<svg viewBox="0 0 760 230" id="nSvg" role="img" aria-label="Diagram of a neuron">
+    <rect width="760" height="230" fill="#f5f3ff"/>
+    <g stroke="#a78bfa" stroke-width="7" class="nerve">
+      <path d="M130 130 L70 80 L40 60 M70 80 L50 100 M130 130 L80 160 L50 180 M80 160 L60 140 M130 130 L110 70 L100 40 M130 130 L120 190 L110 210"/>
+      <path d="M640 130 L700 100 L725 90 M700 100 L720 115 M640 130 L700 160 L725 172 M700 160 L725 150"/>
+    </g>
+    <path id="axonPath" class="nerve" d="M40 60 L70 80 L130 130 L640 130 L700 100 L725 90" stroke="#c4b5fd" stroke-width="10" opacity=".0001"/>
+    <line x1="150" y1="130" x2="640" y2="130" stroke="#a78bfa" stroke-width="8" stroke-linecap="round"/>
+    ${myelin}
+    <circle cx="130" cy="130" r="34" fill="#c4b5fd" stroke="#8b5cf6" stroke-width="3"/><circle cx="126" cy="126" r="11" fill="#6d28d9"/>
+    ${[[725,90],[725,172],[720,115],[725,150]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#8b5cf6"/>`).join('')}
+    ${NEURON_PARTS.map(p => `<g class="mk" data-k="${p.k}" tabindex="0" role="button" aria-label="Unlabelled part"><circle class="hit" cx="${p.x}" cy="${p.y}" r="30"/><circle cx="${p.x}" cy="${p.y}" r="14"/><text x="${p.x}" y="${p.y + 5}" text-anchor="middle" font-size="15" font-weight="800" fill="#6d28d9">?</text></g>`).join('')}
+  </svg>`;
+}
+function synapseSVG(){
+  return `<svg viewBox="0 0 760 200" id="sSvg" role="img" aria-label="Close-up of a synapse between two neurons">
+    <rect width="760" height="200" fill="#fdf2f8"/>
+    <path id="sIn" class="nerve" d="M20 100 L300 100" stroke="#a78bfa" stroke-width="14"/>
+    <path d="M300 50 Q360 50 360 100 Q360 150 300 150 Z" fill="#c4b5fd" stroke="#8b5cf6" stroke-width="3"/>
+    <path d="M440 40 Q400 40 400 100 Q400 160 440 160 L470 150 L470 50 Z" fill="#ddd6fe" stroke="#8b5cf6" stroke-width="3"/>
+    <path id="sOut" class="nerve" d="M470 100 L740 100" stroke="#ddd6fe" stroke-width="14"/>
+    <g id="vesicles">${[[318,80],[330,105],[316,125],[338,88],[340,122]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#f472b6"/>`).join('')}</g>
+    <g id="nt"></g>
+    <text x="380" y="190" text-anchor="middle" font-size="14" font-weight="800" fill="#9d174d">synapse (gap)</text>
+    <text x="160" y="80" text-anchor="middle" font-size="13" font-weight="800" fill="#5b21b6">neuron 1</text>
+    <text x="600" y="80" text-anchor="middle" font-size="13" font-weight="800" fill="#5b21b6">neuron 2</text>
+  </svg>`;
+}
+async function mission1(body, kit){
+  kit.say(`Your nervous system sends messages as tiny <b>electrical impulses</b> along nerve cells called <b>neurons</b>. Let's take one apart!<br><br>Tap a <b>label</b>, then tap the <b>?</b> where it belongs on the neuron.`);
+  body.innerHTML = `<div class="lk-panel glass diagram">${neuronSVG()}
+      <div class="labels">${shuffle(NEURON_PARTS).map(p => `<button class="lab" data-k="${p.k}">${p.name}</button>`).join('')}</div>
+      <div class="row hidden" id="fireRow"><button class="btn primary" id="fire">⚡ Send an impulse</button></div></div>
+    <div class="lk-panel glass diagram hidden" id="synPanel" style="margin-top:14px">
+      <b style="font-family:var(--head);font-size:1.15rem">🔬 Zoom in: the synapse</b>
+      <p style="margin:4px 0 10px;color:var(--ink2);font-weight:600">Neurons don't actually touch! There's a tiny gap between them called a <b>synapse</b>.</p>
+      ${synapseSVG()}<div class="row"><button class="btn primary" id="cross">🧪 Send the message across</button></div></div>
+    <div class="cards3 hidden" id="types">
+      <div class="tile"><b>🖐️ Sensory neurons</b><p>Carry impulses from <b>receptors</b> (in skin, eyes, ears…) to the spinal cord and brain.</p></div>
+      <div class="tile"><b>🔁 Relay neurons</b><p>Found in the brain and spinal cord. They <b>connect</b> sensory and motor neurons.</p></div>
+      <div class="tile"><b>💪 Motor neurons</b><p>Carry impulses from the spinal cord and brain to <b>effectors</b> (muscles and glands).</p></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    labelling(body, NEURON_PARTS, () => {
+      kit.say(`All labelled! Now watch an impulse travel: in at the <b>dendrites</b>, through the <b>cell body</b>, along the <b>axon</b> and out at the <b>axon terminals</b>.`);
+      $('#fireRow').classList.remove('hidden');
+    }, kit);
+    $('#fire').onclick = async () => {
+      $('#fire').disabled = true;
+      await pulse($('#nSvg'), $('#axonPath'), '#facc15', 1600, kit.REDUCED);
+      $('#fire').disabled = false; $('#fire').textContent = '⚡ Send another';
+      if ($('#synPanel').classList.contains('hidden')) {
+        $('#synPanel').classList.remove('hidden'); $('#synPanel').scrollIntoView({behavior:'smooth', block:'center'});
+        kit.say(`When the impulse reaches the end of the axon, it has to cross a <b>gap</b> to reach the next neuron. Electricity can't jump it, so the neuron releases <b>chemicals</b> instead. Try it!`);
+      }
+    };
+    $('#cross').onclick = async () => {
+      $('#cross').disabled = true; const sv = $('#sSvg');
+      await pulse(sv, $('#sIn'), '#facc15', 900, kit.REDUCED);
+      const g = $('#nt'); g.innerHTML = '';
+      const dots = Array.from({length:10}, (_, i) => { const c = document.createElementNS(NS, 'circle'); c.setAttribute('r', 4); c.setAttribute('fill', '#ec4899'); c.setAttribute('cx', 355); c.setAttribute('cy', 70 + i * 6); g.appendChild(c); return c; });
+      const t0 = performance.now();
+      await new Promise(r => (function f(now){ const k = Math.min(1, (now - t0) / (kit.REDUCED ? 1 : 1100)); dots.forEach((d, i) => d.setAttribute('cx', 355 + k * (45 + (i % 3) * 3))); k < 1 ? requestAnimationFrame(f) : r(); })(t0));
+      await pulse(sv, $('#sOut'), '#facc15', 900, kit.REDUCED);
+      g.innerHTML = ''; $('#cross').disabled = false; $('#cross').textContent = '🧪 Send another';
+      if ($('#types').classList.contains('hidden')) {
+        $('#types').classList.remove('hidden');
+        kit.say(`The impulse is <b>electrical</b> along a neuron, then <b>chemical</b> across the synapse (the chemicals are called <b>neurotransmitters</b>). There are 3 types of neuron. You'll use all 3 in the next mission!`);
+        res();
+      }
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 2: REFLEX ARC
+   ================================================================ */
+const ARC = [
+  {k:'rec', name:'Receptor', x:110, y:318, lx:110, ly:296, tip:'heat receptors in your skin detect the hot plate (the stimulus)'},
+  {k:'sen', name:'Sensory neuron', x:400, y:322, lx:400, ly:352, tip:'carries the impulse to the spinal cord'},
+  {k:'rel', name:'Relay neuron', x:630, y:272, lx:690, ly:240, tip:'passes the impulse across the spinal cord'},
+  {k:'mot', name:'Motor neuron', x:520, y:250, lx:540, ly:228, tip:'carries the impulse to the muscle'},
+  {k:'eff', name:'Effector (muscle)', x:420, y:200, lx:400, ly:172, tip:'the biceps contracts and pulls your hand away'}
+];
+function arcSVG(){
+  return `<svg viewBox="0 0 760 400" id="aSvg" role="img" aria-label="Reflex arc: hand on a hot plate connected to the spinal cord">
+    <rect width="760" height="400" fill="#faf5ff"/>
+    <rect x="30" y="352" width="190" height="22" rx="8" fill="#ef4444"/><rect x="30" y="374" width="190" height="10" rx="5" fill="#7f1d1d"/>
+    <text x="125" y="395" text-anchor="middle" font-size="12" font-weight="800" fill="#7f1d1d">HOT PLATE</text>
+    <g id="heat">${[60,110,160,200].map((x, i) => `<path d="M${x} 348 q6 -10 0 -20 q-6 -10 0 -20" stroke="#f97316" stroke-width="3" fill="none" opacity=".7"><animate attributeName="opacity" values=".2;.8;.2" dur="${1.2 + i * .2}s" repeatCount="indefinite"/></path>`).join('')}</g>
+    <g id="arm" style="transform-origin:540px 150px;transition:transform .25s cubic-bezier(.3,1.6,.5,1)">
+      <path d="M540 150 L330 260 L130 320" stroke="#fcd9b6" stroke-width="44" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <ellipse cx="420" cy="200" rx="58" ry="24" transform="rotate(-28 420 200)" fill="#fb7185" opacity=".85"/>
+      <text x="100" y="342" font-size="56" text-anchor="middle" font-family="${EMO}">🫳</text>
+      <path id="pSen" class="nerve" d="M110 318 C 220 340, 400 335, 520 300 S 610 262, 605 250" stroke="#38bdf8" stroke-width="6"/>
+      <path id="pMot" class="nerve" d="M625 292 C 590 300, 560 270, 520 250 S 460 215, 425 205" stroke="#22c55e" stroke-width="6"/>
+    </g>
+    <circle cx="630" cy="270" r="62" fill="#e9d5ff" stroke="#a855f7" stroke-width="3"/>
+    <path d="M630 228 C 655 232 665 255 650 270 C 668 285 655 310 630 312 C 605 310 592 285 610 270 C 595 255 605 232 630 228Z" fill="#c084fc" opacity=".7"/>
+    <text x="630" y="352" text-anchor="middle" font-size="12" font-weight="800" fill="#6b21a8">SPINAL CORD</text>
+    <path id="pRel" class="nerve" d="M605 250 Q 640 262 625 292" stroke="#a855f7" stroke-width="6"/>
+    <path id="pBrain" class="nerve" d="M640 210 L 650 150 L 650 105" stroke="#f472b6" stroke-width="5" stroke-dasharray="6 6"/>
+    <text x="650" y="90" text-anchor="middle" font-size="62" font-family="${EMO}">🧠</text>
+    <g id="ouch" opacity="0"><rect x="676" y="20" width="76" height="34" rx="17" fill="#ef4444"/><text x="714" y="43" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">OUCH!</text></g>
+    ${ARC.map((p, i) => `<g class="mk" data-k="${p.k}" tabindex="0" role="button" aria-label="Unlabelled part"><circle class="hit" cx="${p.x}" cy="${p.y}" r="30"/><circle cx="${p.x}" cy="${p.y}" r="14"/><text x="${p.x}" y="${p.y + 5}" text-anchor="middle" font-size="15" font-weight="800" fill="#6d28d9">?</text></g>`).join('')}
+  </svg>`;
+}
+async function mission2(body, kit){
+  kit.say(`A <b>reflex</b> is a fast, automatic response that protects you. You don't think about it! The pathway it takes is called a <b>reflex arc</b>.<br><br>Label the reflex arc: tap a label, then tap the <b>?</b> where it goes.`);
+  body.innerHTML = `<div class="lk-panel glass diagram">${arcSVG()}
+      <div class="labels">${shuffle(ARC).map(p => `<button class="lab" data-k="${p.k}">${p.name}</button>`).join('')}</div>
+      <div class="row hidden" id="touchRow"><button class="btn primary" id="touch">🔥 Touch the hot plate!</button></div>
+      <div class="timer hidden" id="tmr">0.00 s</div></div>
+    <div class="grid2 hidden" id="after" style="margin-top:14px">
+      <div class="lk-panel glass"><b style="font-family:var(--head);font-size:1.15rem">⏱️ Test your reaction time</b>
+        <p style="margin:4px 0 10px;color:var(--ink2);font-weight:600">A <b>voluntary</b> response has to go through your brain. Click the box as soon as it turns green.</p>
+        <div class="react idle" id="react" tabindex="0" role="button">Click to start<small>Wait for green, then click!</small></div>
+        <p style="font-weight:800;text-align:center;margin:8px 0 0" id="rres"></p></div>
+      <div class="lk-panel glass"><b style="font-family:var(--head);font-size:1.15rem">🦵 More reflexes</b>
+        <div class="ex-list"><span class="chip">👁️ Blinking when something flies at your eye</span><span class="chip">🦵 Knee-jerk when the doctor taps your knee</span><span class="chip">🔆 Pupils shrinking in bright light</span><span class="chip">🤧 Sneezing</span><span class="chip">👶 Babies gripping a finger</span></div>
+        <p style="font-weight:700;color:var(--ink2);margin:12px 0 0">Reflexes skip the "thinking" part of the brain, so they're much faster than responses you choose to make.</p></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    labelling(body, ARC, () => { kit.say(`Labelled! The order is <b>receptor → sensory neuron → relay neuron → motor neuron → effector</b>. Now put your hand on the hot plate… if you dare!`); $('#touchRow').classList.remove('hidden'); }, kit);
+    $('#touch').onclick = async () => {
+      const b = $('#touch'); b.disabled = true; const sv = $('#aSvg'), tm = $('#tmr'); tm.classList.remove('hidden');
+      $('#arm').style.transform = 'rotate(0deg)'; $('#ouch').setAttribute('opacity', 0);
+      const t0 = performance.now(); let stop = false, real = 0;
+      (function tick(){ if (stop) return; tm.textContent = (real += .004).toFixed(2) + ' s'; setTimeout(tick, 60); })();
+      await pulse(sv, $('#pSen'), '#38bdf8', 900, kit.REDUCED);
+      await pulse(sv, $('#pRel'), '#a855f7', 350, kit.REDUCED);
+      await pulse(sv, $('#pMot'), '#22c55e', 800, kit.REDUCED);
+      $('#arm').style.transform = 'rotate(-10deg)';
+      stop = true; tm.textContent = '0.05 s · hand pulled away!';
+      await wait(kit.REDUCED ? 0 : 500);
+      await pulse(sv, $('#pBrain'), '#f472b6', 1300, kit.REDUCED);
+      $('#ouch').setAttribute('opacity', 1); tm.textContent = '0.05 s hand moves · then your brain feels the pain';
+      kit.say(`Did you notice? Your hand moved <b>before</b> your brain felt the pain! The impulse took a shortcut through the <b>spinal cord</b> (via the relay neuron), so the muscle reacted without waiting for the brain to decide.`);
+      b.disabled = false; b.textContent = '🔥 Try it again';
+      $('#after').classList.remove('hidden');
+    };
+    // reaction time game
+    const r = $('#react'); let st = 'idle', t, start = 0, tries = [];
+    const reset = () => { st = 'idle'; r.className = 'react idle'; r.innerHTML = 'Click to try again<small>Wait for green, then click!</small>'; };
+    const hit = () => {
+      if (st === 'idle') { st = 'wait'; r.className = 'react wait'; r.innerHTML = 'Wait for it…<small>Don\'t click yet!</small>'; t = setTimeout(() => { st = 'go'; r.className = 'react go'; r.innerHTML = 'CLICK NOW!'; start = performance.now(); }, 1200 + Math.random() * 2200); }
+      else if (st === 'wait') { clearTimeout(t); st = 'idle'; r.className = 'react idle'; r.innerHTML = 'Too early! 😅<small>Click to try again</small>'; }
+      else if (st === 'go') {
+        const ms = Math.round(performance.now() - start); tries.push(ms);
+        r.className = 'react idle'; r.innerHTML = `${(ms / 1000).toFixed(2)} s<small>Click to try again</small>`; st = 'idle';
+        $('#rres').textContent = `Your best: ${(Math.min(...tries) / 1000).toFixed(2)} s · a reflex: about 0.05 s. Your brain made you about ${Math.max(2, Math.round(Math.min(...tries) / 50))}× slower!`;
+        if (!res.done) { res.done = true; kit.say(`Your reaction needed your <b>brain</b> to see the green, decide, and send a message to your finger muscles. That's a <b>voluntary</b> response: much slower than a reflex!`); res(); }
+      }
+    };
+    r.addEventListener('click', hit); r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hit(); } });
+  });
+}
+
+/* ================================================================
+   MISSION 3: HORMONES
+   ================================================================ */
+const GLANDS = [
+  {k:'pit', name:'Pituitary gland', x:130, y:52, c:'#a855f7', h:'Growth hormone (and hormones that control other glands)', t:'Bones and muscles', e:'Makes you grow. It\'s called the "master gland" because it controls many other glands.'},
+  {k:'thy', name:'Thyroid gland', x:130, y:112, c:'#0ea5e9', h:'Thyroxine', t:'Almost all body cells', e:'Controls your metabolism: how fast your cells use energy.'},
+  {k:'adr', name:'Adrenal glands', x:108, y:222, c:'#ef4444', h:'Adrenaline', t:'Heart, lungs, muscles, liver', e:'"Fight or flight": your heart beats faster, you breathe faster and more glucose goes to your muscles.'},
+  {k:'pan', name:'Pancreas', x:148, y:248, c:'#f59e0b', h:'Insulin', t:'Liver and muscle cells', e:'Lowers blood glucose after you eat by helping cells take in and store glucose.'},
+  {k:'sex', name:'Ovaries / testes', x:130, y:318, c:'#ec4899', h:'Oestrogen / testosterone', t:'Many organs', e:'Cause the body changes of puberty.'}
+];
+function bodySVG(){
+  return `<svg viewBox="0 0 260 460" role="img" aria-label="Body outline showing hormone glands">
+    <g fill="#fde7d4" stroke="#f4c7a1" stroke-width="3">
+      <circle cx="130" cy="55" r="40"/><rect x="115" y="92" width="30" height="26" rx="8"/>
+      <path d="M70 120 Q130 108 190 120 L200 300 Q130 320 60 300 Z"/>
+      <path d="M70 125 L30 260 L48 266 L86 160Z"/><path d="M190 125 L230 260 L212 266 L174 160Z"/>
+      <path d="M72 300 L80 450 L118 450 L126 320 L134 320 L142 450 L180 450 L188 300Z"/>
+    </g>
+    <ellipse cx="108" cy="240" rx="10" ry="16" fill="#fca5a5" opacity=".7"/><ellipse cx="152" cy="240" rx="10" ry="16" fill="#fca5a5" opacity=".7"/>
+    <text x="130" y="455" text-anchor="middle" font-size="11" font-weight="800" fill="#7d86a8">Tap each glowing gland</text>
+    ${GLANDS.map(g => `<g class="gland" data-k="${g.k}" tabindex="0" role="button" aria-label="${g.name}"><circle cx="${g.x}" cy="${g.y}" r="20" fill="${g.c}" opacity=".25"><animate attributeName="r" values="14;22;14" dur="2s" repeatCount="indefinite"/></circle><circle class="c" cx="${g.x}" cy="${g.y}" r="11" fill="${g.c}"/></g>`).join('')}
+  </svg>`;
+}
+const SHAPES = {
+  tri:'<path d="M28 8 L48 44 L8 44Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>',
+  cir:'<circle cx="28" cy="28" r="19" fill="none" stroke="currentColor" stroke-width="5"/>',
+  sq:'<rect x="10" y="10" width="36" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="5"/>',
+  dia:'<path d="M28 6 L50 28 L28 50 L6 28Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>'
+};
+const ROUNDS = [
+  {hormone:'Insulin', shape:'tri', sym:'▲', from:'pancreas', cells:[['Liver cell','tri'],['Muscle cell','tri'],['Bone cell','sq'],['Skin cell','cir'],['Fat cell','tri'],['Eye cell','dia'],['Nerve cell','dia'],['Hair cell','sq']],
+   msg:'Insulin only affects cells with insulin receptors, like liver, muscle and fat cells. They take in glucose, so blood glucose goes down.'},
+  {hormone:'Adrenaline', shape:'cir', sym:'●', from:'adrenal glands', cells:[['Heart cell','cir'],['Bone cell','sq'],['Airway muscle','cir'],['Liver cell','cir'],['Thyroid cell','dia'],['Skin cell','tri'],['Hair cell','sq'],['Nail cell','tri']],
+   msg:'Adrenaline speeds up the heart, opens the airways, and makes the liver release glucose, all ready for "fight or flight"!'}
+];
+async function mission3(body, kit){
+  kit.say(`The <b>endocrine system</b> sends messages a different way: with <b>hormones</b>. These are chemical messengers made by <b>glands</b> and carried around the body in the <b>blood</b>.<br><br>Tap each gland to find out what its hormone does.`);
+  body.innerHTML = `<div class="body-wrap"><div class="lk-panel glass">${bodySVG()}</div>
+      <div class="ginfo"><div class="howto">🔎 <span>Glands explored: <b id="gc">0</b> / 5</span></div><div id="gbox"><div class="tile" style="color:var(--ink3);font-weight:700">Tap a glowing gland on the body.</div></div></div></div>
+    <div class="lk-panel glass hidden" id="lock" style="margin-top:14px"></div>`;
+  const $ = s => body.querySelector(s), seen = new Set();
+  return new Promise(res => {
+    body.querySelectorAll('.gland').forEach(el => {
+      const go = () => {
+        const g = GLANDS.find(x => x.k === el.dataset.k); seen.add(g.k); el.classList.add('seen');
+        $('#gbox').innerHTML = `<div class="tile" style="border-left:6px solid ${g.c}"><b>${g.name}</b><dl><dt>Hormone</dt><dd>${esc(g.h)}</dd><dt>Target</dt><dd>${esc(g.t)}</dd><dt>Effect</dt><dd>${esc(g.e)}</dd></dl></div>`;
+        $('#gc').textContent = seen.size;
+        if (seen.size === GLANDS.length && $('#lock').classList.contains('hidden')) { $('#lock').classList.remove('hidden'); startRound(0); $('#lock').scrollIntoView({behavior:'smooth', block:'start'}); }
+      };
+      el.addEventListener('click', go); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+    function startRound(n){
+      const R = ROUNDS[n], cells = shuffle(R.cells), need = cells.filter(c => c[1] === R.shape).length;
+      kit.say(`Hormones travel <b>everywhere</b> in the blood, but they only affect <b>target cells</b> that have the right <b>receptor</b>, like a key that only fits certain locks.<br><br><b>${R.hormone}</b> ${R.sym} is in the blood. Tap every cell it will affect.`);
+      $('#lock').innerHTML = `<b style="font-family:var(--head);font-size:1.15rem">🔑 Lock and key · round ${n + 1} of ${ROUNDS.length}</b>
+        <div class="blood">${Array.from({length:5}, (_, i) => `<span style="animation-delay:${-i * 1.2}s;color:#be123c">${R.sym}</span>`).join('')}</div>
+        <p style="margin:0 0 10px;font-weight:700"><span class="hormone-pill">${R.sym} ${R.hormone}</span> from the ${R.from}. Find the <b>${need}</b> target cells with a matching receptor.</p>
+        <div class="cells">${cells.map((c, i) => `<button class="cell" data-i="${i}"><svg viewBox="0 0 56 56" style="color:#7c3aed">${SHAPES[c[1]]}</svg>${c[0]}</button>`).join('')}</div>
+        <div class="fb hidden" id="lfb"></div>`;
+      let got = 0;
+      $('#lock').querySelectorAll('.cell').forEach(b => b.onclick = () => {
+        const c = cells[+b.dataset.i], fb = $('#lfb'); fb.classList.remove('hidden');
+        if (c[1] === R.shape) { b.disabled = true; b.classList.add('yes'); got++; fb.className = 'fb good'; fb.textContent = `✓ The ${c[0].toLowerCase()} has a matching receptor, so it responds! ${got < need ? (need - got) + ' more to find.' : ''}`;
+          if (got === need) { fb.textContent = '✓ ' + R.msg; setTimeout(() => n + 1 < ROUNDS.length ? startRound(n + 1) : finish(), kit.REDUCED ? 600 : 2600); } }
+        else { b.disabled = true; b.classList.add('no'); kit.shake(b); fb.className = 'fb bad'; fb.textContent = `✗ No matching receptor. ${R.hormone} passes the ${c[0].toLowerCase()} by without any effect.`; }
+      });
+    }
+    function finish(){
+      $('#lock').insertAdjacentHTML('beforeend', `<div class="fb info">💡 That's why each hormone only causes certain responses, even though it travels all around the body.</div>`);
+      kit.say(`You've got it: <b>glands</b> release hormones into the <b>blood</b>; they travel everywhere but only affect <b>target organs</b> with matching receptors.`);
+      res();
+    }
+  });
+}
+
+/* ================================================================
+   MISSION 4: THE GREAT RACE
+   ================================================================ */
+const SORTS = [
+  ['Uses electrical impulses','n'],['Travels along neurons','n'],['Very fast (fractions of a second)','n'],['Effects are short-lived','n'],['Example: pulling your hand off a hot plate','n'],
+  ['Uses chemical messengers','h'],['Travels in the blood','h'],['Slower (seconds to hours)','h'],['Effects can last a long time','h'],['Example: growing taller during puberty','h']
+];
+function chartSVG(){
+  return `<svg viewBox="0 0 640 260" role="img" aria-label="Graph of response over time for nervous and hormonal responses">
+    <rect width="640" height="260" fill="#fff" rx="16"/>
+    <g stroke="#e5e7eb">${[60,100,140,180].map(y => `<line x1="60" x2="620" y1="${y}" y2="${y}"/>`).join('')}</g>
+    <line x1="60" y1="210" x2="620" y2="210" stroke="#1c2242" stroke-width="2"/><line x1="60" y1="30" x2="60" y2="210" stroke="#1c2242" stroke-width="2"/>
+    <text x="340" y="245" text-anchor="middle" font-size="13" font-weight="800" fill="#48507a">Time after the dog barks →</text>
+    <text x="22" y="120" text-anchor="middle" font-size="13" font-weight="800" fill="#48507a" transform="rotate(-90 22 120)">Size of response</text>
+    ${[['0 s',60],['1 s',120],['10 s',220],['1 min',360],['5 min',600]].map(t => `<text x="${t[1]}" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#7d86a8">${t[0]}</text>`).join('')}
+    <path id="cN" d="M60 210 L66 50 L100 60 L130 205 L620 208" fill="none" stroke="#eab308" stroke-width="5" stroke-linejoin="round" stroke-dasharray="900" stroke-dashoffset="900"/>
+    <path id="cH" d="M60 210 L150 205 C 220 120, 260 80, 330 78 C 430 76, 500 110, 620 160" fill="none" stroke="#f43f5e" stroke-width="5" stroke-dasharray="900" stroke-dashoffset="900"/>
+    <g font-size="13" font-weight="800"><rect x="420" y="18" width="14" height="14" rx="4" fill="#eab308"/><text x="440" y="30" fill="#854d0e">⚡ Nervous (jump and turn)</text>
+    <rect x="420" y="38" width="14" height="14" rx="4" fill="#f43f5e"/><text x="440" y="50" fill="#9f1239">💧 Hormonal (racing heart)</text></g>
+  </svg>`;
+}
+async function mission4(body, kit){
+  kit.say(`<b>Scenario:</b> you're walking home and a dog suddenly <b>barks</b> right behind you! 🐕💥 Your body sends <b>two</b> messages at the same time: a nerve impulse and the hormone adrenaline.<br><br>Make your predictions first!`);
+  body.innerHTML = `<div class="lk-panel glass predict" id="pred">
+      <div><div class="q">1. Which message reaches its target first?</div><div class="row" data-q="1"><button class="btn small" data-a="n">⚡ Nerve impulse</button><button class="btn small" data-a="h">💧 Adrenaline</button></div></div>
+      <div><div class="q">2. Which effect will last longer?</div><div class="row" data-q="2"><button class="btn small" data-a="n">⚡ Nerve impulse</button><button class="btn small" data-a="h">💧 Adrenaline</button></div></div>
+      <div class="row" style="justify-content:center"><button class="btn primary" id="go" disabled>🏁 Start the race!</button></div></div>
+    <div class="lk-panel glass hidden" id="race" style="margin-top:14px">
+      <div class="track"><div class="lane n"><span class="nm">⚡ Nerve</span><span class="runner" id="rn">⚡</span><span class="t" id="tn"></span><span class="finish">💪</span></div>
+        <div class="lane h"><span class="nm">💧 Adrenaline</span><span class="runner" id="rh">💧</span><span class="t" id="th"></span><span class="finish">❤️</span></div></div>
+      <div class="chart" style="margin-top:14px">${chartSVG()}</div><div id="predRes"></div></div>
+    <div class="lk-panel glass hidden" id="sortP" style="margin-top:14px">
+      <b style="font-family:var(--head);font-size:1.15rem">🗂️ Sort it out: nervous or hormonal?</b>
+      <div class="deck" id="deck" style="margin-top:10px"></div>
+      <div class="sort"><div class="bin n"><h4>⚡ Nervous system</h4><div id="binn"></div></div><div class="bin h"><h4>💧 Hormones</h4><div id="binh"></div></div></div>
+      <div class="fb hidden" id="sfb"></div></div>`;
+  const $ = s => body.querySelector(s), pred = {};
+  body.querySelectorAll('#pred [data-q]').forEach(r => r.querySelectorAll('button').forEach(b => b.onclick = () => {
+    r.querySelectorAll('button').forEach(x => x.classList.remove('primary')); b.classList.add('primary'); pred[r.dataset.q] = b.dataset.a;
+    $('#go').disabled = !(pred[1] && pred[2]);
+  }));
+  return new Promise(res => {
+    $('#go').onclick = async () => {
+      $('#go').disabled = true; $('#race').classList.remove('hidden'); $('#race').scrollIntoView({behavior:'smooth', block:'center'});
+      const lane = $('#rn').parentElement, end = Math.max(40, lane.clientWidth - 110 - 190);
+      await wait(kit.REDUCED ? 0 : 500);
+      $('#rn').style.transition = `left ${kit.REDUCED ? 0 : .25}s linear`; $('#rh').style.transition = `left ${kit.REDUCED ? 0 : 3.6}s linear`;
+      $('#rn').style.left = (110 + end) + 'px'; $('#rh').style.left = (110 + end) + 'px';
+      await wait(kit.REDUCED ? 0 : 300); $('#tn').textContent = '0.01 s!';
+      ['#cN'].forEach(id => { const p = $(id); p.style.transition = `stroke-dashoffset ${kit.REDUCED ? 0 : 1}s`; p.style.strokeDashoffset = 0; });
+      await wait(kit.REDUCED ? 0 : 3400); $('#th').textContent = 'a few seconds';
+      const h = $('#cH'); h.style.transition = `stroke-dashoffset ${kit.REDUCED ? 0 : 2.5}s`; h.style.strokeDashoffset = 0;
+      await wait(kit.REDUCED ? 0 : 2600);
+      const ok1 = pred[1] === 'n', ok2 = pred[2] === 'h';
+      $('#predRes').innerHTML = `<div class="fb ${ok1 && ok2 ? 'good' : 'info'}">Prediction 1: ${ok1 ? '✓' : '✗'} The <b>nerve impulse</b> wins: electrical impulses travel along neurons in a fraction of a second, so you jump and spin round instantly.<br>
+        Prediction 2: ${ok2 ? '✓' : '✗'} <b>Adrenaline</b> lasts longer: it stays in your blood, so your heart keeps pounding for minutes after the scare.</div>`;
+      kit.say(`Nervous responses are <b>fast but short</b>. Hormonal responses are <b>slower but last longer</b>. Your body uses both! Now sort the facts into the right system.`);
+      $('#sortP').classList.remove('hidden'); deal();
+    };
+    function deal(){
+      const deck = $('#deck'), cards = shuffle(SORTS); let left = cards.length;
+      deck.innerHTML = cards.map((c, i) => `<div class="sc" data-i="${i}"><span>${esc(c[0])}</span><span class="bt"><button class="btn small" data-to="n">⚡ Nervous</button><button class="btn small" data-to="h">💧 Hormonal</button></span></div>`).join('');
+      deck.querySelectorAll('.sc').forEach(sc => sc.querySelectorAll('[data-to]').forEach(b => b.onclick = () => {
+        const c = cards[+sc.dataset.i], fb = $('#sfb'); fb.classList.remove('hidden');
+        if (b.dataset.to === c[1]) {
+          sc.remove(); $('#bin' + c[1]).insertAdjacentHTML('beforeend', `<span class="placed">✓ ${esc(c[0])}</span>`); left--;
+          fb.className = 'fb good'; fb.textContent = left ? `✓ Correct! ${left} to go.` : '✓ All sorted! You can compare the two systems like a pro.';
+          if (!left && !res.done) { res.done = true; res(); }
+        } else { kit.shake(sc); fb.className = 'fb bad'; fb.textContent = c[1] === 'n' ? '✗ Think about speed, electricity and neurons.' : '✗ Think about chemicals, blood and long-lasting effects.'; }
+      }));
+    }
+  });
+}
+
+/* ================================================================
+   SET UP THE PAGE
+   ================================================================ */
+LabKit.init({
+  id:'signal-race', title:'Signal Race', icon:'⚡', theme:'#8b5cf6',
+  heroTitle:'Signal <span class="g">Race</span>',
+  intro:'How does your body respond so quickly to a hot plate, a scary dog or a big meal? Explore neurons, build a reflex arc, unlock hormone receptors, and race a nerve impulse against adrenaline.',
+  guide:{name:'Professor Synapse', emoji:'🧑‍🔬'},
+  certTitle:'Nervous System Navigator', confetti:['⚡','🧠','💧','❤️','⭐','✨'],
+  summary:'You can now describe how electrical impulses travel through neurons, label a reflex arc, explain how hormones act on target organs, and compare nervous and hormonal responses.',
+  missions:[
+    {icon:'🧬', title:'Meet the neuron', short:'Neurons', blurb:'Label a neuron and send an impulse across a synapse.', run:mission1,
+      gate:[
+        {q:'What carries messages along a neuron?', o:['Electrical impulses','Hormones in the blood','Air bubbles','Red blood cells'],
+          ex:'Messages travel along neurons as electrical impulses.', hint:'What lit up and zoomed along the neuron?'},
+        {q:'Which part of a neuron carries the impulse AWAY from the cell body?', o:['The axon','The dendrites','The nucleus','The synapse'],
+          ex:'The axon is the long fibre that carries impulses away from the cell body towards the axon terminals.', hint:'It\'s the long part covered in myelin.'},
+        {q:'How does a message cross the synapse (gap) between two neurons?', o:['Chemicals called neurotransmitters cross the gap','The electrical impulse jumps across like a spark','The two neurons touch and swap places','Blood carries it across'],
+          ex:'At the synapse, the neuron releases neurotransmitter chemicals that diffuse across the gap to the next neuron.', hint:'Remember the little pink dots in the zoomed-in synapse.'}
+      ],
+      bonus:{q:'What is the job of the myelin sheath?', o:['It insulates the axon and speeds up the impulse','It makes the hormone insulin','It receives messages from other neurons','It stores glucose for the neuron'],
+        ex:'Myelin is a fatty insulating layer. Impulses travel much faster along myelinated axons.'}},
+    {icon:'🔥', title:'The reflex arc', short:'Reflex', blurb:'Label a reflex arc and test your reaction time.', run:mission2,
+      gate:[
+        {q:'What is the correct order of a reflex arc?', o:['Receptor → sensory neuron → relay neuron → motor neuron → effector','Effector → motor neuron → relay neuron → sensory neuron → receptor','Receptor → motor neuron → brain → sensory neuron → effector','Sensory neuron → receptor → effector → relay neuron → motor neuron'],
+          ex:'Stimulus is detected by a receptor, then sensory → relay → motor neurons carry the impulse to the effector.', hint:'Follow the path from the hot plate to the arm muscle.'},
+        {q:'Why are reflexes so fast?', o:['The impulse goes through the spinal cord without waiting for the brain to decide','Reflexes use hormones, which are faster','Reflexes only happen when you are concentrating','The muscles move before any impulse is sent'],
+          ex:'Reflex arcs take a shortcut through the spinal cord, skipping the conscious, decision-making part of the brain.', hint:'Did your hand move before or after the brain felt the pain?'},
+        {q:'Which of these is a reflex?', o:['Blinking when something flies towards your eye','Choosing what to eat for lunch','Writing your name','Catching a ball you decided to catch'],
+          ex:'Blinking to protect your eye is automatic and fast: a reflex. The others are voluntary responses you choose to make.', hint:'Which one happens without you thinking about it?'}
+      ],
+      bonus:{q:'In the hot plate reflex, what is the effector?', o:['The arm muscle (biceps) that pulls the hand away','The heat receptors in the skin','The spinal cord','The brain'],
+        ex:'An effector is the muscle or gland that carries out the response. Here, the biceps contracts.'}},
+    {icon:'💧', title:'Hormones: chemical messengers', short:'Hormones', blurb:'Explore glands and unlock target cells.', run:mission3,
+      gate:[
+        {q:'Hormones are…', o:['Chemical messengers carried around the body in the blood','Electrical impulses that travel along neurons','Cells that fight disease','Muscles that move the body'],
+          ex:'Hormones are chemicals made by glands and carried in the blood to target organs.', hint:'How did insulin and adrenaline travel?'},
+        {q:'Why does a hormone only affect certain organs, even though it travels everywhere in the blood?', o:['Only target cells have receptors that match that hormone','The hormone gets used up before reaching other organs','The other organs are too far away','Hormones can only travel downwards'],
+          ex:'Like a key and a lock, a hormone only works on cells with the matching receptor.', hint:'Remember the lock-and-key shapes.'},
+        {q:'Which hormone prepares your body for "fight or flight"?', o:['Adrenaline','Insulin','Thyroxine','Oestrogen'],
+          ex:'Adrenaline from the adrenal glands speeds up your heart and breathing for action.', hint:'It\'s made by the adrenal glands.'}
+      ],
+      bonus:{q:'After a big meal your blood glucose rises. Which hormone brings it back down?', o:['Insulin, from the pancreas','Adrenaline, from the adrenal glands','Growth hormone, from the pituitary','Thyroxine, from the thyroid'],
+        ex:'Insulin helps liver and muscle cells take in and store glucose. This is an example of homeostasis!'}},
+    {icon:'🏁', title:'The great race', short:'Race', blurb:'Race a nerve impulse against adrenaline and compare them.', run:mission4,
+      gate:[
+        {q:'Compared with hormonal responses, nervous responses are…', o:['Faster but shorter-lasting','Slower but longer-lasting','Faster and longer-lasting','Slower and shorter-lasting'],
+          ex:'Nerve impulses act in fractions of a second, but the effect stops quickly. Hormones are slower but last longer.', hint:'Think about the race and the graph.'},
+        {q:'Which response is controlled mainly by hormones?', o:['Growing taller during puberty','Pulling your hand off a hot plate','Blinking','Jumping when you hear a loud bang'],
+          ex:'Growth during puberty is slow and long-lasting, which is controlled by hormones like growth hormone, oestrogen and testosterone.', hint:'Which one happens slowly over months or years?'},
+        {q:'Why do you still feel shaky a few minutes after a big scare?', o:['Adrenaline is still in your blood, so its effects last longer','Your neurons are still sending the same impulse','Your reflex arc is broken','You have run out of glucose'],
+          ex:'Hormones like adrenaline stay in the blood for a while, so their effects continue after the danger has passed.', hint:'Which message lasted longer in the race?'}
+      ],
+      bonus:{q:'How are the nervous system and hormones SIMILAR?', o:['Both carry messages that coordinate the body\'s response to stimuli','Both use electrical impulses','Both travel only in the blood','Both only work while you are asleep'],
+        ex:'Both systems detect changes and coordinate responses. They just use different messengers (electrical vs chemical).'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

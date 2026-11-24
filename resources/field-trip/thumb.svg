@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bae6fd"/><stop offset="1" stop-color="#f0fdf4"/></linearGradient>
+    <g id="d"><g fill="#f472b6"><ellipse rx="5" ry="9" transform="translate(0 -7)"/><ellipse rx="5" ry="9" transform="rotate(72) translate(0 -7)"/><ellipse rx="5" ry="9" transform="rotate(144) translate(0 -7)"/><ellipse rx="5" ry="9" transform="rotate(216) translate(0 -7)"/><ellipse rx="5" ry="9" transform="rotate(288) translate(0 -7)"/></g><circle r="4.5" fill="#facc15"/></g>
+  </defs>
+  <rect width="640" height="400" fill="url(#s)"/>
+  <path d="M0 150 Q160 110 320 140 T640 120 L640 400 L0 400Z" fill="#a8d98a"/>
+  <path d="M0 330 C160 300 300 360 440 335 S600 300 640 320 L640 400 L0 400Z" fill="#38bdf8"/>
+  <g>
+    <use href="#d" x="90" y="210"/><use href="#d" x="140" y="250"/><use href="#d" x="200" y="200"/><use href="#d" x="250" y="240"/><use href="#d" x="300" y="190"/>
+    <use href="#d" x="330" y="260"/><use href="#d" x="380" y="215"/><use href="#d" x="470" y="200"/><use href="#d" x="520" y="250"/><use href="#d" x="570" y="190"/><use href="#d" x="60" y="270"/>
+  </g>
+  <g transform="rotate(-8 250 235)"><rect x="190" y="180" width="120" height="110" fill="rgba(255,255,255,.18)" stroke="#f97316" stroke-width="8"/>
+    <path d="M250 180V290M190 235H310" stroke="#f97316" stroke-width="3" stroke-dasharray="6 6"/></g>
+  <path d="M400 300 L600 150" stroke="#fff" stroke-width="5" stroke-dasharray="14 10"/>
+  <g font-family="Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif" text-anchor="middle">
+    <text x="520" y="110" font-size="70">👩‍🔬</text><text x="440" y="375" font-size="38">🪰</text><text x="500" y="370" font-size="34">🦐</text><text x="120" y="120" font-size="44">🔍</text>
+  </g>
+</svg>

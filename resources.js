@@ -59,6 +59,34 @@ window.CATEGORIES = [
    --------------------------------------------------------------------- */
 window.RESOURCES = [
   {
+    id: "signal-race",
+    title: "Signal Race",
+    subtitle: "Nerves vs hormones",
+    description: "Label a neuron, build a reflex arc, test your reaction time, unlock hormone target cells, then race a nerve impulse against adrenaline. Four missions with check-in questions.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/signal-race/index.html",
+    years: "Year 9",
+    tags: ["nervous system", "neuron", "reflex arc", "hormones", "endocrine", "adrenaline", "insulin", "stimulus", "response", "EQ2"],
+    added: "2026-11-24",
+    thumb: "resources/signal-race/thumb.svg",
+    emoji: "⚡"
+  },
+  {
+    id: "field-trip",
+    title: "Ecosystem Field Trip",
+    subtitle: "Monitoring ecosystems",
+    description: "Spot human impacts, throw quadrats to estimate a population, walk a transect from creek to ridge, and test creek health with water bugs. Four missions with check-in questions.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/field-trip/index.html",
+    years: "Year 9",
+    tags: ["ecosystem", "monitoring", "quadrat", "transect", "sampling", "population", "indicator species", "human impact", "EQ6"],
+    added: "2026-11-24",
+    thumb: "resources/field-trip/thumb.svg",
+    emoji: "🔍"
+  },
+  {
     id: "carbon-quest",
     title: "Carbon Quest",
     subtitle: "Open-world adventure game",

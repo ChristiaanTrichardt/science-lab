@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ecosystem Field Trip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+:root{--theme:#16a34a;--g1:#16a34a;--g2:#0ea5e9;--b1:#86efac;--b2:#67e8f9;--b3:#fde68a}
+
+/* mission 1: spot the impacts */
+.scene{position:relative;border-radius:22px;overflow:hidden;box-shadow:inset 0 0 0 1px #fff}
+.scene svg{display:block;width:100%;height:auto}
+.hot{cursor:pointer}
+.hot .ring{fill:rgba(255,255,255,.0);stroke:rgba(255,255,255,0);stroke-width:4;transition:all .3s}
+.hot:hover .ring{fill:rgba(255,255,255,.25);stroke:rgba(255,255,255,.9)}
+.hot.found .ring{fill:rgba(34,197,94,.22);stroke:#22c55e}
+.hot.found.good .ring{fill:rgba(56,189,248,.22);stroke:#0ea5e9}
+.found-list{display:grid;gap:10px;align-content:start}
+.found-list .tile{display:flex;gap:12px;align-items:flex-start;animation:lkPop .4s}
+.found-list .tile .e{font-size:1.8rem;line-height:1}
+.found-list .tile b{display:block;font-family:var(--head);font-weight:600}
+.found-list .tile p{margin:2px 0 0;font-size:.9rem;color:var(--ink2);font-weight:600}
+.empty-slot{border:2px dashed #c7d2fe;border-radius:20px;padding:14px;color:var(--ink3);font-weight:700;text-align:center}
+
+/* mission 2: quadrats */
+.qwrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:18px;align-items:start}
+@media (max-width:900px){.qwrap{grid-template-columns:1fr}}
+.field svg{display:block;width:100%;height:auto;border-radius:20px;background:#a8d98a}
+.qframe{transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
+.zoom{display:grid;grid-template-columns:170px 1fr;gap:14px;align-items:center}
+.zoom svg{width:170px;height:170px;border-radius:16px;background:#a8d98a;box-shadow:0 0 0 4px #fff,0 8px 20px -8px rgba(0,0,0,.35)}
+@media (max-width:480px){.zoom{grid-template-columns:1fr}.zoom svg{margin:0 auto}}
+.row-in{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.calc{display:grid;gap:12px;margin-top:14px}
+.calc .tile{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.calc .tile p{margin:0;flex:1;min-width:200px;font-weight:700}
+.reveal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.reveal div{background:#fff;border-radius:16px;padding:10px;text-align:center;font-weight:700;font-size:.82rem;color:var(--ink2)}
+.reveal b{display:block;font-family:var(--head);font-weight:600;font-size:1.5rem;color:var(--ink)}
+.tablewrap{max-height:290px;overflow:auto;border-radius:16px}
+
+/* mission 3: transect */
+.slope svg{display:block;width:100%;height:auto;border-radius:22px}
+.station{cursor:pointer}
+.station circle.b{fill:#fff;stroke:#16a34a;stroke-width:4;transition:all .2s}
+.station:hover circle.b{fill:#dcfce7}
+.station.done circle.b{fill:#22c55e;stroke:#fff}
+.station text{pointer-events:none}
+.kite{display:grid;gap:10px;margin-top:8px}
+.kite .k{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center}
+.kite .bars{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;height:34px;align-items:center}
+.kite .bars i{display:block;height:var(--h);border-radius:6px;background:var(--c);transition:height .5s;margin:auto 0;min-height:2px}
+.kite .lab{font-weight:800;font-size:.85rem;display:flex;align-items:center;gap:6px}
+.kite .lab span{width:12px;height:12px;border-radius:50%;background:var(--c);flex:none}
+.kite .axis{display:grid;grid-template-columns:130px 1fr;gap:10px;font-size:.72rem;font-weight:800;color:var(--ink3)}
+.kite .axis div:last-child{display:grid;grid-template-columns:repeat(8,1fr);text-align:center}
+@media (max-width:560px){.kite .k,.kite .axis{grid-template-columns:86px 1fr}.kite .lab{font-size:.72rem}}
+.st-pop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.moist{width:100%;height:12px;border-radius:9px;background:rgba(28,34,66,.1);overflow:hidden;margin-top:4px}
+.moist i{display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#2563eb)}
+
+/* mission 4: creek */
+.sites{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:860px){.sites{grid-template-columns:1fr}}
+.site{border-radius:26px;padding:16px;position:relative;overflow:hidden}
+.site.a{background:linear-gradient(160deg,rgba(220,252,231,.85),rgba(186,230,253,.75))}
+.site.b{background:linear-gradient(160deg,rgba(254,243,199,.85),rgba(190,180,140,.6))}
+.site h3{font-family:var(--head);font-weight:600;margin:0 0 4px;font-size:1.25rem}
+.site .sub2{font-size:.86rem;color:var(--ink2);font-weight:700;margin:0 0 10px}
+.water{height:70px;border-radius:16px;position:relative;overflow:hidden;margin-bottom:10px}
+.site.a .water{background:linear-gradient(#7dd3fc,#0ea5e9)}
+.site.b .water{background:linear-gradient(#a3a35a,#6b7d3a)}
+.water .net{position:absolute;font-size:2.2rem;left:50%;top:-50px;transform:translateX(-50%);transition:top .5s}
+.water.dip .net{top:12px}
+.catch{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;margin:8px 0}
+.critter{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:#fff;font-weight:800;font-size:.8rem;animation:lkPop .4s;box-shadow:0 3px 8px -6px rgba(0,0,0,.4)}
+.abio{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
+.abio div{background:rgba(255,255,255,.75);border-radius:12px;padding:6px 10px;font-size:.8rem;font-weight:700;color:var(--ink2)}
+.abio b{color:var(--ink)}
+.score{margin-top:10px;padding:12px;border-radius:16px;background:#fff;font-weight:700}
+.score .big{font-family:var(--head);font-weight:600;font-size:1.8rem}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin-top:10px}
+.legend div{display:flex;justify-content:space-between;gap:8px;background:rgba(255,255,255,.75);border-radius:12px;padding:6px 10px;font-size:.82rem;font-weight:700}
+.sens{font-weight:800;border-radius:8px;padding:0 7px;color:#fff}
+.verdict{display:grid;gap:8px;margin-top:12px}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+/* ================================================================
+   MISSION 1: SPOT THE HUMAN IMPACTS
+   ================================================================ */
+const IMPACTS = [
+  {id:'clear', e:'🪓', x:150, y:260, r:62, name:'Land clearing', d:'Native bush has been cut down for a paddock. Animals lose their habitat, fewer species can live here, and bare soil washes into the creek.'},
+  {id:'drain', e:'🚰', x:520, y:330, r:46, name:'Polluted drain', d:'Runoff from the farm and road (fertiliser, oil, chemicals) flows straight into the creek. It can poison animals and cause algal blooms.'},
+  {id:'litter', e:'🗑️', x:640, y:390, r:40, name:'Litter', d:'Plastic and rubbish can tangle animals or be eaten by them. Plastic takes hundreds of years to break down.'},
+  {id:'cat', e:'🐈', x:330, y:205, r:40, name:'Feral cat', d:'Cats and foxes are introduced predators. They kill native birds, lizards and small mammals that never evolved to escape them.'},
+  {id:'cow', e:'🐄', x:420, y:360, r:46, name:'Cattle in the creek', d:'Hooves trample the creek banks. This causes erosion, muddy water and manure in the creek.'},
+  {id:'plant', e:'🌱', x:700, y:225, r:42, name:'Tree planting (a good impact!)', d:'Volunteers are replanting native trees. Monitoring tells us whether this restoration is actually working.', good:true}
+];
+function sceneSVG(){
+  return `<svg viewBox="0 0 800 450" role="img" aria-label="A bushland landscape with a creek. Find the human impacts.">
+    <defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd8ff"/><stop offset="1" stop-color="#e8f7ff"/></linearGradient>
+    <linearGradient id="cr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#38bdf8"/><stop offset=".55" stop-color="#0ea5e9"/><stop offset=".75" stop-color="#7c8a3c"/><stop offset="1" stop-color="#8a8f4a"/></linearGradient></defs>
+    <rect width="800" height="450" fill="url(#sk)"/>
+    <circle cx="700" cy="70" r="36" fill="#fde047"/>
+    <path d="M0 170 Q200 120 400 160 T800 150 L800 450 L0 450Z" fill="#9ccc65"/>
+    <path d="M0 230 Q220 200 420 230 T800 220 L800 450 L0 450Z" fill="#8bc34a"/>
+    <rect x="40" y="210" width="230" height="110" rx="18" fill="#d8c483"/>
+    <g fill="#8d6e4a">${[[70,240],[120,270],[180,235],[220,290],[95,300],[250,250]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="11" ry="6"/>`).join('')}</g>
+    <path d="M0 360 C150 330 260 390 400 370 S650 330 800 380 L800 450 L0 450Z" fill="url(#cr)"/>
+    <path d="M0 360 C150 330 260 390 400 370 S650 330 800 380" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/>
+    <rect x="500" y="300" width="40" height="16" rx="4" fill="#64748b"/><rect x="490" y="250" width="16" height="60" fill="#64748b"/>
+    <path d="M540 312 q10 14 6 34" stroke="#6b7d3a" stroke-width="8" fill="none" opacity=".8"/>
+    <g>${[[330,150,40],[400,140,46],[470,150,38],[560,160,44],[610,150,36],[760,170,40],[300,175,30]].map(t=>`<rect x="${t[0]-5}" y="${t[1]}" width="10" height="${t[2]}" fill="#795548"/><circle cx="${t[0]}" cy="${t[1]-4}" r="${t[2]*.7}" fill="#43a047"/>`).join('')}</g>
+    <g font-size="34" text-anchor="middle" font-family="Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif">
+      <text x="330" y="218">🐈</text><text x="420" y="372">🐄</text><text x="640" y="400">🥤</text><text x="660" y="395" font-size="24">🛍️</text>
+      <text x="700" y="238">🌱</text><text x="680" y="246" font-size="26">🌱</text><text x="722" y="246" font-size="24">🌱</text><text x="745" y="225" font-size="28">🧑‍🌾</text>
+      <text x="600" y="300" font-size="30">🦘</text><text x="250" y="160" font-size="26">🐦</text><text x="90" y="400" font-size="26">🦆</text>
+    </g>
+    ${IMPACTS.map(h=>`<g class="hot" data-id="${h.id}" tabindex="0" role="button" aria-label="Investigate this spot"><circle class="ring" cx="${h.x}" cy="${h.y}" r="${h.r}"/></g>`).join('')}
+  </svg>`;
+}
+async function mission1(body, kit){
+  kit.say(`Welcome to the field, ecologists! <b>Ecosystem monitoring</b> means regularly measuring the living things (and abiotic factors like water and temperature) in an ecosystem, so we can track its health and spot changes over time.<br><br>First, find the <b>5 human impacts</b> harming this creek. Tap anything that looks like a problem. There's one <b>good</b> impact hiding too!`);
+  body.innerHTML = `<div class="grid2"><div class="scene glass">${sceneSVG()}</div>
+    <div class="lk-panel glass"><div class="howto">🔎 <span>Tap the picture to investigate. Found: <b id="fcount">0</b> / 5 harmful impacts</span></div><div class="found-list" id="flist">${'<div class="empty-slot">?</div>'.repeat(5)}</div></div></div>`;
+  return new Promise(res => {
+    const found = new Set();
+    const handle = g => {
+      const h = IMPACTS.find(x => x.id === g.dataset.id); if (found.has(h.id)) return;
+      found.add(h.id); g.classList.add('found'); if (h.good) g.classList.add('good');
+      const list = body.querySelector('#flist'), slot = list.querySelector('.empty-slot');
+      const html = `<div class="tile" style="${h.good ? 'background:#e0f2fe' : ''}"><span class="e">${h.e}</span><div><b>${esc(h.name)}</b><p>${esc(h.d)}</p></div></div>`;
+      if (slot && !h.good) slot.outerHTML = html; else list.insertAdjacentHTML('beforeend', html);
+      const bad = [...found].filter(id => !IMPACTS.find(x => x.id === id).good).length;
+      body.querySelector('#fcount').textContent = bad;
+      kit.toast(h.good ? '🌱 That one is a good impact!' : `✓ Found: ${h.name}`);
+      if (bad === 5 && !res.done) { res.done = true; kit.say(`Great spotting! Each of these could change the creek's health. But how would we actually <b>measure</b> the damage? That's what the next missions are about: <b>sampling</b>.`); res(); }
+    };
+    body.querySelectorAll('.hot').forEach(g => { g.addEventListener('click', () => handle(g)); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handle(g); } }); });
+  });
+}
+
+/* ================================================================
+   MISSION 2: QUADRATS
+   ================================================================ */
+function poisson(l){ let L = Math.exp(-l), k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; }
+function makeField(){
+  const cells = [];
+  for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
+    const d = .6 + 3.2 * Math.exp(-((x - 2.5) ** 2 + (y - 6.5) ** 2) / 9) + 2.6 * Math.exp(-((x - 7.5) ** 2 + (y - 2.5) ** 2) / 6);
+    const n = Math.min(9, poisson(d));
+    const pts = [];
+    for (let i = 0; i < n; i++) { let p, tries = 0; do { p = [x * 50 + rnd(9, 41), y * 50 + rnd(9, 41)]; tries++; } while (tries < 30 && pts.some(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 11)); pts.push(p); }
+    cells.push({x, y, n, pts});
+  }
+  return cells;
+}
+function fieldSVG(cells){
+  let grass = '';
+  for (let i = 0; i < 420; i++) { const x = rnd(2, 498), y = rnd(2, 498); grass += `<path d="M${x.toFixed(1)} ${y.toFixed(1)} l-2 -6 M${x.toFixed(1)} ${y.toFixed(1)} l0 -7 M${x.toFixed(1)} ${y.toFixed(1)} l2 -6" />`; }
+  const flowers = cells.flatMap(c => c.pts.map(p => `<use href="#daisy" x="${p[0].toFixed(1)}" y="${p[1].toFixed(1)}"/>`)).join('');
+  let gridl = ''; for (let i = 1; i < 10; i++) gridl += `<path d="M${i * 50} 0V500M0 ${i * 50}H500"/>`;
+  return `<svg id="fieldSvg" viewBox="0 0 500 500" role="img" aria-label="A 10 metre by 10 metre field of everlasting daisies">
+    <defs><g id="daisy"><g fill="#f472b6">${[0,72,144,216,288].map(a => `<ellipse rx="2.3" ry="4.3" transform="rotate(${a}) translate(0 -3.6)"/>`).join('')}</g><circle r="2.1" fill="#facc15"/></g></defs>
+    <g id="plants"><rect width="500" height="500" fill="#a8d98a"/><g stroke="#6aa84f" stroke-width="1.2" opacity=".7">${grass}</g>${flowers}</g>
+    <g stroke="rgba(255,255,255,.45)" stroke-width="1" stroke-dasharray="3 4">${gridl}</g>
+    <g id="used"></g>
+    <g class="qframe" id="qframe" style="transform:translate(-80px,-80px)"><rect width="50" height="50" fill="none" stroke="#fff" stroke-width="4"/><rect width="50" height="50" fill="none" stroke="#f97316" stroke-width="2"/></g>
+    <text x="250" y="496" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" opacity=".9">10 m × 10 m = 100 m² · each square = 1 m²</text>
+  </svg>`;
+}
+async function mission2(body, kit){
+  const cells = makeField(), total = cells.reduce((n, c) => n + c.n, 0), AREA = 100;
+  kit.say(`Counting every daisy in this field would take forever. Instead, ecologists use a <b>quadrat</b>: a square frame (here 1 m × 1 m) placed <b>randomly</b> to count organisms in a small area. Then we <b>scale up</b> to estimate the whole population.<br><br>Throw your quadrat 5 times and count the <b style="color:#db2777">pink everlasting daisies</b> inside it.`);
+  body.innerHTML = `<div class="qwrap">
+    <div class="field lk-panel glass">${fieldSVG(cells)}
+      <div class="row-in" style="justify-content:center;margin-top:12px"><button class="btn primary" id="throw">🎯 Throw quadrat (<span id="left">5</span> left)</button></div></div>
+    <div>
+      <div class="lk-panel glass" id="zoomPanel"><div class="zoom"><svg viewBox="0 0 50 50" id="zoomSvg"><use href="#plants"/></svg>
+        <div><b style="font-family:var(--head);font-size:1.15rem" id="zTitle">Throw your first quadrat!</b>
+        <p style="margin:4px 0;color:var(--ink2);font-weight:600;font-size:.92rem" id="zHelp">Your quadrat lands on a random square. Count the daisies inside it.</p>
+        <div class="row-in hidden" id="zIn"><input class="num" id="cnt" type="number" min="0" inputmode="numeric" aria-label="Number of daisies"><button class="btn green small" id="rec">Record</button></div>
+        <div class="fb hidden" id="zfb"></div></div></div></div>
+      <div class="lk-panel glass" style="margin-top:14px"><div class="tablewrap"><table class="dtable"><thead><tr><th>Quadrat</th><th>Daisies per m²</th></tr></thead><tbody id="tb"><tr><td colspan="2" style="color:var(--ink3)">No data yet</td></tr></tbody></table></div>
+        <div class="calc hidden" id="calc"></div></div>
+    </div></div>`;
+  const $ = s => body.querySelector(s);
+  const data = [];
+  let pending = null, wrong = 0;
+  const usedCells = new Set();
+  const drawTable = () => { $('#tb').innerHTML = data.map((d, i) => `<tr><td>${i + 1}${d.auto ? ' <small style="color:var(--ink3)">(auto)</small>' : ''}</td><td><b>${d.n}</b></td></tr>`).join(''); const tw = body.querySelector('.tablewrap'); tw.scrollTop = tw.scrollHeight; };
+  const pick = () => { const free = cells.filter(c => !usedCells.has(c)); const c = free[Math.floor(Math.random() * free.length)]; usedCells.add(c); return c; };
+  const markUsed = c => $('#used').insertAdjacentHTML('beforeend', `<rect x="${c.x * 50 + 2}" y="${c.y * 50 + 2}" width="46" height="46" fill="rgba(249,115,22,.15)" stroke="#f97316" stroke-width="1.5" stroke-dasharray="4 3"/>`);
+  return new Promise(res => {
+    $('#throw').onclick = async () => {
+      if (pending || data.length >= 5) return;
+      const c = pick(); pending = c; wrong = 0;
+      $('#qframe').style.transform = `translate(${c.x * 50}px,${c.y * 50}px)`;
+      $('#throw').disabled = true;
+      await wait(kit.REDUCED ? 0 : 650);
+      $('#zoomSvg').setAttribute('viewBox', `${c.x * 50} ${c.y * 50} 50 50`);
+      $('#zTitle').textContent = `Quadrat ${data.length + 1}`;
+      $('#zHelp').textContent = 'How many pink daisies are inside this quadrat?';
+      $('#zIn').classList.remove('hidden'); $('#zfb').classList.add('hidden');
+      const inp = $('#cnt'); inp.value = ''; inp.className = 'num'; inp.focus();
+    };
+    const record = () => {
+      if (!pending) return;
+      const inp = $('#cnt'), v = parseInt(inp.value, 10);
+      if (isNaN(v)) { inp.focus(); return; }
+      const fb = $('#zfb'); fb.classList.remove('hidden');
+      if (v !== pending.n) {
+        wrong++; inp.className = 'num no'; kit.shake(inp);
+        if (wrong < 2) { fb.className = 'fb bad'; fb.textContent = `Not quite. Count again carefully. Tip: count one row at a time!`; return; }
+        fb.className = 'fb info'; fb.textContent = `There are ${pending.n} daisies in this one. Scientists double-check their counts too!`;
+      } else { inp.className = 'num ok'; fb.className = 'fb good'; fb.textContent = '✓ Recorded!'; }
+      data.push({n: pending.n}); markUsed(pending); pending = null; drawTable();
+      $('#zIn').classList.add('hidden');
+      $('#left').textContent = 5 - data.length;
+      if (data.length < 5) { $('#throw').disabled = false; return; }
+      $('#throw').closest('.row-in').classList.add('hidden');
+      kit.say(`Nice sampling! Now let's <b>scale up</b>. First find the <b>mean</b> (average) daisies per m², then multiply by the area of the whole field (100 m²).`);
+      calcStep();
+    };
+    $('#rec').onclick = record;
+    $('#cnt').addEventListener('keydown', e => { if (e.key === 'Enter') record(); });
+
+    function calcStep(){
+      const sum = data.reduce((a, d) => a + d.n, 0), mean = sum / data.length;
+      const calc = $('#calc'); calc.classList.remove('hidden');
+      calc.innerHTML = `<div class="tile"><p>1️⃣ Mean = total ÷ number of quadrats = ${sum} ÷ ${data.length} =</p><input class="num" id="mean" type="number" step="0.1" inputmode="decimal" aria-label="Mean"><button class="btn small" id="chkMean">Check</button></div>
+        <div class="tile hidden" id="estRow"><p>2️⃣ Estimated population = mean × area = <span id="mShow"></span> × ${AREA} m² =</p><input class="num" id="est" type="number" inputmode="decimal" aria-label="Estimated population"><button class="btn small" id="chkEst">Check</button></div>
+        <div class="fb hidden" id="cfb"></div><div id="rev"></div>`;
+      const cfb = $('#cfb'), show = (cls, t) => { cfb.className = 'fb ' + cls; cfb.innerHTML = t; };
+      $('#chkMean').onclick = () => {
+        const v = parseFloat($('#mean').value);
+        if (Math.abs(v - mean) <= .051) { $('#mean').className = 'num ok'; show('good', `✓ Mean = ${+mean.toFixed(2)} daisies per m²`); $('#mShow').textContent = +mean.toFixed(2); $('#estRow').classList.remove('hidden'); $('#est').focus(); }
+        else { $('#mean').className = 'num no'; kit.shake($('#mean')); show('bad', `Add up all ${data.length} counts (${data.map(d => d.n).join(' + ')} = ${sum}), then divide by ${data.length}.`); }
+      };
+      $('#chkEst').onclick = () => {
+        const v = parseFloat($('#est').value), est = mean * AREA;
+        if (Math.abs(v - est) <= 5.1) { $('#est').className = 'num ok'; show('good', `✓ Estimate ≈ ${Math.round(est)} daisies in the whole field.`); revealStep(); }
+        else { $('#est').className = 'num no'; kit.shake($('#est')); show('bad', `Multiply your mean (${+mean.toFixed(2)}) by the field's area (${AREA} m²).`); }
+      };
+    }
+    function revealStep(){
+      const est = Math.round(data.reduce((a, d) => a + d.n, 0) / data.length * AREA), err = Math.round(Math.abs(est - total) / total * 100);
+      $('#rev').innerHTML = `<div class="reveal"><div><b>${est}</b>your estimate</div><div><b>${total}</b>actual daisies</div><div><b>${err}%</b>difference</div></div>
+        <p style="font-weight:700;color:var(--ink2);margin:12px 0 8px">Is 5 quadrats enough? Let's take 10 more (I'll count these for you) and see what happens to the estimate.</p>
+        <button class="btn primary" id="more">🎯🎯 Throw 10 more quadrats</button>`;
+      $('#more').onclick = async () => {
+        $('#more').disabled = true;
+        for (let k = 0; k < 10; k++) {
+          const c = pick(); $('#qframe').style.transform = `translate(${c.x * 50}px,${c.y * 50}px)`; markUsed(c);
+          data.push({n: c.n, auto: true}); drawTable(); await wait(kit.REDUCED ? 0 : 220);
+        }
+        const mean2 = data.reduce((a, d) => a + d.n, 0) / data.length, est2 = Math.round(mean2 * AREA), err2 = Math.round(Math.abs(est2 - total) / total * 100);
+        $('#rev').innerHTML = `<div class="reveal"><div><b>${est}</b>5 quadrats<br>(${err}% off)</div><div><b>${est2}</b>15 quadrats<br>(${err2}% off)</div><div><b>${total}</b>actual</div></div>
+          <div class="fb info">💡 With more quadrats, the estimate is usually <b>more reliable</b> because one unusually crowded or empty square has less effect on the mean. ${err2 <= err ? 'Yours got closer!' : 'Yours didn\'t get closer this time. That happens with random samples, but on average more samples win.'}</div>`;
+        kit.say(`That's how scientists estimate population size: <b>random</b> quadrats, find the <b>mean</b>, then <b>scale up</b> to the whole area. More quadrats = a more reliable estimate.`);
+        res();
+      };
+    }
+  });
+}
+
+/* ================================================================
+   MISSION 3: TRANSECT
+   ================================================================ */
+const SPECIES = [
+  {name:'Sedges & rushes', c:'#0ea5e9', cover:[80,65,30,5,0,0,0,0]},
+  {name:'Paperbark trees', c:'#a16207', cover:[35,60,55,20,0,0,0,0]},
+  {name:'Kangaroo grass', c:'#65a30d', cover:[0,0,20,50,65,40,15,0]},
+  {name:'Spinifex', c:'#eab308', cover:[0,0,0,0,10,35,60,75]}
+];
+const MOIST = [92,81,66,49,36,24,15,9];
+function slopeSVG(){
+  const pts = [[40,300],[130,285],[220,262],[310,232],[400,198],[490,160],[580,122],[670,90]];
+  const plants = (i) => SPECIES.map((s, k) => s.cover[i] > 15 ? `<circle cx="${pts[i][0] - 18 + k * 12}" cy="${pts[i][1] - 22 - (k % 2) * 8}" r="${4 + s.cover[i] / 14}" fill="${s.c}" opacity=".9"/>` : '').join('');
+  return `<svg viewBox="0 0 720 360" role="img" aria-label="A slope from a creek up to a dry ridge with 8 sampling stations">
+    <defs><linearGradient id="slp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4d7c0f"/><stop offset=".5" stop-color="#a3a33a"/><stop offset="1" stop-color="#d6b46a"/></linearGradient>
+      <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bae6fd"/><stop offset="1" stop-color="#f0f9ff"/></linearGradient></defs>
+    <rect width="720" height="360" fill="url(#sky2)"/>
+    <path d="M0 305 L40 300 L130 285 L220 262 L310 232 L400 198 L490 160 L580 122 L670 90 L720 82 L720 360 L0 360Z" fill="url(#slp)"/>
+    <path d="M0 305 Q30 300 60 310 L60 360 L0 360Z" fill="#0ea5e9"/>
+    <text x="30" y="345" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">Creek</text>
+    <text x="660" y="140" font-size="13" font-weight="800" fill="#78350f" text-anchor="middle">Dry ridge</text>
+    <path d="M40 300 L130 285 L220 262 L310 232 L400 198 L490 160 L580 122 L670 90" stroke="#fff" stroke-width="3" stroke-dasharray="8 6" fill="none"/>
+    ${pts.map((p, i) => `<g id="pl${i}" opacity="0">${plants(i)}</g>`).join('')}
+    ${pts.map((p, i) => `<g class="station" data-i="${i}" tabindex="0" role="button" aria-label="Station ${i + 1}, ${i * 5} metres"><circle class="b" cx="${p[0]}" cy="${p[1]}" r="15"/><text x="${p[0]}" y="${p[1] + 5}" text-anchor="middle" font-size="13" font-weight="800" fill="#14532d">${i + 1}</text><text x="${p[0]}" y="${p[1] + 34}" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${i * 5} m</text></g>`).join('')}
+  </svg>`;
+}
+async function mission3(body, kit){
+  kit.say(`A <b>transect</b> is a line laid across an area, with samples taken at regular intervals along it. It's perfect for seeing how living things <b>change</b> from one place to another, like from this wet creek up to the dry ridge.<br><br>Tap each of the <b>8 stations</b> (every 5 m) to sample the plants and measure soil moisture.`);
+  body.innerHTML = `<div class="slope lk-panel glass">${slopeSVG()}</div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="lk-panel glass" id="stPanel"><div class="howto">📍 <span>Tap a station on the slope to sample it. Sampled: <b id="scount">0</b> / 8</span></div><div id="stInfo" style="color:var(--ink3);font-weight:700">No station sampled yet.</div></div>
+      <div class="lk-panel glass"><b style="font-family:var(--head);font-size:1.1rem">📊 Plant cover along the transect</b>
+        <div class="kite">${SPECIES.map((s, k) => `<div class="k" style="--c:${s.c}"><div class="lab"><span></span>${s.name}</div><div class="bars">${Array.from({length:8}, (_, i) => `<i id="b${k}_${i}" style="--h:0px"></i>`).join('')}</div></div>`).join('')}
+          <div class="k" style="--c:#2563eb"><div class="lab"><span></span>Soil moisture</div><div class="bars">${Array.from({length:8}, (_, i) => `<i id="m${i}" style="--h:0px"></i>`).join('')}</div></div>
+          <div class="axis"><div></div><div>${Array.from({length:8}, (_, i) => `<span>${i * 5}m</span>`).join('')}</div></div></div></div>
+    </div>`;
+  const $ = s => body.querySelector(s), done = new Set();
+  return new Promise(res => {
+    const sample = g => {
+      const i = +g.dataset.i;
+      g.classList.add('done'); body.querySelector('#pl' + i).setAttribute('opacity', '1');
+      SPECIES.forEach((s, k) => $(`#b${k}_${i}`).style.setProperty('--h', Math.max(2, s.cover[i] * .34) + 'px'));
+      $('#m' + i).style.setProperty('--h', Math.max(2, MOIST[i] * .34) + 'px');
+      $('#stInfo').innerHTML = `<div class="st-pop"><div style="flex:1;min-width:180px"><b style="font-family:var(--head);font-size:1.15rem">Station ${i + 1} · ${i * 5} m from creek</b>
+        <div style="font-weight:700;font-size:.9rem;margin-top:6px">💧 Soil moisture: ${MOIST[i]}%</div><div class="moist"><i style="width:${MOIST[i]}%"></i></div></div></div>
+        <table class="dtable" style="margin-top:10px"><thead><tr><th style="text-align:left">Species</th><th>% cover</th></tr></thead><tbody>
+        ${SPECIES.map(s => `<tr><td style="text-align:left"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.c};margin-right:6px"></span>${s.name}</td><td><b>${s.cover[i]}%</b></td></tr>`).join('')}</tbody></table>`;
+      done.add(i); $('#scount').textContent = done.size;
+      if (done.size === 8 && !res.done) {
+        res.done = true;
+        kit.say(`Look at the graph! Each species has its own <b>zone</b>. Sedges crowd the wet creek bank, while spinifex takes over the dry ridge. The <b>abiotic factor</b> changing along the transect is <b>soil moisture</b>, and the plants are spread out to match it.`);
+        res();
+      }
+    };
+    body.querySelectorAll('.station').forEach(g => { g.addEventListener('click', () => sample(g)); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sample(g); } }); });
+  });
+}
+
+/* ================================================================
+   MISSION 4: CREEK HEALTH (indicator species)
+   ================================================================ */
+const BUGS = [
+  {n:'Stonefly nymph', e:'🦗', s:10}, {n:'Mayfly nymph', e:'🪰', s:9}, {n:'Caddisfly larva', e:'🐛', s:8},
+  {n:'Freshwater shrimp', e:'🦐', s:6}, {n:'Dragonfly nymph', e:'🐉', s:4}, {n:'Water beetle', e:'🪲', s:4},
+  {n:'Pond snail', e:'🐌', s:3}, {n:'Bloodworm (midge larva)', e:'🔴', s:3}, {n:'Worm', e:'🪱', s:2}, {n:'Mosquito larva', e:'🦟', s:1}
+];
+const SITES = {
+  a:{name:'Site A · Upstream', sub:'In the national park, surrounded by bush', w:[4,5,4,3,2,1,0,0,0,0],
+     abio:[['💨 Dissolved oxygen','9.1 mg/L'],['🧪 Nitrate','0.2 mg/L'],['🌡️ Temperature','15 °C'],['👀 Water clarity','Clear']]},
+  b:{name:'Site B · Downstream', sub:'Below the farm drain and cattle crossing', w:[0,0,0,1,2,2,4,6,5,4],
+     abio:[['💨 Dissolved oxygen','3.4 mg/L'],['🧪 Nitrate','4.8 mg/L'],['🌡️ Temperature','21 °C'],['👀 Water clarity','Murky, green']]}
+};
+const sensColor = s => s >= 8 ? '#16a34a' : s >= 5 ? '#ca8a04' : '#dc2626';
+const rating = v => v > 6 ? ['Healthy 💚', '#16a34a'] : v >= 5 ? ['Mild pollution 💛', '#ca8a04'] : v >= 4 ? ['Moderate pollution 🧡', '#ea580c'] : ['Severe pollution ❤️‍🩹', '#dc2626'];
+function drawBug(w){ const tot = w.reduce((a, b) => a + b, 0); let r = Math.random() * tot; for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return i; } return w.length - 1; }
+async function mission4(body, kit){
+  kit.say(`Some animals are <b>indicator species</b>: their presence or absence tells us how healthy an ecosystem is. Mayfly and stonefly nymphs need clean, oxygen-rich water. Worms and mosquito larvae can survive almost anywhere.<br><br>Dip your net <b>3 times</b> at each site, then compare the creek's health.`);
+  body.innerHTML = `<div class="sites">${['a','b'].map(k => `<div class="site glass ${k}" id="site${k}"><h3>${SITES[k].name}</h3><p class="sub2">${SITES[k].sub}</p>
+      <div class="water"><span class="net">🥅</span></div>
+      <button class="btn primary small" data-dip="${k}">🥅 Dip net (<span>3</span> left)</button>
+      <div class="catch" id="catch${k}"></div>
+      <div class="abio">${SITES[k].abio.map(a => `<div>${a[0]}<br><b>${a[1]}</b></div>`).join('')}</div>
+      <div id="score${k}"></div></div>`).join('')}</div>
+    <div class="lk-panel glass" style="margin-top:14px"><b style="font-family:var(--head);font-size:1.1rem">🔬 Sensitivity scores (based on Australia's SIGNAL water bug system)</b>
+      <p style="margin:4px 0 0;font-size:.9rem;color:var(--ink2);font-weight:600">High score = only survives in clean water. Low score = tolerates pollution. <b>Health score</b> = the average score of the different types of animal you found.</p>
+      <div class="legend">${BUGS.map(b => `<div><span>${b.e} ${b.n}</span><span class="sens" style="background:${sensColor(b.s)}">${b.s}</span></div>`).join('')}</div>
+      <div id="verdict"></div></div>`;
+  const found = {a:new Set(), b:new Set()}, dips = {a:0, b:0};
+  return new Promise(res => {
+    body.querySelectorAll('[data-dip]').forEach(btn => btn.onclick = async () => {
+      const k = btn.dataset.dip; if (dips[k] >= 3) return;
+      btn.disabled = true; dips[k]++;
+      const water = body.querySelector(`#site${k} .water`); water.classList.add('dip');
+      await wait(kit.REDUCED ? 0 : 600); water.classList.remove('dip');
+      const got = Array.from({length:5}, () => drawBug(SITES[k].w));
+      const box = body.querySelector('#catch' + k);
+      for (const i of got) { box.insertAdjacentHTML('beforeend', `<span class="critter">${BUGS[i].e} ${BUGS[i].n}</span>`); found[k].add(i); await wait(kit.REDUCED ? 0 : 120); }
+      btn.querySelector('span').textContent = 3 - dips[k];
+      if (dips[k] < 3) { btn.disabled = false; return; }
+      btn.textContent = '✓ Sampled';
+      const types = [...found[k]].sort((x, y) => BUGS[y].s - BUGS[x].s), avg = types.reduce((a, i) => a + BUGS[i].s, 0) / types.length, r = rating(avg);
+      body.querySelector('#score' + k).innerHTML = `<div class="score">Types found: ${types.map(i => `${BUGS[i].e}<sub>${BUGS[i].s}</sub>`).join(' ')}<br>
+        Health score = (${types.map(i => BUGS[i].s).join(' + ')}) ÷ ${types.length} = <span class="big" style="color:${r[1]}">${avg.toFixed(1)}</span><br><span style="color:${r[1]}">${r[0]}</span></div>`;
+      if (dips.a === 3 && dips.b === 3) verdict();
+    });
+    function verdict(){
+      const v = body.querySelector('#verdict');
+      v.innerHTML = `<div class="verdict"><div class="fb info" style="margin-top:12px">🧑‍🔬 Your conclusion: what is most likely making Site B less healthy?</div>
+        ${shuffle([
+          {t:'Fertiliser and manure from the farm and cattle are polluting the creek, lowering the oxygen', ok:true},
+          {t:'Site B is just further from the sun', ok:false, w:'Sunlight isn\'t the main difference. Look at the nitrate and oxygen readings.'},
+          {t:'The mayflies all flew away because it was the wrong season', ok:false, w:'Both sites were sampled on the same day, so season can\'t explain the difference.'},
+          {t:'There is nothing wrong. Both sites are equally healthy', ok:false, w:'Compare the health scores and the indicator species at each site.'}
+        ]).map((o, i) => `<button class="opt" data-ok="${o.ok ? 1 : 0}" data-w="${esc(o.w || '')}">${esc(o.t)}</button>`).join('')}<div class="fb hidden" id="vfb"></div></div>`;
+      v.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        const fb = v.querySelector('#vfb'); fb.classList.remove('hidden');
+        if (b.dataset.ok === '1') {
+          v.querySelectorAll('.opt').forEach(x => x.disabled = true); b.classList.add('right');
+          fb.className = 'fb good'; fb.innerHTML = '✓ Exactly! High nitrate (from fertiliser and manure) feeds algae. When the algae die, decomposers use up the oxygen. Sensitive animals like mayflies can\'t survive, so only tolerant ones remain.';
+          kit.say(`Great detective work! Using <b>living indicators</b> plus abiotic measurements, you showed that human activity downstream is harming the creek. Monitoring again after the farm fences off the creek would show if it recovers.`);
+          if (!res.done) { res.done = true; res(); }
+        } else { b.disabled = true; b.classList.add('wrong'); kit.shake(b); fb.className = 'fb bad'; fb.textContent = '✗ ' + b.dataset.w; }
+      });
+    }
+  });
+}
+
+/* ================================================================
+   SET UP THE PAGE
+   ================================================================ */
+LabKit.init({
+  id:'field-trip', title:'Ecosystem Field Trip', icon:'🔍', theme:'#16a34a',
+  heroTitle:'Ecosystem <span class="g">Field Trip</span>',
+  intro:'Join Dr Mia the ecologist on a virtual field trip. Find human impacts, sample with quadrats and transects, and test a creek\'s health using water bugs. Answer the check-in questions to unlock each mission.',
+  guide:{name:'Dr Mia the ecologist', emoji:'👩‍🔬'},
+  certTitle:'Junior Ecologist', confetti:['🌿','🌸','🐛','🔍','⭐','💧'],
+  summary:'You can now explain why ecosystems are monitored, use quadrats and transects to sample organisms, estimate population size, and use indicator species to judge ecosystem health.',
+  missions:[
+    {icon:'🌏', title:'Spot the human impacts', short:'Impacts', blurb:'What is ecosystem monitoring, and what harms ecosystems?', run:mission1,
+      gate:[
+        {q:'Ecosystem monitoring means…', o:['Regularly measuring the organisms and abiotic factors in an ecosystem to track changes over time','Counting every single organism in an ecosystem once','Building fences around national parks','Taking photos of animals for fun'],
+          ex:'Monitoring is repeated measuring over time. It shows whether an ecosystem is healthy and how it is changing.', hint:'Think about the word "monitor": keep checking on something.'},
+        {q:'Why do scientists usually take samples instead of counting every organism?', o:['Counting everything would take too long and cost too much, so a sample is used to estimate','Samples are always perfectly accurate','Organisms don\'t like being counted','It is against the law to count every organism'],
+          ex:'It\'s usually impossible to count everything, so scientists sample a part and use it to estimate the whole.', hint:'Imagine counting every ant in a forest!'},
+        {q:'Which of these is a human activity that HARMS ecosystem health?', o:['Clearing native vegetation for farming','Planting native trees along a creek','Removing feral cats from a reserve','Counting frogs at night'],
+          ex:'Land clearing destroys habitat. The other options are things people do to protect or study ecosystems.', hint:'Which one destroys habitat?'}
+      ],
+      bonus:{q:'Why should scientists monitor the same site many times over several years?', o:['To see long-term trends and tell real changes apart from normal ups and downs','Because the first results are always wrong','So they can visit their favourite places','To make sure the organisms get used to them'],
+        ex:'Populations naturally go up and down. Repeated monitoring over years shows the real trend, for example whether a restoration project is working.'}},
+    {icon:'🟧', title:'Quadrat sampling', short:'Quadrats', blurb:'Use random quadrats to estimate a population size.', run:mission2,
+      gate:[
+        {q:'A quadrat is…', o:['A square frame used to sample organisms in a known area','A line stretched across a habitat','A type of net for catching insects','A machine that counts plants'],
+          ex:'A quadrat marks out a known area (like 1 m²) so you can count the organisms inside it.', hint:'What did you throw onto the field?'},
+        {q:'Why should quadrats be placed randomly?', o:['To avoid bias, so the sample represents the whole area','So they land on the most plants','To make the counting faster','Because the frame is hard to aim'],
+          ex:'If you choose where to put quadrats, you might pick crowded or empty spots. Random placement gives a fair sample.', hint:'What would happen if you only put quadrats where you saw lots of flowers?'},
+        {q:'A student finds a mean of 4 daisies per m² in a field of 200 m². What is the estimated population?', o:['800 daisies','204 daisies','50 daisies','4 daisies'],
+          ex:'Estimated population = mean × area = 4 × 200 = 800.', hint:'Multiply the mean by the total area.'}
+      ],
+      bonus:{q:'Which change would make a quadrat estimate MORE reliable?', o:['Using more quadrats spread randomly across the whole field','Using just one quadrat in the middle','Only sampling the corner with the most flowers','Using a smaller field'],
+        ex:'More randomly placed quadrats make the mean less affected by one unusual square, so the estimate is more reliable.'}},
+    {icon:'📏', title:'Walk the transect', short:'Transect', blurb:'See how plants change from a wet creek to a dry ridge.', run:mission3,
+      gate:[
+        {q:'A transect is…', o:['A line across an area, with organisms sampled at regular intervals along it','A square used to count organisms','A type of graph','A sample of creek water'],
+          ex:'A transect is a line (like a measuring tape) with samples taken at set distances along it.', hint:'You sampled every 5 m along a line.'},
+        {q:'Transects are most useful for…', o:['Showing how organisms change across an area, e.g. from wet to dry ground','Counting every organism in a field','Measuring how fast animals run','Testing water for pollution'],
+          ex:'Transects show changes in distribution across a gradient, such as moisture, light or height.', hint:'What did your graph show?'},
+        {q:'Your data showed sedges and rushes grow mostly…', o:['Near the creek, where soil moisture is high','On the dry ridge','Evenly everywhere','Only where spinifex grows'],
+          ex:'Sedges had the highest cover at 0–5 m, where soil moisture was over 80%.', hint:'Look at the blue bars on your graph.'}
+      ],
+      bonus:{q:'Spinifex was most common where the soil was driest. What does this suggest?', o:['Spinifex is adapted to survive dry conditions','Spinifex needs lots of water','Spinifex makes the soil dry','Spinifex can\'t grow on slopes'],
+        ex:'Organisms are found where the abiotic conditions suit their adaptations. Spinifex is famous for surviving dry Australian conditions.'}},
+    {icon:'💧', title:'Creek health check', short:'Creek', blurb:'Use indicator species to compare two sites.', run:mission4,
+      gate:[
+        {q:'Mayfly and stonefly nymphs are called indicator species because…', o:['Their presence or absence tells us how healthy the water is','They indicate which way the creek flows','They are the biggest animals in the creek','They eat all the pollution'],
+          ex:'These nymphs need clean, oxygen-rich water, so finding them is a sign of a healthy creek.', hint:'What do they "indicate"?'},
+        {q:'Site B had lots of bloodworms and mosquito larvae but no mayflies. This suggests…', o:['The water is polluted and low in oxygen','The water is very clean','It is too cold for any animals','Mayflies eat bloodworms'],
+          ex:'Only pollution-tolerant animals survived, which is a sign of poor water quality.', hint:'Which animals tolerate pollution?'},
+        {q:'Which human activity most likely caused the problem at Site B?', o:['Fertiliser and manure running off the farm into the creek','Bushwalkers taking photos upstream','Rain falling in the national park','Scientists sampling the creek'],
+          ex:'Runoff added nitrate (look at the high nitrate reading), which leads to low oxygen.', hint:'Look at the abiotic readings for Site B.'}
+      ],
+      bonus:{q:'Why does fertiliser runoff lower the oxygen in a creek?', o:['Algae grow quickly, then die, and decomposing bacteria use up the oxygen','Fertiliser reacts with oxygen and turns it into nitrogen','Fertiliser makes the water too cold','Fish breathe faster when there is fertiliser'],
+        ex:'Extra nutrients cause an algal bloom. When the algae die, decomposers respire and use up the dissolved oxygen.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>
