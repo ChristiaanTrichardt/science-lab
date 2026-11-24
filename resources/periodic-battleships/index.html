@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Periodic Battleships</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: naval command radar ===== */
+:root{--ink:#e7f0ff;--ink2:#a9bcd8;--ink3:#7891b3;--accent:#ffb000;--theme:#ffb000;--hair:rgba(255,176,0,.25);
+  --head:'Black Ops One','Impact',sans-serif;--g1:#ffb000;--g2:#ff6a00;--line:rgba(255,176,0,.4);--panel:rgba(8,32,58,.9)}
+body{background:#04121f;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  repeating-radial-gradient(circle at 50% 120%,rgba(255,176,0,.08) 0 1px,transparent 1px 70px),
+  linear-gradient(rgba(120,170,230,.06) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,rgba(120,170,230,.06) 1px,transparent 1px) 0 0/40px 40px,
+  radial-gradient(1200px 700px at 50% 0,#0b2a4a,#04121f)}
+body::after{content:'';position:fixed;left:50%;top:50%;width:160vmax;height:160vmax;margin:-80vmax 0 0 -80vmax;z-index:-1;pointer-events:none;
+  background:conic-gradient(from 0deg,rgba(255,176,0,.14),transparent 40deg);border-radius:50%;animation:sweep 8s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){body::after{animation:none;opacity:0}}
+.lk-bg{display:none}
+.glass{background:var(--panel);border:2px solid var(--line);border-radius:10px;box-shadow:0 0 30px -12px rgba(255,176,0,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.lk-top{border-radius:10px}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:400;letter-spacing:.05em}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--accent)}
+.lk-logo{border-radius:8px;background:#ffb000;box-shadow:0 0 16px rgba(255,176,0,.6)}
+.lk-kick{color:var(--accent);font-family:var(--head);font-weight:400;letter-spacing:.12em}
+.lk-step{border-radius:8px;background:rgba(255,255,255,.04);border-color:var(--line);color:var(--ink2)}
+.lk-step .n{border-radius:6px;background:#0b2a4a}
+.lk-step.now{background:#0b2a4a;color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.lk-step.done .n{background:#22c55e}
+.lk-chip,.chip{border-radius:8px;background:rgba(255,255,255,.04);border-color:var(--line);color:var(--ink)}
+.lk-mlist li{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px}
+.lk-mlist .ic,.lk-face{border-radius:8px;background:#0b2a4a;box-shadow:0 0 0 1px var(--line)}
+.lk-bubble small{font-family:var(--head);font-weight:400;color:var(--accent);letter-spacing:.1em}
+.btn{border-radius:8px;background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);box-shadow:none;letter-spacing:.03em}
+.btn.primary,.btn.green{background:linear-gradient(180deg,#ffc53d,#ff9500);color:#2b1700;border-color:#ffc53d;box-shadow:0 0 20px -4px rgba(255,176,0,.8)}
+.lk-name input{border-radius:8px;background:#06192c;border-color:var(--line);color:var(--ink)}
+#lkModal{background:rgba(2,8,15,.7)}
+.lk-card{background:#08203a;color:var(--ink);border-radius:12px}
+.opt,.lk-mb{background:#0b2a4a;color:var(--ink);border:1px solid var(--line);border-radius:8px}
+.opt.right,.lk-mb.done{background:rgba(34,197,94,.18);border-color:#22c55e;color:#d1fae5}
+.opt.wrong{background:rgba(239,68,68,.18);border-color:#ef4444}
+.fb.good{background:rgba(34,197,94,.14);color:#bbf7d0;border:1px solid rgba(34,197,94,.4)}
+.fb.bad{background:rgba(239,68,68,.14);color:#fecaca;border:1px solid rgba(239,68,68,.4)}
+.fb.info{background:rgba(255,176,0,.1);color:#ffe2a3;border:1px solid var(--line)}
+.tile{background:#0b2a4a;border-color:var(--line);color:var(--ink)}
+.lk-cert{background:#08203a;border-color:var(--accent)}
+.lk-stats div{background:#0b2a4a}
+#lkToast{background:#0b2a4a;color:var(--ink);border-color:var(--line);border-radius:8px}
+
+/* periodic table board */
+.pt{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:3px;user-select:none}
+.cell{aspect-ratio:1;border-radius:5px;border:1px solid rgba(120,170,230,.25);background:rgba(120,170,230,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-weight:900;font-size:clamp(.5rem,1.4vw,.95rem);color:var(--ink);cursor:crosshair;position:relative;transition:background .2s,transform .15s;padding:0}
+.cell small{font-size:.55em;color:var(--ink3);font-weight:800;line-height:1}
+.cell:hover{background:rgba(255,176,0,.18);transform:scale(1.06);z-index:2}
+.cell.hit{background:#ef4444;border-color:#fca5a5;animation:boom .5s}
+.cell.miss::after{content:'•';position:absolute;inset:0;display:grid;place-items:center;color:#7dd3fc;font-size:1.6em}
+.cell.sel{background:rgba(255,176,0,.45);border-color:#ffb000}
+.cell.good{background:rgba(34,197,94,.45);border-color:#22c55e}
+.cell.metal{box-shadow:inset 0 -4px 0 #a78bfa}.cell.nonmetal{box-shadow:inset 0 -4px 0 #34d399}.cell.noble{box-shadow:inset 0 -4px 0 #f472b6}.cell.metalloid{box-shadow:inset 0 -4px 0 #fbbf24}
+.cell.gap{visibility:hidden}
+@keyframes boom{0%{transform:scale(1.5);box-shadow:0 0 30px #ef4444}100%{transform:scale(1)}}
+.gl{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:3px;font-size:.62rem;color:var(--ink3);text-align:center;font-weight:900;margin-bottom:3px}
+@media (max-width:640px){.cell small{display:none}.gl{display:none}}
+.orders{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 14px;border:2px dashed var(--line);border-radius:10px;margin-bottom:12px}
+.orders .o{font-family:var(--head);font-size:clamp(1.1rem,3vw,1.6rem);letter-spacing:.04em;color:var(--accent)}
+.ammo{display:flex;gap:6px}
+.ammo i{width:16px;height:30px;border-radius:8px 8px 3px 3px;background:#0b2a4a;border:1px solid var(--line)}
+.ammo i.d{background:linear-gradient(#ffc53d,#ff9500)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;font-weight:800;margin-top:10px}
+.legend span::before{content:'';display:inline-block;width:12px;height:4px;margin-right:5px;vertical-align:middle;background:var(--c)}
+.card{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.elcard{width:120px;height:140px;border:3px solid var(--accent);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#06192c}
+.elcard .z{font-weight:900;color:var(--ink2)}.elcard .s{font-family:var(--head);font-size:3rem;line-height:1}.elcard .m{font-weight:900;color:var(--accent)}.elcard .nm{font-size:.75rem;color:var(--ink3);font-weight:800}
+.inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.inputs label{font-size:.8rem;font-weight:900;color:var(--ink2)}
+.inputs input{width:100%;height:46px;border-radius:8px;border:2px solid var(--line);background:#06192c;color:var(--ink);text-align:center;font-weight:900;font-size:1.2rem;outline:none}
+.inputs input.ok{border-color:#22c55e}.inputs input.no{border-color:#ef4444}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+/* first 36 elements: [Z, symbol, name, mass number, group, period, type] */
+const E = [[1,'H','Hydrogen',1,1,1,'nonmetal'],[2,'He','Helium',4,18,1,'noble'],[3,'Li','Lithium',7,1,2,'metal'],[4,'Be','Beryllium',9,2,2,'metal'],[5,'B','Boron',11,13,2,'metalloid'],[6,'C','Carbon',12,14,2,'nonmetal'],[7,'N','Nitrogen',14,15,2,'nonmetal'],[8,'O','Oxygen',16,16,2,'nonmetal'],[9,'F','Fluorine',19,17,2,'nonmetal'],[10,'Ne','Neon',20,18,2,'noble'],
+ [11,'Na','Sodium',23,1,3,'metal'],[12,'Mg','Magnesium',24,2,3,'metal'],[13,'Al','Aluminium',27,13,3,'metal'],[14,'Si','Silicon',28,14,3,'metalloid'],[15,'P','Phosphorus',31,15,3,'nonmetal'],[16,'S','Sulfur',32,16,3,'nonmetal'],[17,'Cl','Chlorine',35,17,3,'nonmetal'],[18,'Ar','Argon',40,18,3,'noble'],
+ [19,'K','Potassium',39,1,4,'metal'],[20,'Ca','Calcium',40,2,4,'metal'],[21,'Sc','Scandium',45,3,4,'metal'],[22,'Ti','Titanium',48,4,4,'metal'],[23,'V','Vanadium',51,5,4,'metal'],[24,'Cr','Chromium',52,6,4,'metal'],[25,'Mn','Manganese',55,7,4,'metal'],[26,'Fe','Iron',56,8,4,'metal'],[27,'Co','Cobalt',59,9,4,'metal'],[28,'Ni','Nickel',59,10,4,'metal'],[29,'Cu','Copper',64,11,4,'metal'],[30,'Zn','Zinc',65,12,4,'metal'],[31,'Ga','Gallium',70,13,4,'metal'],[32,'Ge','Germanium',73,14,4,'metalloid'],[33,'As','Arsenic',75,15,4,'metalloid'],[34,'Se','Selenium',79,16,4,'nonmetal'],[35,'Br','Bromine',80,17,4,'nonmetal'],[36,'Kr','Krypton',84,18,4,'noble']];
+const byZ = z => E[z - 1];
+function board(el, opts){
+  opts = opts || {};
+  let cells = '';
+  for (let p = 1; p <= 4; p++) for (let g = 1; g <= 18; g++) {
+    const e = E.find(x => x[4] === g && x[5] === p);
+    cells += e ? `<button class="cell ${opts.types ? e[6] : ''}" data-z="${e[0]}" aria-label="${e[2]}"><small>${e[0]}</small>${opts.hide ? '' : e[1]}</button>` : '<span class="cell gap"></span>';
+  }
+  el.innerHTML = `<div class="gl">${Array.from({length:18}, (_, i) => `<span>${i + 1}</span>`).join('')}</div><div class="pt">${cells}</div>` +
+    (opts.types ? '<div class="legend"><span style="--c:#a78bfa">Metals</span><span style="--c:#34d399">Non-metals</span><span style="--c:#fbbf24">Metalloids</span><span style="--c:#f472b6">Noble gases</span></div>' : '');
+}
+
+/* ================================================================
+   MISSION 1: TARGET PRACTICE
+   ================================================================ */
+const ORDERS = [
+  {c:'Fire at: Potassium', z:19}, {c:'Fire at: Fe', z:26}, {c:'Fire at: Group 2, Period 3', z:12}, {c:'Fire at: element 17', z:17}, {c:'Fire at: Neon', z:10},
+  {c:'Fire at: Cu', z:29}, {c:'Fire at: Group 16, Period 2', z:8}, {c:'Fire at: element 6', z:6}, {c:'Fire at: Group 1, Period 4', z:19}, {c:'Fire at: Al', z:13}
+];
+async function mission1(body, kit){
+  kit.say(`Admiral on deck! ⚓ The periodic table is your battle map. <b>Groups</b> are the columns (1 to 18) and <b>periods</b> are the rows. Each square shows an element's <b>symbol</b> and <b>atomic number</b>.<br><br>Follow the fire orders and hit the right element. 10 hits to clear the mission!`);
+  body.innerHTML = `<div class="lk-panel glass"><div class="orders"><span>🎯 ORDERS:</span><span class="o" id="ord"></span><span class="ammo" id="am">${ORDERS.map(() => '<i></i>').join('')}</span></div><div id="bd"></div><div class="fb hidden" id="fb"></div></div>`;
+  const $ = s => body.querySelector(s); board($('#bd'));
+  let i = 0;
+  const show = () => { $('#ord').textContent = ORDERS[i].c; };
+  show();
+  return new Promise(res => {
+    body.querySelectorAll('.cell[data-z]').forEach(c => c.onclick = () => {
+      if (i >= ORDERS.length) return;
+      const z = +c.dataset.z, O = ORDERS[i], e = byZ(z), f = $('#fb'); f.classList.remove('hidden');
+      if (z === O.z) {
+        c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit'); setTimeout(() => c.classList.remove('hit'), 700);
+        body.querySelectorAll('#am i')[i].classList.add('d');
+        f.className = 'fb good'; f.textContent = `💥 Direct hit: ${e[2]} (${e[1]}), atomic number ${e[0]}, Group ${e[4]}, Period ${e[5]}.`;
+        if (++i === ORDERS.length) { $('#ord').textContent = 'ALL TARGETS DESTROYED'; kit.say(`Outstanding shooting! You can find elements by <b>name</b>, <b>symbol</b>, <b>atomic number</b>, or by <b>group and period</b>.`); res(); }
+        else show();
+      } else {
+        c.classList.add('miss'); kit.shake(c);
+        f.className = 'fb bad'; f.textContent = `🌊 Miss! That was ${e[2]} (${e[1]}), Group ${e[4]}, Period ${e[5]}. Groups go DOWN (columns), periods go ACROSS (rows).`;
+      }
+    });
+  });
+}
+
+/* ================================================================
+   MISSION 2: LOAD THE TORPEDOES
+   ================================================================ */
+async function mission2(body, kit){
+  kit.say(`To arm each torpedo, decode the element card:<br>🔢 <b>Protons</b> = atomic number · ⚡ <b>Electrons</b> = protons (in a neutral atom) · ⚪ <b>Neutrons</b> = mass number − atomic number.`);
+  const cards = shuffle([3, 7, 11, 17, 19, 26]).map(byZ);
+  body.innerHTML = `<div class="lk-panel glass"><div class="orders"><span>🚀 TORPEDOES LOADED:</span><span class="ammo" id="am">${cards.map(() => '<i></i>').join('')}</span></div><div id="slot"></div></div>`;
+  const $ = s => body.querySelector(s); let i = 0;
+  return new Promise(res => {
+    const show = () => {
+      const e = cards[i];
+      $('#slot').innerHTML = `<div class="card"><div class="elcard"><span class="z">${e[0]}</span><span class="s">${e[1]}</span><span class="nm">${e[2]}</span><span class="m">${e[3]}</span></div>
+        <div><p style="margin:0 0 8px;font-weight:800;color:var(--ink2)">Top number = atomic number (${e[0]}) · bottom number = mass number (${e[3]})</p>
+        <div class="inputs"><label>Protons<input id="ip" inputmode="numeric"></label><label>Neutrons<input id="in" inputmode="numeric"></label><label>Electrons<input id="ie" inputmode="numeric"></label></div>
+        <button class="btn primary" id="arm" style="margin-top:10px">🚀 Arm torpedo</button><div class="fb hidden" id="fb"></div></div></div>`;
+      $('#ip').focus();
+      $('#arm').onclick = () => {
+        const want = {ip:e[0], in:e[3] - e[0], ie:e[0]}, f = $('#fb'); let ok = true;
+        Object.keys(want).forEach(k => { const v = parseInt($('#' + k).value, 10), g = v === want[k]; $('#' + k).className = g ? 'ok' : 'no'; ok = ok && g; });
+        f.classList.remove('hidden');
+        if (!ok) { f.className = 'fb bad'; f.textContent = `✗ Check the inputs marked red. Neutrons = ${e[3]} − ${e[0]}.`; return; }
+        f.className = 'fb good'; f.textContent = `✓ ${e[2]}: ${e[0]} protons, ${e[3] - e[0]} neutrons, ${e[0]} electrons. Torpedo armed!`;
+        body.querySelectorAll('#am i')[i].classList.add('d');
+        if (++i === cards.length) { kit.say(`All torpedoes armed! 🚀 Atomic number = protons = electrons; mass number − atomic number = neutrons.`); res(); }
+        else setTimeout(show, kit.REDUCED ? 0 : 1100);
+      };
+    };
+    show();
+  });
+}
+
+/* ================================================================
+   MISSION 3: RADAR PATTERNS
+   ================================================================ */
+const SWEEPS = [
+  {c:'Mark every NOBLE GAS (Group 18)', set:[2, 10, 18, 36], why:'Group 18 = noble gases. They are very unreactive, with full outer shells.'},
+  {c:'Mark every ALKALI METAL in Group 1 (not hydrogen!)', set:[3, 11, 19], why:'Group 1 metals (Li, Na, K) all have 1 outer electron and react strongly with water.'},
+  {c:'Mark all the METALS in Period 3', set:[11, 12, 13], why:'Na, Mg and Al are metals. Across a period, elements change from metals (left) to non-metals (right).'},
+  {c:'Mark all the elements in Period 2', set:[3, 4, 5, 6, 7, 8, 9, 10], why:'A period is a row. Period 2 runs from Li to Ne.'}
+];
+async function mission3(body, kit){
+  kit.say(`Radar shows <b>patterns</b>! The coloured strips show element types: <b>metals</b> on the left and middle, <b>non-metals</b> on the right, and <b>metalloids</b> along the staircase between them. Complete each radar sweep, then press <b>Confirm</b>.`);
+  body.innerHTML = `<div class="lk-panel glass"><div class="orders"><span>📡 SWEEP <span id="sn">1</span>/${SWEEPS.length}:</span><span class="o" id="ord"></span></div><div id="bd"></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn primary" id="ok">✅ Confirm</button><button class="btn" id="clr">Clear marks</button></div><div class="fb hidden" id="fb"></div></div>`;
+  const $ = s => body.querySelector(s); board($('#bd'), {types:true});
+  let i = 0, sel = new Set();
+  const show = () => { $('#ord').textContent = SWEEPS[i].c; $('#sn').textContent = i + 1; sel.clear(); body.querySelectorAll('.cell').forEach(c => c.classList.remove('sel', 'good')); };
+  show();
+  return new Promise(res => {
+    body.querySelectorAll('.cell[data-z]').forEach(c => c.onclick = () => { const z = +c.dataset.z; sel.has(z) ? sel.delete(z) : sel.add(z); c.classList.toggle('sel'); });
+    $('#clr').onclick = show;
+    $('#ok').onclick = () => {
+      const S = SWEEPS[i], want = new Set(S.set), f = $('#fb'); f.classList.remove('hidden');
+      const missing = S.set.filter(z => !sel.has(z)), extra = [...sel].filter(z => !want.has(z));
+      if (!missing.length && !extra.length) {
+        body.querySelectorAll('.cell.sel').forEach(c => { c.classList.remove('sel'); c.classList.add('good'); });
+        f.className = 'fb good'; f.textContent = '✓ ' + S.why;
+        if (++i === SWEEPS.length) { kit.say(`Radar mastered! 📡 <b>Groups</b> (columns) share similar properties. <b>Periods</b> (rows) go from metals on the left to non-metals on the right.`); res(); }
+        else setTimeout(show, kit.REDUCED ? 300 : 2200);
+      } else { f.className = 'fb bad'; f.textContent = `✗ ${missing.length ? missing.length + ' missing' : ''}${missing.length && extra.length ? ' and ' : ''}${extra.length ? extra.length + ' extra marked' : ''}. Check again!`; }
+    };
+  });
+}
+
+LabKit.init({
+  id:'periodic-battleships', title:'Periodic Battleships', icon:'⚓', theme:'#ffb000', kicker:"Mr Trichardt's Science Lab · Naval command",
+  heroTitle:'Periodic <span class="g">Battleships</span>',
+  intro:'Take command of the fleet! Use the periodic table as your battle map. Hit targets by name, symbol and position, decode element cards to arm torpedoes, and sweep the radar for patterns.',
+  guide:{name:'Admiral Argon', emoji:'🫡'}, certTitle:'Periodic Table Admiral', confetti:['⚓','💥','🚀','⭐','🎯'],
+  summary:'You can now locate elements by name or symbol, use atomic and mass numbers to find protons, neutrons and electrons, and identify groups, periods, metals and non-metals.',
+  missions:[
+    {icon:'🎯', title:'Target practice', short:'Locate', blurb:'Hit elements by name, symbol, number or position.', run:mission1,
+      gate:[
+        {q:'On the periodic table, a GROUP is…', o:['A vertical column','A horizontal row','A single element','The top number on an element card'], ex:'Groups are columns (1 to 18). Periods are rows.', hint:'Groups go up and down.'},
+        {q:'Which element is in Group 2, Period 3?', o:['Magnesium (Mg)','Sodium (Na)','Calcium (Ca)','Beryllium (Be)'], ex:'Row 3, column 2 is magnesium.', hint:'Find row 3, then column 2.'},
+        {q:'The symbol "Fe" stands for…', o:['Iron','Fluorine','Francium','Fermium'], ex:'Fe comes from the Latin "ferrum", meaning iron.', hint:'It\'s a metal used in steel.'}],
+      bonus:{q:'Why is the symbol for potassium K?', o:['It comes from its Latin name "kalium"','It was the 11th element found','Potassium starts with K in English','It was a mistake'], ex:'Several symbols come from Latin names: K (kalium), Na (natrium), Fe (ferrum).'}},
+    {icon:'🚀', title:'Load the torpedoes', short:'Decode', blurb:'Use atomic and mass numbers to find protons, neutrons and electrons.', run:mission2,
+      gate:[
+        {q:'An element has atomic number 17 and mass number 35. How many neutrons?', o:['18','17','35','52'], ex:'Neutrons = 35 − 17 = 18.', hint:'Mass number minus atomic number.'},
+        {q:'In a neutral atom, the number of electrons equals the number of…', o:['Protons','Neutrons','Shells','Groups'], ex:'Neutral atoms have equal numbers of protons (+) and electrons (−).', hint:'Charges must balance.'},
+        {q:'The mass number is the total number of…', o:['Protons + neutrons','Protons + electrons','Electrons only','Neutrons only'], ex:'Electrons are so light we don\'t count them, so mass number = protons + neutrons.', hint:'What\'s in the heavy nucleus?'}],
+      bonus:{q:'Iron has atomic number 26 and mass number 56. How many particles are in its nucleus?', o:['56','26','30','82'], ex:'The nucleus holds protons + neutrons = mass number = 56.'}},
+    {icon:'📡', title:'Radar patterns', short:'Patterns', blurb:'Find groups, periods, metals and non-metals.', run:mission3,
+      gate:[
+        {q:'Where are the METALS found on the periodic table?', o:['On the left and in the middle','Only on the far right','Only in the top row','Only in Group 18'], ex:'Most elements are metals, found on the left and in the centre.', hint:'Look at the purple strips.'},
+        {q:'The elements in Group 18 are called…', o:['Noble gases','Alkali metals','Halogens','Transition metals'], ex:'Group 18 = noble gases: He, Ne, Ar, Kr…', hint:'Think of neon signs.'},
+        {q:'Elements in the same GROUP have…', o:['Similar chemical properties','The same mass','The same number of shells','Nothing in common'], ex:'Elements in a group have the same number of outer electrons, so they react in similar ways.', hint:'Think of the Group 1 alkali metals.'}],
+      bonus:{q:'Moving across Period 3 from left to right, elements change from…', o:['Metals to non-metals','Non-metals to metals','Gases to liquids','Big atoms to noble gases only'], ex:'Na, Mg and Al are metals, Si is a metalloid, and P, S, Cl and Ar are non-metals.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

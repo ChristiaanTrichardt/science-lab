@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs><radialGradient id="b" cx="80%" cy="0"><stop offset="0" stop-color="#ff4fd8" stop-opacity=".45"/><stop offset="1" stop-color="#07051a" stop-opacity="0"/></radialGradient></defs>
+  <rect width="640" height="400" fill="#07051a"/><rect width="640" height="400" fill="url(#b)"/>
+  <g stroke="rgba(126,110,255,.5)"><path d="M0 330 H640 M0 360 H640 M0 390 H640 M80 300 L0 400 M240 300 L200 400 M400 300 L440 400 M560 300 L640 400"/></g>
+  <g fill="none" stroke-width="3"><circle cx="320" cy="180" r="55" stroke="#4fe3ff"/><circle cx="320" cy="180" r="95" stroke="#4fe3ff"/><circle cx="320" cy="180" r="135" stroke="rgba(126,110,255,.6)" stroke-dasharray="6 7"/></g>
+  <g><circle cx="314" cy="176" r="11" fill="#ff5c7a"/><circle cx="328" cy="172" r="11" fill="#9aa3c7"/><circle cx="322" cy="188" r="11" fill="#ff5c7a"/><circle cx="308" cy="190" r="11" fill="#9aa3c7"/></g>
+  <g fill="#4fe3ff" style="filter:drop-shadow(0 0 6px #4fe3ff)"><circle cx="320" cy="125" r="9"/><circle cx="320" cy="235" r="9"/><circle cx="225" cy="180" r="9"/><circle cx="415" cy="180" r="9"/><circle cx="253" cy="113" r="9"/><circle cx="387" cy="247" r="9"/></g>
+  <text x="320" y="380" font-family="Arial Black,sans-serif" font-size="30" text-anchor="middle" fill="#ff4fd8">2 · 8 · 8 · 2</text>
+</svg>

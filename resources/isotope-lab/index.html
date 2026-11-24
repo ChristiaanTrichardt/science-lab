@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Isotope Mass Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: precision lab instrument ===== */
+:root{--ink:#16181d;--ink2:#4b5160;--ink3:#8a90a0;--accent:#ff6b1a;--theme:#ff6b1a;--hair:rgba(22,24,29,.08);
+  --head:'Space Grotesk','Segoe UI',sans-serif;--body:'Space Grotesk','Nunito',sans-serif;--g1:#ff6b1a;--g2:#16181d}
+body{background:#eceef2;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:linear-gradient(180deg,#f7f8fa,#e3e6ec)}
+.lk-bg{display:none}
+.glass{background:#fff;border:1px solid #dde1e8;border-radius:20px;box-shadow:0 1px 0 #fff inset,0 12px 30px -18px rgba(22,24,29,.35);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:700;letter-spacing:-.02em}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--accent)}
+.lk-logo{background:#16181d;box-shadow:none;border-radius:12px}
+.lk-kick{color:var(--accent);letter-spacing:.14em}
+.lk-step{background:#f4f5f8;border-color:#dde1e8}
+.lk-step.now{background:#16181d;color:#fff;box-shadow:none}
+.lk-step.now .n{background:#2b2f38}
+.lk-step.done .n{background:var(--accent);color:#fff}
+.lk-mlist li{background:#f7f8fa;border:1px solid #e6e9ef}
+.lk-face{background:#16181d;box-shadow:none}
+.lk-bubble small{color:var(--accent)}
+.btn{background:#fff;border:1px solid #d3d8e1;box-shadow:0 1px 2px rgba(0,0,0,.06);border-radius:12px}
+.btn.primary,.btn.green{background:#16181d;color:#fff;border-color:#16181d;box-shadow:0 8px 16px -8px rgba(22,24,29,.6)}
+.lk-name input{border:1px solid #d3d8e1;border-radius:12px;background:#fff}
+.lk-card{background:#fff;border:1px solid #dde1e8}
+.opt,.lk-mb,.lk-deck .lk-sc{background:#f7f8fa;border:1px solid #e1e5ec;box-shadow:none;border-radius:12px}
+.opt:hover:not(:disabled),.lk-mb:hover:not(:disabled){border-color:var(--accent)}
+.lk-bin{background:#f7f8fa;border-color:#d3d8e1}
+.lk-cert{background:#fff;border-color:var(--accent)}
+.lcd{font-family:'Space Grotesk',monospace;background:#16181d;color:#ffb38a;border-radius:12px;padding:10px 14px;font-weight:700;letter-spacing:.04em}
+.spec svg{display:block;width:100%;max-width:820px;margin:0 auto;height:auto;border-radius:14px;background:#16181d}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.seg{display:inline-flex;background:#f1f3f6;border-radius:12px;padding:3px}
+.seg button{padding:8px 14px;border-radius:10px;font-weight:700}
+.seg button.on{background:#16181d;color:#fff}
+.peaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:12px}
+.peak{border:1px solid #e1e5ec;border-radius:14px;padding:12px;background:#f7f8fa}
+.peak b{font-size:1.1rem}
+.peak input{width:80px;height:40px;border-radius:10px;border:1px solid #d3d8e1;text-align:center;font:inherit;font-weight:700;font-size:1.05rem}
+.peak input.ok{border-color:#22c55e;background:#f0fdf4}.peak input.no{border-color:#ef4444;background:#fef2f2}
+.react{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.react{grid-template-columns:1fr}}
+.rbox{border:1px solid #e1e5ec;border-radius:16px;padding:14px;background:#f7f8fa;text-align:center}
+.rbox svg{width:100%;max-width:240px;height:150px}
+.dating{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-top:12px}
+.jar{width:90px;height:120px;border:3px solid #16181d;border-radius:10px 10px 16px 16px;position:relative;overflow:hidden;background:#fff}
+.jar i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#ffb38a,#ff6b1a);transition:height .6s}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const NS = 'http://www.w3.org/2000/svg';
+
+/* ================================================================
+   MISSION 1: SAME ELEMENT?
+   ================================================================ */
+async function mission1(body, kit){
+  kit.say(`Welcome to the Isotope Lab. 🔬 An element is decided by its number of <b>protons</b> ONLY. Atoms of the same element with different numbers of <b>neutrons</b> are called <b>isotopes</b>.<br><br>Sort these nuclei by element. Look only at the protons!`);
+  body.innerHTML = `<div class="lk-panel glass" id="s"></div>`;
+  await kit.sortDeck(body.querySelector('#s'), [
+    {t:'🔴×6 ⚪×6 · 6 protons, 6 neutrons', k:'C', why:'6 protons = carbon (carbon-12).'},
+    {t:'🔴×6 ⚪×7 · 6 protons, 7 neutrons', k:'C', why:'Still 6 protons, so still carbon! (carbon-13)'},
+    {t:'🔴×6 ⚪×8 · 6 protons, 8 neutrons', k:'C', why:'Carbon-14: same protons, more neutrons.'},
+    {t:'🔴×8 ⚪×8 · 8 protons, 8 neutrons', k:'O', why:'8 protons = oxygen (oxygen-16).'},
+    {t:'🔴×8 ⚪×10 · 8 protons, 10 neutrons', k:'O', why:'Oxygen-18: an isotope of oxygen.'},
+    {t:'🔴×7 ⚪×7 · 7 protons, 7 neutrons', k:'N', why:'7 protons = nitrogen, even though it has the same mass as carbon-14!'}
+  ], [{k:'C', label:'Carbon (6p)'}, {k:'O', label:'Oxygen (8p)'}, {k:'N', label:'Nitrogen (7p)'}], {hint:'Only the number of PROTONS decides the element.'});
+  kit.say(`Sorted! Carbon-12, carbon-13 and carbon-14 are <b>isotopes</b>: same element (6 protons), different neutrons, so different masses. The number after the name is the <b>mass number</b>.`);
+}
+
+/* ================================================================
+   MISSION 2: MASS SPECTROMETER
+   ================================================================ */
+const SAMPLES = {
+  Cl:{name:'Chlorine', z:17, iso:[{a:35, f:.76}, {a:37, f:.24}]},
+  C:{name:'Carbon', z:6, iso:[{a:12, f:.94}, {a:13, f:.05}, {a:14, f:.01}]},
+  Mg:{name:'Magnesium', z:12, iso:[{a:24, f:.79}, {a:25, f:.1}, {a:26, f:.11}]}
+};
+async function mission2(body, kit){
+  kit.say(`This is a <b>mass spectrometer</b>. It fires atoms (as ions) through a magnetic field. <b>Heavier</b> isotopes bend <b>less</b>, so each isotope lands in a different place on the detector.<br><br>Run each sample, then label every peak with its number of <b>neutrons</b>.`);
+  body.innerHTML = `<div class="lk-panel glass spec"><svg viewBox="0 0 640 300" id="ms">
+      <rect x="20" y="40" width="70" height="40" rx="8" fill="#2b2f38"/><text x="55" y="100" fill="#8a90a0" font-size="11" text-anchor="middle">ion source</text>
+      <path d="M90 60 H200" stroke="#3a3f4b" stroke-width="20"/><circle cx="330" cy="60" r="0"/>
+      <path d="M200 50 A200 200 0 0 1 560 230" fill="none" stroke="#2b2f38" stroke-width="140" opacity=".5"/>
+      <text x="380" y="120" fill="#5a6070" font-size="12" text-anchor="middle">magnetic field</text>
+      <rect x="400" y="250" width="220" height="14" fill="#ff6b1a" opacity=".85"/><text x="510" y="285" fill="#ffb38a" font-size="12" text-anchor="middle">detector</text>
+      <g id="paths"></g><g id="bars"></g></svg>
+    <div class="ctl"><span class="seg" id="seg">${Object.entries(SAMPLES).map(([k, s], i) => `<button data-k="${k}" class="${i ? '' : 'on'}">${s.name}</button>`).join('')}</span>
+      <button class="btn primary" id="run">▶ Run sample</button><span class="lcd" id="lcd">READY</span></div>
+    <div id="peaks"></div></div>`;
+  const $ = s => body.querySelector(s); let cur = 'Cl', busy = false; const done = new Set();
+  // heavier isotopes bend less, so they land further along the detector
+  const xFor = a => { const as = SAMPLES[cur].iso.map(i => i.a), lo = Math.min(...as), hi = Math.max(...as); return 440 + (a - lo) / ((hi - lo) || 1) * 140; };
+  $('#seg').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy) return; $('#seg').querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on'); cur = b.dataset.k; $('#paths').innerHTML = ''; $('#bars').innerHTML = ''; $('#peaks').innerHTML = ''; $('#lcd').textContent = 'READY'; });
+  return new Promise(res => {
+    $('#run').onclick = async () => {
+      if (busy) return; busy = true; const S = SAMPLES[cur]; $('#paths').innerHTML = ''; $('#bars').innerHTML = ''; $('#lcd').textContent = 'RUNNING…';
+      const counts = S.iso.map(() => 0);
+      for (let k = 0; k < 40; k++) {
+        let r = Math.random(), idx = 0; while (idx < S.iso.length - 1 && r > S.iso[idx].f) { r -= S.iso[idx].f; idx++; }
+        if (k < S.iso.length) idx = k; // make sure every isotope shows up
+        counts[idx]++;
+        const x = xFor(S.iso[idx].a), p = document.createElementNS(NS, 'path');
+        p.setAttribute('d', `M90 60 H200 Q ${x - 40} 60 ${x} 250`); p.setAttribute('fill', 'none'); p.setAttribute('stroke', ['#ffb38a','#7dd3fc','#c4b5fd'][idx]); p.setAttribute('stroke-width', 1.5); p.setAttribute('opacity', .7);
+        $('#paths').appendChild(p);
+        $('#bars').innerHTML = S.iso.map((iso, j) => `<rect x="${xFor(iso.a) - 7}" y="${248 - counts[j] * 4}" width="14" height="${counts[j] * 4}" fill="${['#ffb38a','#7dd3fc','#c4b5fd'][j]}"/><text x="${xFor(iso.a)}" y="${240 - counts[j] * 4}" fill="#fff" font-size="11" text-anchor="middle">${iso.a}</text>`).join('');
+        await wait(kit.REDUCED ? 0 : 50);
+      }
+      $('#lcd').textContent = `${S.name.toUpperCase()}: ${S.iso.length} PEAKS`;
+      $('#peaks').innerHTML = `<p style="margin:12px 0 0;font-weight:700">${S.name} has atomic number <b>${S.z}</b>. Label each peak:</p><div class="peaks">${S.iso.map((iso, j) => `<div class="peak"><b>${S.name}-${iso.a}</b><div style="color:var(--ink2);font-size:.85rem;margin:4px 0 8px">${Math.round(iso.f * 100)}% of atoms</div>Neutrons: <input data-n="${iso.a - S.z}" inputmode="numeric"></div>`).join('')}</div>
+        <button class="btn primary" id="lab" style="margin-top:10px">✅ Check labels</button><div class="fb hidden" id="fb"></div>`;
+      busy = false;
+      $('#lab').onclick = () => {
+        let ok = true; body.querySelectorAll('.peak input').forEach(i => { const g = parseInt(i.value, 10) === +i.dataset.n; i.className = g ? 'ok' : 'no'; ok = ok && g; });
+        const f = $('#fb'); f.classList.remove('hidden');
+        if (!ok) { f.className = 'fb bad'; f.textContent = `✗ Neutrons = mass number − atomic number (${S.z}).`; return; }
+        done.add(cur); f.className = 'fb good'; f.textContent = `✓ All ${S.name} isotopes labelled! ${done.size < 2 ? 'Now run another sample.' : ''}`;
+        if (done.size >= 2 && !res.done) { res.done = true; kit.say(`Spectrometer calibrated! Every isotope of an element has the <b>same number of protons</b> but a different number of <b>neutrons</b>, and that's why they land in different places.`); res(); }
+      };
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 3: SAME CHEMISTRY, DIFFERENT MASS
+   ================================================================ */
+function shellSVG(n, label){ return `<svg viewBox="0 0 240 150"><circle cx="120" cy="75" r="30" fill="none" stroke="#d3d8e1" stroke-width="2"/><circle cx="120" cy="75" r="58" fill="none" stroke="#d3d8e1" stroke-width="2"/>
+  <circle cx="120" cy="75" r="14" fill="#ff6b1a"/><text x="120" y="80" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">${label}</text>
+  ${[[120,45],[120,105]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#16181d"/>`).join('')}${[[62,75],[178,75],[120,17],[120,133]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#16181d"/>`).join('')}</svg>`; }
+async function mission3(body, kit){
+  kit.say(`Do isotopes behave differently in chemical reactions? Let's burn carbon-12 and carbon-14 in oxygen and compare. 🔥`);
+  body.innerHTML = `<div class="react"><div class="rbox">${shellSVG(6, '6p 6n')}<b>Carbon-12</b><div class="lcd" id="r12" style="margin-top:8px">electrons: 2, 4</div></div>
+      <div class="rbox">${shellSVG(6, '6p 8n')}<b>Carbon-14</b><div class="lcd" id="r14" style="margin-top:8px">electrons: 2, 4</div></div></div>
+    <div class="ctl" style="justify-content:center"><button class="btn primary" id="burn">🔥 React both with oxygen</button></div><div class="fb hidden" id="bf"></div>
+    <div class="lk-panel glass hidden" id="date" style="margin-top:14px"><b style="font-size:1.2rem">🦴 Bonus job: carbon dating</b>
+      <p style="margin:6px 0 0;color:var(--ink2);font-weight:600">Living things contain a tiny amount of carbon-14. After death it slowly decays: every <b>5730 years</b> (its half-life), half of it is gone. Work out how old each fossil is.</p>
+      <div class="dating"><div class="jar"><i id="lvl" style="height:100%"></i></div><div id="dq"></div></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    $('#burn').onclick = async () => {
+      $('#burn').disabled = true;
+      await wait(kit.REDUCED ? 0 : 500);
+      $('#r12').innerHTML = 'Makes CO₂ ✓<br>mass of CO₂ = 44'; $('#r14').innerHTML = 'Makes CO₂ ✓<br>mass of CO₂ = 46';
+      const f = $('#bf'); f.classList.remove('hidden'); f.className = 'fb info';
+      f.innerHTML = 'Both made <b>CO₂</b> in exactly the same way! Chemical reactions depend on <b>electrons</b>, and both isotopes have the same electrons (2, 4). They only differ in <b>mass</b> (extra neutrons).';
+      $('#date').classList.remove('hidden'); $('#date').scrollIntoView({behavior:'smooth', block:'center'});
+      const Q = [[50, '5730 years'], [25, '11 460 years'], [12.5, '17 190 years']]; let k = 0;
+      const ask = () => {
+        const [pct, ans] = Q[k]; $('#lvl').style.height = pct + '%';
+        const opts = shuffle(['5730 years', '11 460 years', '17 190 years', '2865 years']);
+        $('#dq').innerHTML = `<b>Fossil ${k + 1}: ${pct}% of its carbon-14 is left.</b><div class="lk-bt" style="margin-top:8px">${opts.map(o => `<button class="btn small" data-a="${o}">${o}</button>`).join('')}</div><div class="fb hidden" id="df"></div>`;
+        $('#dq').querySelectorAll('button').forEach(b => b.onclick = async () => {
+          const df = $('#df'); df.classList.remove('hidden');
+          if (b.dataset.a === ans) { df.className = 'fb good'; df.textContent = `✓ ${pct}% left = ${k + 1} half-life${k ? 's' : ''} = ${ans}.`; await wait(kit.REDUCED ? 200 : 1400);
+            if (++k < Q.length) ask(); else { kit.say(`Excellent! Isotopes have the <b>same chemical properties</b> (same electrons) but <b>different masses</b>. And carbon-14 lets scientists date ancient remains!`); res(); } }
+          else { b.disabled = true; kit.shake(b); df.className = 'fb bad'; df.textContent = '✗ Every half-life halves what\'s left: 100% → 50% → 25% → 12.5%.'; }
+        });
+      };
+      ask();
+    };
+  });
+}
+
+LabKit.init({
+  id:'isotope-lab', title:'Isotope Mass Lab', icon:'⚖️', theme:'#ff6b1a', kicker:"Mr Trichardt's Science Lab · Precision lab",
+  heroTitle:'Isotope <span class="g">Mass Lab</span>',
+  intro:'Operate a real-style mass spectrometer, sort atoms into isotopes, and discover why isotopes react the same way but weigh differently. Then use carbon-14 to date ancient fossils.',
+  guide:{name:'Dr Mass · Lab lead', emoji:'👨‍🔬'}, certTitle:'Isotope Specialist', confetti:['⚖️','⚛️','🦴','⭐','🔬'],
+  summary:'You can now define isotopes, calculate the number of neutrons from atomic and mass numbers, and explain why isotopes have similar chemical properties but different masses.',
+  missions:[
+    {icon:'🔴', title:'Same element?', short:'Isotopes', blurb:'Sort nuclei by element and discover isotopes.', run:mission1,
+      gate:[
+        {q:'Isotopes are atoms of the same element with different numbers of…', o:['Neutrons','Protons','Electrons','Shells'], ex:'Same protons (same element), different neutrons.', hint:'What changed between carbon-12 and carbon-14?'},
+        {q:'What decides which element an atom is?', o:['The number of protons','The number of neutrons','The mass number','The number of isotopes'], ex:'Atomic number (protons) defines the element.', hint:'Nitrogen-14 and carbon-14 have the same mass but are different elements.'},
+        {q:'Which pair are isotopes?', o:['Carbon-12 and carbon-14','Carbon-14 and nitrogen-14','Oxygen-16 and carbon-12','Sodium and chlorine'], ex:'Both are carbon (6 protons) with different neutrons.', hint:'They must be the same element.'}],
+      bonus:{q:'Carbon-14 and nitrogen-14 have the same mass number. Are they isotopes?', o:['No, they have different numbers of protons, so they are different elements','Yes, same mass means isotopes','Yes, because both are gases','Only on Tuesdays'], ex:'Isotopes must be the SAME element (same protons).'}},
+    {icon:'🧲', title:'Mass spectrometer', short:'Spectrometer', blurb:'Run samples and label every isotope peak.', run:mission2,
+      gate:[
+        {q:'How many neutrons are in chlorine-37 (atomic number 17)?', o:['20','17','37','54'], ex:'37 − 17 = 20.', hint:'Mass number − atomic number.'},
+        {q:'Magnesium-26 has atomic number 12. How many neutrons?', o:['14','12','26','38'], ex:'26 − 12 = 14.', hint:'Subtract.'},
+        {q:'In the mass spectrometer, heavier isotopes…', o:['Bend less and land further along','Bend more','Don\'t move','Turn into different elements'], ex:'Heavier ions are harder to turn, so they bend less.', hint:'Where did chlorine-37 land compared with chlorine-35?'}],
+      bonus:{q:'Most chlorine atoms are chlorine-35, but some are chlorine-37. Why is chlorine\'s mass on the periodic table about 35.5?', o:['It\'s an average of the isotopes, weighted by how common each is','Chlorine atoms are cut in half','It\'s a printing error','Electrons add 0.5'], ex:'Relative atomic mass is a weighted average of all the isotopes.'}},
+    {icon:'🔥', title:'Same chemistry, different mass', short:'Chemistry', blurb:'React isotopes and carbon-date fossils.', run:mission3,
+      gate:[
+        {q:'Why do isotopes of an element have the same chemical properties?', o:['They have the same number of electrons','They have the same number of neutrons','They have the same mass','They are in different groups'], ex:'Reactions involve electrons, and isotopes have identical electron arrangements.', hint:'What was the same in both carbon atoms?'},
+        {q:'How do carbon-12 and carbon-14 differ?', o:['Carbon-14 is heavier because it has 2 more neutrons','Carbon-14 has more protons','Carbon-14 has more electrons','They are exactly the same'], ex:'Two extra neutrons make carbon-14 heavier.', hint:'Look at the nucleus.'},
+        {q:'A fossil has 25% of its original carbon-14 left (half-life 5730 years). How old is it?', o:['About 11 460 years','About 5730 years','About 2865 years','About 22 920 years'], ex:'100% → 50% → 25% is two half-lives: 2 × 5730.', hint:'How many times did it halve?'}],
+      bonus:{q:'Why can\'t carbon dating be used on a 1-billion-year-old rock?', o:['After so many half-lives, almost no carbon-14 is left to measure','Rocks are too hard','Carbon-14 grows back','It works perfectly on rocks'], ex:'Carbon-14 has a short half-life, so it only works for things up to about 50 000 years old.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

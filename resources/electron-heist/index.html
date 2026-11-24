@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Electron Heist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: retro arcade ===== */
+:root{--ink:#f5f3ff;--ink2:#c4bde8;--ink3:#8f86c4;--accent:#ffe600;--theme:#ffe600;--hair:rgba(255,230,0,.25);
+  --head:'Press Start 2P',monospace;--g1:#ffe600;--g2:#00ff9c;--neon:#00ff9c;--pink:#ff3ea5;--line:#5b4bc4}
+body{background:#120a2a;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(1000px 600px at 50% -10%,#2b1667,#120a2a 70%)}
+body::after{content:'';position:fixed;inset:0;z-index:50;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.lk-bg{display:none}
+.glass{background:#1d1146;border:4px solid var(--line);border-radius:0;box-shadow:6px 6px 0 #07031a;-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-top{border-radius:0}
+.lk-brand b{font-family:var(--head);font-size:.8rem;line-height:1.5}
+.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:400;line-height:1.35}
+.lk-hero h1{font-size:clamp(1.6rem,4.5vw,2.8rem);text-shadow:4px 4px 0 var(--pink)}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--accent)}
+.lk-mhead h1{font-size:clamp(1rem,2.6vw,1.5rem);text-shadow:3px 3px 0 var(--pink)}
+.lk-card h2{font-size:1rem}
+.lk-kick{font-family:var(--head);font-size:.55rem;color:var(--neon)}
+.lk-logo{border-radius:0;background:var(--accent);box-shadow:3px 3px 0 var(--pink)}
+.lk-step{border-radius:0;background:#120a2a;border:2px solid var(--line);color:var(--ink2)}
+.lk-step .n{border-radius:0;background:#2b1667}
+.lk-step.now{background:#2b1667;color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.lk-step.done .n{background:var(--neon);color:#120a2a}
+.lk-chip,.chip{border-radius:0;background:#120a2a;border:2px solid var(--line);color:var(--ink)}
+.lk-mlist li{border-radius:0;background:#120a2a;border:2px solid var(--line)}
+.lk-mlist .ic,.lk-face{border-radius:0;background:#2b1667;box-shadow:none}
+.lk-bubble{border-radius:0}
+.lk-bubble small{font-family:var(--head);font-size:.55rem;color:var(--accent)}
+.btn{border-radius:0;background:#2b1667;color:var(--ink);border:3px solid var(--line);box-shadow:4px 4px 0 #07031a;font-weight:900}
+.btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:1px 1px 0 #07031a}
+.btn.primary,.btn.green{background:var(--accent);color:#120a2a;border-color:#fff59e}
+.lk-name input{border-radius:0;background:#120a2a;border:3px solid var(--line);color:var(--ink)}
+#lkModal{background:rgba(7,3,26,.75)}
+.lk-card{background:#1d1146;color:var(--ink);border-radius:0;border:4px solid var(--line)}
+.opt,.lk-mb{border-radius:0;background:#2b1667;color:var(--ink);border:2px solid var(--line)}
+.opt.right,.lk-mb.done{background:rgba(0,255,156,.18);border-color:var(--neon);color:#d1fff0}
+.opt.wrong{background:rgba(255,62,165,.18);border-color:var(--pink)}
+.fb{border-radius:0}
+.fb.good{background:rgba(0,255,156,.12);color:#c9ffe9;border:2px solid var(--neon)}
+.fb.bad{background:rgba(255,62,165,.12);color:#ffd0ea;border:2px solid var(--pink)}
+.fb.info{background:rgba(255,230,0,.1);color:#fff6b3;border:2px solid var(--accent)}
+.lk-cert{border-radius:0;background:#1d1146;border:4px dashed var(--accent)}
+.lk-stats div{border-radius:0;background:#2b1667}
+#lkToast{border-radius:0;background:#2b1667;color:var(--ink);border:3px solid var(--accent)}
+.pix{font-family:var(--head);font-size:.7rem;line-height:1.6}
+.vault svg{display:block;width:100%;height:auto;max-height:380px}
+.atomg{cursor:pointer}
+.atomg:hover circle.core{filter:brightness(1.3)}
+.hud{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.carry{font-family:var(--head);font-size:.65rem;color:var(--neon)}
+.ion{font-family:var(--head);font-size:clamp(1.6rem,6vw,3rem);text-align:center;margin:16px 0 8px;color:var(--accent)}
+.timer{height:10px;background:#120a2a;border:2px solid var(--line)}
+.timer i{display:block;height:100%;background:var(--neon);transition:width linear}
+.charges{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+@media (max-width:560px){.charges{grid-template-columns:repeat(3,1fr)}}
+.charges button{padding:12px 0;font-family:var(--head);font-size:.75rem}
+.elcard{display:inline-flex;flex-direction:column;align-items:center;padding:12px 20px;border:4px solid var(--accent);background:#120a2a}
+.elcard b{font-family:var(--head);font-size:1.8rem;margin:6px 0}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const DATA = {Na:{z:11, c:[2,8,1], m:true, name:'Sodium'}, Cl:{z:17, c:[2,8,7], name:'Chlorine'}, Mg:{z:12, c:[2,8,2], m:true, name:'Magnesium'}, O:{z:8, c:[2,6], name:'Oxygen'},
+  Ca:{z:20, c:[2,8,8,2], m:true, name:'Calcium'}, Li:{z:3, c:[2,1], m:true, name:'Lithium'}, K:{z:19, c:[2,8,8,1], m:true, name:'Potassium'}, F:{z:9, c:[2,7], name:'Fluorine'}};
+const supNum = s => String(s).replace(/1/g,'¹').replace(/2/g,'²').replace(/3/g,'³');
+const SUP = n => n === 0 ? '' : (Math.abs(n) === 1 ? '' : supNum(Math.abs(n))) + (n > 0 ? '⁺' : '⁻');
+
+/* ================================================================
+   MISSION 1: THE HEIST
+   ================================================================ */
+const LEVELS = [['Na','Cl'], ['Mg','O'], ['Ca','Cl','Cl'], ['Li','Li','O']];
+function drawAtom(a, x, y){
+  const R = [24, 44, 64, 84], cfg = a.c, outer = cfg.length - 1;
+  let s = `<g class="atomg" data-i="${a.i}">`;
+  cfg.forEach((n, sh) => {
+    const full = sh === 0 ? 2 : 8;
+    s += `<circle cx="${x}" cy="${y}" r="${R[sh]}" fill="none" stroke="${sh === outer ? (n === full ? '#00ff9c' : '#ffe600') : '#5b4bc4'}" stroke-width="${sh === outer ? 3 : 2}"/>`;
+    for (let k = 0; k < n; k++) { const ang = k / Math.max(n, 1) * Math.PI * 2 - Math.PI / 2; s += `<rect x="${x + Math.cos(ang) * R[sh] - 5}" y="${y + Math.sin(ang) * R[sh] - 5}" width="10" height="10" fill="${sh === outer ? '#00ff9c' : '#8f86c4'}"/>`; }
+    if (sh === outer && n < full && !a.m) for (let k = n; k < full; k++) { const ang = k / full * Math.PI * 2 - Math.PI / 2; s += `<rect x="${x + Math.cos(ang) * R[sh] - 5}" y="${y + Math.sin(ang) * R[sh] - 5}" width="10" height="10" fill="none" stroke="#ff3ea5" stroke-dasharray="2 2"/>`; }
+  });
+  const q = a.z - cfg.reduce((t, n) => t + n, 0);
+  s += `<circle class="core" cx="${x}" cy="${y}" r="16" fill="${a.m ? '#ff3ea5' : '#3ea5ff'}"/><text x="${x}" y="${y + 6}" text-anchor="middle" font-family="Press Start 2P" font-size="11" fill="#fff">${a.s}</text>`;
+  s += `<text x="${x}" y="${y + 112}" text-anchor="middle" font-family="Press Start 2P" font-size="${q ? 16 : 10}" fill="${q ? '#ffe600' : '#c4bde8'}">${q ? a.s + SUP(q) : a.c.join(',')}</text></g>`;
+  return s;
+}
+async function mission1(body, kit){
+  kit.say(`🕹️ <b>PLAYER 1 READY.</b> Metal atoms have only a few outer electrons and want to <b>get rid of them</b>. Non-metals are nearly full and want to <b>grab more</b>. Your job: steal electrons from the metal and deliver them to the non-metal until every outer shell is FULL.<br><br>Tap the <b>pink metal</b> to grab an electron, then tap the <b>blue non-metal</b> to drop it.`);
+  body.innerHTML = `<div class="lk-panel glass vault"><div class="hud"><span class="pix" id="lvl"></span><span class="carry" id="carry">HANDS: EMPTY</span></div><div id="stage"></div><div class="fb hidden" id="fb"></div></div>`;
+  const $ = s => body.querySelector(s);
+  for (let L = 0; L < LEVELS.length; L++) {
+    await new Promise(res => {
+      const atoms = LEVELS[L].map((s, i) => ({i, s, z:DATA[s].z, c:DATA[s].c.slice(), m:!!DATA[s].m}));
+      let carry = 0;
+      $('#lvl').textContent = `LEVEL ${L + 1}/${LEVELS.length}`;
+      const draw = () => {
+        const w = 220 * atoms.length;
+        $('#stage').innerHTML = `<svg viewBox="0 0 ${w} 260">${atoms.map((a, i) => drawAtom(a, 110 + i * 220, 110)).join('')}</svg>`;
+        $('#carry').textContent = carry ? `HANDS: ${carry} e⁻` : 'HANDS: EMPTY';
+        $('#stage').querySelectorAll('.atomg').forEach(g => g.onclick = () => click(atoms[+g.dataset.i]));
+      };
+      const outerFull = a => { const n = a.c[a.c.length - 1], cap = a.c.length === 1 ? 2 : 8; return n === cap; };
+      const click = a => {
+        const f = $('#fb'); f.classList.remove('hidden');
+        if (a.m) {
+          if (carry) { f.className = 'fb bad'; f.textContent = '✗ Drop the electron you\'re carrying on a non-metal first!'; return; }
+          if (a.c.length && outerFull(a) && a.z !== a.c.reduce((t, n) => t + n, 0)) { f.className = 'fb info'; f.textContent = `${a.s} has already lost its outer electrons and now has a full shell!`; return; }
+          a.c[a.c.length - 1]--; if (a.c[a.c.length - 1] === 0) a.c.pop(); carry = 1; f.className = 'fb good'; f.textContent = `💰 Grabbed an electron from ${a.s}!`;
+        } else {
+          if (!carry) { f.className = 'fb bad'; f.textContent = '✗ Non-metals don\'t give electrons away. Grab one from the metal first!'; return; }
+          if (outerFull(a)) { f.className = 'fb bad'; f.textContent = `✗ ${a.s}'s outer shell is already full!`; return; }
+          a.c[a.c.length - 1]++; carry = 0; f.className = 'fb good'; f.textContent = `📦 Delivered to ${a.s}!`;
+        }
+        draw();
+        if (atoms.every(outerFull) && !carry) {
+          const ions = atoms.map(a => a.s + SUP(a.z - a.c.reduce((t, n) => t + n, 0)));
+          f.className = 'fb good'; f.innerHTML = `🏆 HEIST COMPLETE! Ions formed: <b>${ions.join(' + ')}</b>. Every atom now has a full outer shell.`;
+          setTimeout(res, kit.REDUCED ? 300 : 1800);
+        }
+      };
+      draw();
+    });
+  }
+  kit.say(`HIGH SCORE! 🏆 When a metal <b>loses</b> electrons it becomes a <b>positive ion</b> (a <b>cation</b>). When a non-metal <b>gains</b> electrons it becomes a <b>negative ion</b> (an <b>anion</b>). An <b>ion</b> is a charged particle!`);
+}
+
+/* ================================================================
+   MISSION 2: CATION OR ANION? (arcade)
+   ================================================================ */
+const IONS = [['Na⁺','c'],['Cl⁻','a'],['Mg²⁺','c'],['O²⁻','a'],['K⁺','c'],['F⁻','a'],['Al³⁺','c'],['N³⁻','a'],['Ca²⁺','c'],['S²⁻','a'],['Li⁺','c'],['Br⁻','a']];
+async function mission2(body, kit){
+  kit.say(`⚡ <b>BONUS STAGE!</b> Ions are flying at you. Sort each one before the timer runs out:<br>⬅ <b>CATION</b> = positive ion (lost electrons) · <b>ANION</b> ➡ = negative ion (gained electrons). Get <b>10 in a row</b> to clear the stage. (Keyboard: ← and →)`);
+  body.innerHTML = `<div class="lk-panel glass"><div class="hud"><span class="pix">STREAK <span id="st">0</span>/10</span><span class="pix">BEST <span id="best">0</span></span></div>
+    <div class="timer"><i id="tb" style="width:100%"></i></div><div class="ion" id="ion">READY?</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" data-a="c">⬅ CATION (+)</button><button class="btn" data-a="a">ANION (−) ➡</button></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn primary" id="go">▶ START</button></div><div class="fb hidden" id="fb"></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    let streak = 0, best = 0, cur = null, timer = null, live = false, deck = [];
+    const next = () => {
+      if (!deck.length) deck = shuffle(IONS);
+      cur = deck.pop(); $('#ion').textContent = cur[0];
+      const tb = $('#tb'); tb.style.transition = 'none'; tb.style.width = '100%'; void tb.offsetWidth; tb.style.transition = 'width 4s linear'; tb.style.width = '0%';
+      clearTimeout(timer); timer = setTimeout(() => answer(null), 4000);
+    };
+    const answer = a => {
+      if (!live) return; clearTimeout(timer); const f = $('#fb'); f.classList.remove('hidden');
+      if (a === cur[1]) { streak++; best = Math.max(best, streak); f.className = 'fb good'; f.textContent = `✓ ${cur[0]} is ${cur[1] === 'c' ? 'positive: a CATION (lost electrons)' : 'negative: an ANION (gained electrons)'}.`; }
+      else { streak = 0; f.className = 'fb bad'; f.textContent = `${a ? '✗' : '⏱ Too slow!'} ${cur[0]} is ${cur[1] === 'c' ? 'a CATION (+)' : 'an ANION (−)'}. Streak reset!`; }
+      $('#st').textContent = streak; $('#best').textContent = best;
+      if (streak >= 10) { live = false; $('#ion').textContent = 'STAGE CLEAR!'; $('#tb').style.width = '0%'; kit.say(`STAGE CLEAR! 🎮 Positive ions = <b>cations</b> (usually metals). Negative ions = <b>anions</b> (usually non-metals). Tip: ca<b>t</b>ions are "pawsitive" 🐱`); res(); return; }
+      next();
+    };
+    body.querySelectorAll('[data-a]').forEach(b => b.onclick = () => answer(b.dataset.a));
+    const key = e => { if (!live) return; if (e.key === 'ArrowLeft') answer('c'); if (e.key === 'ArrowRight') answer('a'); };
+    addEventListener('keydown', key);
+    $('#go').onclick = () => { live = true; streak = 0; $('#go').classList.add('hidden'); next(); };
+  });
+}
+
+/* ================================================================
+   MISSION 3: PREDICT THE CHARGE
+   ================================================================ */
+const PRED = [['Li',1,'+1'],['Mg',2,'+2'],['Al',13,'+3'],['N',15,'−3'],['O',16,'−2'],['Cl',17,'−1'],['K',1,'+1'],['S',16,'−2']];
+async function mission3(body, kit){
+  kit.say(`FINAL BOSS: predict each ion's charge from its <b>group</b> on the periodic table!<br>Groups 1, 2, 13 (metals) <b>lose</b> 1, 2, 3 electrons → +1, +2, +3.<br>Groups 15, 16, 17 (non-metals) <b>gain</b> 3, 2, 1 electrons → −3, −2, −1.`);
+  body.innerHTML = `<div class="lk-panel glass" style="text-align:center"><div class="pix" id="cnt"></div><div style="margin:14px 0"><div class="elcard" id="el"></div></div>
+    <div class="charges">${['+1','+2','+3','−3','−2','−1'].map(c => `<button class="btn" data-c="${c}">${c}</button>`).join('')}</div><div class="fb hidden" id="fb"></div></div>`;
+  const $ = s => body.querySelector(s), names = {Li:'Lithium',Mg:'Magnesium',Al:'Aluminium',N:'Nitrogen',O:'Oxygen',Cl:'Chlorine',K:'Potassium',S:'Sulfur'};
+  return new Promise(res => {
+    const list = shuffle(PRED); let i = 0;
+    const show = () => { const [s, g] = list[i]; $('#cnt').textContent = `BOSS HP ${list.length - i}/${list.length}`; $('#el').innerHTML = `<span class="pix">GROUP ${g}</span><b>${s}</b><span>${names[s]}</span>`; };
+    show();
+    body.querySelectorAll('[data-c]').forEach(b => b.onclick = async () => {
+      const [s, g, c] = list[i], f = $('#fb'); f.classList.remove('hidden');
+      if (b.dataset.c === c) {
+        const metal = c[0] === '+';
+        f.className = 'fb good'; f.textContent = `✓ ${names[s]} ${metal ? 'loses' : 'gains'} ${c.slice(1)} electron${c.slice(1) === '1' ? '' : 's'} → ${s}${SUP((metal ? 1 : -1) * +c.slice(1))}`;
+        if (++i === list.length) { $('#cnt').textContent = 'BOSS DEFEATED!'; kit.say(`GAME COMPLETE! 👾 <b>Metals lose</b> electrons to form <b>positive</b> ions; <b>non-metals gain</b> electrons to form <b>negative</b> ions, all to get a <b>full outer shell</b>.`); res(); }
+        else { await wait(kit.REDUCED ? 100 : 900); show(); }
+      } else { kit.shake(b); f.className = 'fb bad'; f.textContent = `✗ ${names[s]} is in Group ${g}. ${g <= 13 ? 'Metals LOSE electrons (positive).' : 'Non-metals GAIN electrons (negative).'}`; }
+    });
+  });
+}
+
+LabKit.init({
+  id:'electron-heist', title:'Electron Heist', icon:'👾', theme:'#ffe600', kicker:"Mr Trichardt's Science Lab · Arcade",
+  heroTitle:'Electron <span class="g">Heist</span>',
+  intro:'INSERT COIN! Steal electrons from metals, deliver them to non-metals, and turn atoms into ions. Then survive the bonus stage and beat the charge-predicting boss.',
+  guide:{name:'Byte · Your heist buddy', emoji:'👾'}, certTitle:'Ion Arcade Champion', confetti:['👾','⚡','💰','⭐','🕹️'],
+  summary:'You can now define an ion, explain the difference between cations and anions, and describe how metals and non-metals form ions by losing or gaining electrons.',
+  missions:[
+    {icon:'💰', title:'The heist', short:'Heist', blurb:'Transfer electrons from metals to non-metals.', run:mission1,
+      gate:[
+        {q:'An ion is…', o:['A charged particle formed when an atom gains or loses electrons','An atom with extra neutrons','A neutral atom','A type of molecule'], ex:'Gaining or losing electrons unbalances the charges, which makes an ion.', hint:'What happened to Na and Cl?'},
+        {q:'When sodium loses one electron, it becomes…', o:['Na⁺','Na⁻','Na²⁺','Still neutral Na'], ex:'Losing a negative electron leaves one extra proton, so it\'s +1.', hint:'Losing a negative makes it more…?'},
+        {q:'Why does chlorine gain an electron?', o:['To get a full outer shell of 8','To lose mass','Because it is a metal','To become a neutron'], ex:'Chlorine has 7 outer electrons; gaining 1 completes the shell.', hint:'Look at its outer shell: 2,8,7.'}],
+      bonus:{q:'Calcium (2,8,8,2) reacts with chlorine. How many chlorine atoms does each calcium give electrons to?', o:['2','1','3','8'], ex:'Calcium loses 2 electrons; each chlorine only needs 1, so two chlorines are needed: CaCl₂.'}},
+    {icon:'🕹️', title:'Cation or anion?', short:'Sort', blurb:'Arcade-sort positive and negative ions.', run:mission2,
+      gate:[
+        {q:'A cation is…', o:['A positive ion','A negative ion','A neutral atom','A type of neutron'], ex:'Cations are positive: they have lost electrons.', hint:'"Ca-t-ions are pawsitive."'},
+        {q:'O²⁻ is an…', o:['Anion, because it has gained 2 electrons','Cation, because it has lost 2 electrons','Atom, because it has no charge','Isotope'], ex:'The 2− shows 2 extra electrons, so it\'s an anion.', hint:'Negative charge = gained electrons.'},
+        {q:'Cations are usually formed from…', o:['Metals','Non-metals','Noble gases','Only hydrogen'], ex:'Metals lose their few outer electrons and become positive.', hint:'Who gave electrons away in the heist?'}],
+      bonus:{q:'How many electrons has Al³⁺ lost compared with an aluminium atom?', o:['3','13','10','0'], ex:'A 3+ charge means 3 electrons were lost.'}},
+    {icon:'👑', title:'Predict the charge', short:'Charges', blurb:'Use groups to predict ion charges.', run:mission3,
+      gate:[
+        {q:'What charge does a Group 2 metal ion usually have?', o:['+2','−2','+1','0'], ex:'Group 2 metals lose 2 outer electrons, so they\'re +2.', hint:'Group 2 = 2 outer electrons.'},
+        {q:'What charge does a Group 16 non-metal ion usually have?', o:['−2','+2','−6','+6'], ex:'Group 16 has 6 outer electrons and gains 2, so it\'s −2.', hint:'How many more to reach 8?'},
+        {q:'Why don\'t noble gases (Group 18) usually form ions?', o:['They already have full outer shells','They are metals','They have no electrons','They are too heavy'], ex:'Noble gases are already stable with full shells.', hint:'What is every ion trying to get?'}],
+      bonus:{q:'Nitrogen is in Group 15. What is the formula of a nitride ion?', o:['N³⁻','N³⁺','N⁵⁺','N⁻'], ex:'Nitrogen (5 outer electrons) gains 3 to reach 8, so it\'s N³⁻.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

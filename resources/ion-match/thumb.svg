@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#f3efff"/>
+  <g stroke="rgba(124,58,237,.1)" stroke-width="2"><path d="M0 44H640M0 88H640M0 132H640M0 176H640M0 220H640M0 264H640M0 308H640M0 352H640M44 0V400M88 0V400M132 0V400M176 0V400M220 0V400M264 0V400M308 0V400M352 0V400M396 0V400M440 0V400M484 0V400M528 0V400M572 0V400M616 0V400"/></g>
+  <g font-family="Arial Black,sans-serif" font-size="30" fill="#fff" text-anchor="middle">
+    <rect x="110" y="150" width="130" height="100" rx="16" fill="#f43f5e"/><rect x="122" y="136" width="20" height="16" rx="5" fill="#f43f5e"/><rect x="150" y="136" width="20" height="16" rx="5" fill="#f43f5e"/><rect x="178" y="136" width="20" height="16" rx="5" fill="#f43f5e"/><text x="175" y="212">Al</text>
+    <rect x="260" y="150" width="110" height="100" rx="16" fill="#3b82f6"/><text x="315" y="212">O</text>
+    <rect x="390" y="150" width="110" height="100" rx="16" fill="#3b82f6"/><text x="445" y="212">O</text>
+    <rect x="110" y="270" width="130" height="100" rx="16" fill="#f43f5e" opacity=".85"/><text x="175" y="332">Al</text>
+    <rect x="260" y="270" width="110" height="100" rx="16" fill="#3b82f6" opacity=".85"/><text x="315" y="332">O</text>
+  </g>
+  <text x="320" y="90" font-family="Arial Black,sans-serif" font-size="56" text-anchor="middle" fill="#7c3aed">Al₂O₃</text>
+  <text x="560" y="250" font-family="Arial Black,sans-serif" font-size="40" text-anchor="middle" fill="#10b981">= 0</text>
+</svg>

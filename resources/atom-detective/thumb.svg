@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#e3d2ad"/>
+  <rect x="60" y="50" width="420" height="300" rx="6" fill="#fbf3df" stroke="#c9b48a" stroke-width="3" transform="rotate(-3 270 200)"/>
+  <rect x="90" y="28" width="120" height="30" rx="4" fill="#d9c28f" transform="rotate(-3 150 43)"/>
+  <text x="150" y="50" font-family="Courier New,monospace" font-size="16" text-anchor="middle" fill="#2b1d0e" transform="rotate(-3 150 43)">CASE FILE</text>
+  <g transform="rotate(-3 270 200)"><circle cx="250" cy="200" r="90" fill="none" stroke="#8b7350" stroke-width="3" stroke-dasharray="6 6"/><circle cx="250" cy="200" r="16" fill="#8b2e1a"/>
+  <circle cx="160" cy="200" r="8" fill="#2b1d0e"/><circle cx="310" cy="135" r="8" fill="#2b1d0e"/><circle cx="290" cy="285" r="8" fill="#2b1d0e"/></g>
+  <circle cx="470" cy="230" r="80" fill="rgba(255,255,255,.35)" stroke="#5a4326" stroke-width="12"/><rect x="520" y="290" width="26" height="100" rx="10" fill="#5a4326" transform="rotate(-40 533 340)"/>
+  <text x="420" y="110" font-family="Courier New,monospace" font-size="28" fill="#8b2e1a" stroke="#8b2e1a" stroke-width="1" transform="rotate(-12 420 110)">SOLVED</text>
+  <rect x="395" y="80" width="160" height="44" fill="none" stroke="#8b2e1a" stroke-width="4" transform="rotate(-12 420 110)"/>
+</svg>

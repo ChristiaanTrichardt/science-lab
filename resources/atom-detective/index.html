@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atom Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Special+Elite&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: sepia Victorian case files ===== */
+:root{--ink:#2b1d0e;--ink2:#5a4326;--ink3:#8b7350;--accent:#8b2e1a;--theme:#8b2e1a;--hair:rgba(43,29,14,.18);
+  --head:'Playfair Display',Georgia,serif;--type:'Special Elite','Courier New',monospace;--g1:#8b2e1a;--g2:#b7791f}
+body{background:#e9dcc0;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(ellipse at 20% 10%,rgba(255,250,235,.9),transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(160,120,70,.35),transparent 55%),
+  repeating-linear-gradient(0deg,rgba(90,60,20,.03) 0 2px,transparent 2px 4px),#e3d2ad}
+.lk-bg{display:none}
+.glass{background:#fbf3df;border:1px solid #c9b48a;border-radius:6px;box-shadow:0 2px 0 #c9b48a,0 18px 30px -20px rgba(60,40,10,.6);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-top{border-radius:8px}
+.lk-logo{border-radius:50%;background:#8b2e1a;box-shadow:inset 0 0 0 3px #fbf3df,0 0 0 2px #8b2e1a}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:800}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--accent);font-style:italic}
+.lk-kick,.lk-bubble small,.lk-step{font-family:var(--type);text-transform:uppercase;letter-spacing:.08em}
+.lk-kick{color:var(--accent)}
+.lk-step{background:#fbf3df;border:1px solid #c9b48a;border-radius:4px;color:var(--ink2)}
+.lk-step .n{background:#efe2c2;border-radius:3px}
+.lk-step.now{box-shadow:0 0 0 2px var(--accent);color:var(--ink)}
+.lk-step.done .n{background:#5b7a3a;color:#fff}
+.lk-chip,.chip{border-radius:4px;background:#fbf3df;border:1px solid #c9b48a}
+.lk-mlist li{background:#fffaf0;border:1px dashed #c9b48a;border-radius:4px}
+.lk-mlist .ic{border-radius:4px;background:#efe2c2;box-shadow:none}
+.lk-face{border-radius:50%;background:#efe2c2;box-shadow:inset 0 0 0 3px #c9b48a}
+.lk-bubble{font-family:var(--type);font-weight:400;line-height:1.6;background:#fffaf0;border-radius:4px;border:1px solid #c9b48a;
+  background-image:repeating-linear-gradient(transparent 0 25px,rgba(139,46,26,.08) 25px 26px)}
+.lk-bubble b{font-family:var(--body);font-weight:800}
+.btn{border-radius:4px;background:#fbf3df;border:1px solid #8b7350;color:var(--ink);box-shadow:0 2px 0 #8b7350;font-family:var(--type);letter-spacing:.04em;font-weight:400}
+.btn.primary,.btn.green{background:#8b2e1a;color:#fbf3df;border-color:#5e1d10;box-shadow:0 2px 0 #5e1d10}
+.lk-name input{border-radius:4px;border:1px solid #8b7350;background:#fffaf0;font-family:var(--type)}
+.lk-card{background:#fbf3df;border:1px solid #c9b48a;border-radius:6px}
+.opt{border-radius:4px;border:1px solid #c9b48a;background:#fffaf0}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.tile,.lk-mb,.lk-slot{border-radius:4px}
+.lk-mb{background:#fffaf0;border-color:#c9b48a}
+.lk-cert{background:#fffaf0;border:3px double #8b2e1a;border-radius:4px}
+#lkToast{border-radius:4px;background:#fbf3df;font-family:var(--type);font-weight:400}
+.stamp{display:inline-block;font-family:var(--type);color:#8b2e1a;border:3px solid #8b2e1a;padding:4px 12px;transform:rotate(-6deg);font-size:1.3rem;letter-spacing:.1em;opacity:.85;animation:lkPop .4s}
+.file{position:relative}
+.file::before{content:'CASE FILE';position:absolute;top:-12px;left:22px;font-family:var(--type);font-size:.75rem;background:#d9c28f;padding:2px 12px;border-radius:4px 4px 0 0;letter-spacing:.12em}
+.lab svg{display:block;width:100%;height:auto;border-radius:6px;background:#1c1610}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.seg{display:inline-flex;border:1px solid #8b7350;border-radius:4px;overflow:hidden}
+.seg button{padding:8px 12px;font-family:var(--type);background:#fffaf0;border-right:1px solid #c9b48a}
+.seg button:last-child{border-right:0}
+.seg button.on{background:#8b2e1a;color:#fbf3df}
+.models{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media (max-width:640px){.models{grid-template-columns:1fr}}
+.model{border:1px solid #c9b48a;border-radius:6px;background:#fffaf0;padding:10px;text-align:center;font-weight:800}
+.model svg{width:100%;height:110px;display:block}
+.model.ok{background:#e4efd4;border-color:#5b7a3a}.model.no{background:#f4d6cf;opacity:.7}
+.tally{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.tally div{border:1px solid #c9b48a;border-radius:4px;background:#fffaf0;padding:8px;text-align:center;font-family:var(--type)}
+.tally b{display:block;font-family:var(--head);font-size:1.6rem}
+.concl{display:grid;gap:8px;margin-top:12px}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const NS = 'http://www.w3.org/2000/svg';
+const MODELS = {
+  dalton:{n:'Solid sphere (Dalton)', svg:'<svg viewBox="0 0 120 110"><circle cx="60" cy="55" r="40" fill="#8b7350"/><circle cx="48" cy="42" r="12" fill="#fff" opacity=".25"/></svg>'},
+  plum:{n:'Plum pudding (Thomson)', svg:'<svg viewBox="0 0 120 110"><circle cx="60" cy="55" r="42" fill="#f3c9a3" stroke="#b7791f" stroke-width="2"/>' + [[40,40],[72,35],[55,60],[82,65],[38,72],[64,84]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#3b2a1a"/><text x="${p[0]}" y="${p[1] + 3}" font-size="9" fill="#fff" text-anchor="middle">−</text>`).join('') + '<text x="60" y="20" font-size="10" text-anchor="middle" fill="#8b2e1a">+ + +</text></svg>'},
+  nuclear:{n:'Nuclear model (Rutherford)', svg:'<svg viewBox="0 0 120 110"><circle cx="60" cy="55" r="44" fill="none" stroke="#c9b48a" stroke-dasharray="3 4"/><circle cx="60" cy="55" r="7" fill="#8b2e1a"/>' + [[24,50],[92,38],[70,96],[40,20]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#3b2a1a"/>`).join('') + '</svg>'},
+  bohr:{n:'Shell model (Bohr)', svg:'<svg viewBox="0 0 120 110"><circle cx="60" cy="55" r="22" fill="none" stroke="#8b7350"/><circle cx="60" cy="55" r="42" fill="none" stroke="#8b7350"/><circle cx="60" cy="55" r="7" fill="#8b2e1a"/>' + [[60,33],[60,77],[18,55],[102,55],[60,13],[90,85]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#3b2a1a"/>`).join('') + '</svg>'}
+};
+function pickModel(el, kit, correct, choices, why){
+  return new Promise(res => {
+    el.innerHTML = `<div class="models">${choices.map(k => `<button class="model" data-k="${k}">${MODELS[k].svg}${MODELS[k].n}</button>`).join('')}</div><div class="fb hidden"></div>`;
+    const fb = el.querySelector('.fb');
+    el.querySelectorAll('.model').forEach(b => b.onclick = () => {
+      fb.classList.remove('hidden');
+      if (b.dataset.k === correct) { el.querySelectorAll('.model').forEach(x => x.disabled = true); b.classList.add('ok'); fb.className = 'fb good'; fb.innerHTML = '✓ ' + why; res(); }
+      else { b.classList.add('no'); b.disabled = true; kit.shake(b); fb.className = 'fb bad'; fb.textContent = '✗ That model doesn\'t explain the evidence. Look again!'; }
+    });
+  });
+}
+
+/* ================================================================
+   CASE 1: DALTON + THOMSON (cathode rays)
+   ================================================================ */
+async function mission1(body, kit){
+  kit.say(`<b>London, 1803.</b> John Dalton says everything is made of tiny atoms: <b>solid, indivisible spheres</b>, like billiard balls.<br><br><b>Cambridge, 1897.</b> J.J. Thomson is firing a strange glowing ray down a glass tube. Your job, detective: switch on the charged plates and work out what the ray is made of.`);
+  body.innerHTML = `<div class="lk-panel glass file lab"><svg viewBox="0 0 640 240" id="tube">
+      <defs><radialGradient id="glw"><stop offset="0" stop-color="#9ef7c8"/><stop offset="1" stop-color="#9ef7c8" stop-opacity="0"/></radialGradient></defs>
+      <rect x="40" y="70" width="560" height="100" rx="50" fill="rgba(200,230,255,.08)" stroke="#cbd5e1" stroke-width="3"/>
+      <rect x="60" y="100" width="16" height="40" fill="#94a3b8"/><text x="68" y="95" fill="#e2d5b8" font-size="12" text-anchor="middle" font-family="Special Elite">−</text>
+      <rect x="586" y="80" width="8" height="80" fill="#9ef7c8" opacity=".5"/>
+      <g id="plates" opacity=".25"><rect x="260" y="78" width="140" height="10" fill="#e5484d"/><rect x="260" y="152" width="140" height="10" fill="#3b82f6"/>
+        <text id="pt" x="330" y="72" fill="#e2d5b8" font-size="14" text-anchor="middle" font-family="Special Elite"></text><text id="pb" x="330" y="182" fill="#e2d5b8" font-size="14" text-anchor="middle" font-family="Special Elite"></text></g>
+      <path id="beam" d="M76 120 L586 120" stroke="#9ef7c8" stroke-width="4" fill="none" style="filter:drop-shadow(0 0 6px #9ef7c8)"/>
+      <circle id="spot" cx="590" cy="120" r="10" fill="url(#glw)"/>
+      <text x="320" y="225" fill="#e2d5b8" font-size="13" text-anchor="middle" font-family="Special Elite">Cathode ray tube</text></svg>
+    <div class="ctl"><b>Charged plates:</b><span class="seg" id="seg"><button data-v="off" class="on">Off</button><button data-v="top">+ on top</button><button data-v="bot">+ on bottom</button></span></div>
+    <div id="q1"></div><div id="m1"></div></div>`;
+  const $ = s => body.querySelector(s), tried = new Set();
+  return new Promise(res => {
+    $('#seg').querySelectorAll('button').forEach(b => b.onclick = () => {
+      $('#seg').querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on');
+      const v = b.dataset.v, y = v === 'top' ? 70 : v === 'bot' ? 170 : 120;
+      $('#plates').setAttribute('opacity', v === 'off' ? .25 : 1);
+      $('#pt').textContent = v === 'top' ? '+ + + +' : v === 'bot' ? '− − − −' : ''; $('#pb').textContent = v === 'top' ? '− − − −' : v === 'bot' ? '+ + + +' : '';
+      $('#plates rect').setAttribute('fill', v === 'bot' ? '#3b82f6' : '#e5484d'); $('#plates rect:last-of-type').setAttribute('fill', v === 'bot' ? '#e5484d' : '#3b82f6');
+      $('#beam').setAttribute('d', v === 'off' ? 'M76 120 L586 120' : `M76 120 L260 120 Q340 120 400 ${(120 + y) / 2} L586 ${y + (y > 120 ? -18 : 18)}`);
+      $('#spot').setAttribute('cy', v === 'off' ? 120 : y + (y > 120 ? -18 : 18));
+      if (v !== 'off') tried.add(v);
+      if (tried.size === 2 && !$('#q1').innerHTML) {
+        $('#q1').innerHTML = `<div class="concl"><b style="font-family:var(--type)">The ray always bends TOWARDS the + plate. So the ray must be…</b>
+          ${shuffle([['n','made of negatively charged particles',1],['p','made of positively charged particles',0],['z','not charged at all',0]]).map(o => `<button class="opt" data-ok="${o[2]}">${o[1]}</button>`).join('')}<div class="fb hidden" id="f1"></div></div>`;
+        $('#q1').querySelectorAll('.opt').forEach(o => o.onclick = async () => {
+          const f = $('#f1'); f.classList.remove('hidden');
+          if (o.dataset.ok === '1') {
+            $('#q1').querySelectorAll('.opt').forEach(x => x.disabled = true); o.classList.add('right'); f.className = 'fb good';
+            f.innerHTML = '✓ Opposite charges attract. Thomson called these tiny negative particles <b>electrons</b>, and they came from INSIDE atoms. So atoms are NOT indivisible!';
+            kit.say(`Atoms contain tiny negative electrons… but atoms overall have no charge. So something positive must balance them. Which model fits this new evidence?`);
+            await pickModel($('#m1'), kit, 'plum', ['dalton', 'plum', 'nuclear'], 'Thomson\'s <b>plum pudding model</b>: negative electrons dotted through a ball of positive charge. <span class="stamp">Case closed</span>');
+            res();
+          } else { o.disabled = true; o.classList.add('wrong'); kit.shake(o); f.className = 'fb bad'; f.textContent = '✗ Remember: opposite charges attract.'; }
+        });
+      } else if (tried.size < 2) kit.toast('🔎 Now try the other plate arrangement too!');
+    });
+  });
+}
+
+/* ================================================================
+   CASE 2: RUTHERFORD GOLD FOIL
+   ================================================================ */
+async function mission2(body, kit){
+  kit.say(`<b>Manchester, 1909.</b> Ernest Rutherford's team fires tiny positive <b>alpha particles</b> at gold foil only a few atoms thick. If the plum pudding model is right, the spread-out positive charge is too weak to stop them: they should all zip <b>straight through</b>.<br><br>Fire at least <b>40</b> alpha particles and record what happens.`);
+  body.innerHTML = `<div class="lk-panel glass file lab"><svg viewBox="0 0 640 300" id="foil">
+      <rect x="20" y="130" width="60" height="40" rx="6" fill="#64748b"/><text x="50" y="190" fill="#e2d5b8" font-size="11" text-anchor="middle" font-family="Special Elite">alpha source</text>
+      <rect x="318" y="40" width="6" height="220" fill="#e8b923"/><text x="321" y="30" fill="#e8b923" font-size="12" text-anchor="middle" font-family="Special Elite">gold foil</text>
+      <circle cx="321" cy="150" r="250" fill="none" stroke="#9ef7c8" stroke-opacity=".15" stroke-width="40"/>
+      <g id="shots"></g></svg>
+    <div class="ctl"><button class="btn primary" id="f1">Fire 1</button><button class="btn" id="f10">Fire 10</button><span style="font-family:var(--type)">Fired: <b id="fired">0</b></span></div>
+    <div class="tally"><div><b id="cs">0</b>went straight through</div><div><b id="cd">0</b>deflected a little</div><div><b id="cb">0</b>bounced BACK!</div></div>
+    <div id="q2"></div><div id="m2"></div></div>`;
+  const $ = s => body.querySelector(s), shots = $('#shots'), c = {s:0, d:0, b:0};
+  let fired = 0, busy = false;
+  const fire = async () => {
+    fired++; const y = 150 + (Math.random() - .5) * 120, r = Math.random();
+    let kind = r < .9 ? 's' : r < .975 ? 'd' : 'b';
+    if (fired === 23 || fired === 37) kind = 'b';
+    const p = document.createElementNS(NS, 'path'); p.setAttribute('fill', 'none'); p.setAttribute('stroke-width', 2);
+    p.setAttribute('stroke', kind === 's' ? 'rgba(158,247,200,.55)' : kind === 'd' ? '#facc15' : '#f87171');
+    const ang = (Math.random() - .5) * (kind === 'd' ? 70 : 0);
+    const end = kind === 's' ? `L620 ${y}` : kind === 'd' ? `L620 ${y + ang * 3}` : `L321 ${y} L60 ${y + (Math.random() - .5) * 160}`;
+    p.setAttribute('d', `M80 150 L321 ${y} ${end.replace('L321 ' + y + ' ', '')}`);
+    if (kind === 'b') p.setAttribute('d', `M80 150 L318 ${y} L60 ${y + (Math.random() - .5) * 160}`);
+    const L = 800; p.setAttribute('stroke-dasharray', L); p.setAttribute('stroke-dashoffset', L); shots.appendChild(p);
+    p.getBoundingClientRect(); p.style.transition = `stroke-dashoffset ${kit.REDUCED ? 0 : .5}s linear`; p.setAttribute('stroke-dashoffset', 0);
+    if (shots.children.length > 60) shots.firstChild.remove();
+    c[kind]++; $('#c' + kind).textContent = c[kind]; $('#fired').textContent = fired;
+    if (kind === 'b') kit.toast('😲 One bounced straight back!', 1800);
+  };
+  return new Promise(res => {
+    const go = async n => { if (busy) return; busy = true; for (let i = 0; i < n; i++) { await fire(); await wait(kit.REDUCED ? 0 : 90); } busy = false; check(); };
+    $('#f1').onclick = () => go(1); $('#f10').onclick = () => go(10);
+    function check(){
+      if (fired < 40 || $('#q2').innerHTML) return;
+      kit.say(`Rutherford said it was "as if you fired a 15-inch shell at a piece of tissue paper and it came back and hit you!" 🤯 What does the evidence tell us?`);
+      const qs = [
+        {q:'MOST alpha particles went straight through. So the atom is…', o:['mostly empty space','a solid ball','full of gold']},
+        {q:'A FEW bounced straight back. So there must be…', o:['a tiny, dense, positive centre (nucleus)','lots of electrons blocking them','a hole in the foil']}
+      ];
+      let k = 0;
+      const ask = () => {
+        const Q = qs[k], opts = shuffle(Q.o.map((t, i) => ({t, ok: !i})));
+        $('#q2').innerHTML = `<div class="concl"><b style="font-family:var(--type)">${Q.q}</b>${opts.map((o, i) => `<button class="opt" data-i="${i}">${o.t}</button>`).join('')}<div class="fb hidden" id="f2"></div></div>`;
+        $('#q2').querySelectorAll('.opt').forEach(b => b.onclick = async () => {
+          const o = opts[+b.dataset.i], f = $('#f2'); f.classList.remove('hidden');
+          if (!o.ok) { b.disabled = true; b.classList.add('wrong'); kit.shake(b); f.className = 'fb bad'; f.textContent = '✗ Look at your tally again.'; return; }
+          b.classList.add('right'); f.className = 'fb good'; f.textContent = '✓ Exactly!';
+          await wait(kit.REDUCED ? 200 : 900);
+          if (++k < qs.length) return ask();
+          kit.say(`The plum pudding model can't explain the bounces! Which new model fits the evidence?`);
+          await pickModel($('#m2'), kit, 'nuclear', ['plum', 'nuclear', 'dalton'], 'Rutherford\'s <b>nuclear model</b>: a tiny, dense, positive <b>nucleus</b> with electrons around it, and mostly empty space. <span class="stamp">Case closed</span>');
+          res();
+        });
+      };
+      ask();
+    }
+  });
+}
+
+/* ================================================================
+   CASE 3: BOHR + THE TIMELINE
+   ================================================================ */
+async function mission3(body, kit){
+  kit.say(`<b>Copenhagen, 1913.</b> Niels Bohr noticed that heated elements only give off <b>certain colours</b> of light, never a full rainbow. Heat the sodium atom and watch its electron.`);
+  body.innerHTML = `<div class="lk-panel glass file lab"><svg viewBox="0 0 640 260" id="bohr">
+      <circle cx="220" cy="130" r="40" fill="none" stroke="#8b7350" stroke-width="2"/><circle cx="220" cy="130" r="80" fill="none" stroke="#8b7350" stroke-width="2"/><circle cx="220" cy="130" r="115" fill="none" stroke="#8b7350" stroke-width="2"/>
+      <circle cx="220" cy="130" r="14" fill="#8b2e1a"/><circle id="el" cx="300" cy="130" r="8" fill="#9ef7c8"/>
+      <rect x="400" y="90" width="210" height="80" rx="6" fill="#0d0a07" stroke="#8b7350"/><text x="505" y="85" fill="#e2d5b8" font-size="12" text-anchor="middle" font-family="Special Elite">light given off</text>
+      <g id="lines"></g></svg>
+    <div class="ctl"><button class="btn primary" id="heat">🔥 Heat the atom</button><span style="font-family:var(--type)">Heated <b id="hc">0</b>/3</span></div>
+    <div id="tl" class="hidden" style="margin-top:16px"><b style="font-family:var(--head);font-size:1.25rem">🗂️ Put the case files in order: oldest first</b><div id="tlb" style="margin-top:10px"></div></div></div>`;
+  const $ = s => body.querySelector(s); let n = 0, busy = false;
+  return new Promise(res => {
+    $('#heat').onclick = async () => {
+      if (busy) return; busy = true; const el = $('#el');
+      const move = (r, d) => new Promise(ok => { const t0 = performance.now(), r0 = +el.getAttribute('cx') - 220; (function f(now){ const k = Math.min(1, (now - t0) / (kit.REDUCED ? 1 : d)); el.setAttribute('cx', 220 + r0 + (r - r0) * k); k < 1 ? requestAnimationFrame(f) : ok(); })(t0); });
+      await move(115, 500); await wait(kit.REDUCED ? 0 : 300); await move(80, 400);
+      const x = 470 + (n % 3) * 1.5; $('#lines').insertAdjacentHTML('beforeend', `<rect x="${x}" y="95" width="6" height="70" fill="#facc15" style="filter:drop-shadow(0 0 6px #facc15)"/>`);
+      $('#hc').textContent = ++n; busy = false;
+      if (n === 3) {
+        kit.say(`Every time, the <b>same</b> yellow line! Bohr explained it: electrons can only sit in <b>fixed shells (energy levels)</b>. Heat makes an electron jump UP a shell; when it falls back DOWN it gives off light of one exact colour.<br><br>Now organise all the case files in order, from oldest to newest.`);
+        $('#tl').classList.remove('hidden'); $('#tl').scrollIntoView({behavior:'smooth', block:'center'});
+        await kit.orderTap($('#tlb'), [
+          {t:'⚫ Dalton', sub:'1803 · solid sphere'}, {t:'🍮 Thomson', sub:'1897 · plum pudding (electrons)'},
+          {t:'🎯 Rutherford', sub:'1911 · nucleus, empty space'}, {t:'⭕ Bohr', sub:'1913 · electron shells'}, {t:'🔵 Chadwick', sub:'1932 · discovers the neutron'}
+        ], {hint:'Check the year on each file.', done:'Each new experiment gave new evidence, and the model changed to fit it.'});
+        res();
+      }
+    };
+  });
+}
+
+LabKit.init({
+  id:'atom-detective', title:'Atom Detective', icon:'🕵️', theme:'#8b2e1a', kicker:"Mr Trichardt's Science Lab · Case files",
+  heroTitle:'Atom <span class="g">Detective</span>',
+  intro:'The case of the missing atom model! Travel back in time to the labs of Dalton, Thomson, Rutherford and Bohr. Run their experiments, examine the evidence, and work out what an atom really looks like.',
+  guide:{name:'Inspector Isotope', emoji:'🕵️'}, certTitle:'Master Atom Detective', confetti:['🔎','⚛️','📜','⭐','🕵️'],
+  summary:'You can now recall the key scientists in atomic theory, describe how the atom model changed, and explain how new experimental evidence forced each model to be modified.',
+  missions:[
+    {icon:'💡', title:'Case 1: The mysterious ray', short:'Thomson', blurb:'Dalton\'s solid atom meets Thomson\'s cathode ray.', run:mission1,
+      gate:[
+        {q:'Dalton\'s model described atoms as…', o:['Tiny, solid, indivisible spheres','Mostly empty space with a nucleus','Electrons in fixed shells','A ball of positive charge with electrons in it'], ex:'Dalton (1803) thought atoms were solid balls that couldn\'t be broken into smaller parts.', hint:'Think "billiard ball".'},
+        {q:'Thomson\'s experiment showed that atoms contain…', o:['Tiny negatively charged electrons','A positive nucleus','Neutrons','Nothing smaller than the atom'], ex:'The cathode ray bent towards the + plate, so it was made of negative particles: electrons.', hint:'Which way did the beam bend?'},
+        {q:'Why did Thomson\'s discovery mean Dalton\'s model had to change?', o:['Atoms could no longer be indivisible, because they contain smaller particles','Dalton had made a spelling mistake','Atoms turned out to be bigger','Electrons are positive'], ex:'New evidence (electrons inside atoms) didn\'t fit the old model, so the model was modified.', hint:'Can something "indivisible" contain smaller bits?'}],
+      bonus:{q:'In the plum pudding model, why does the atom have no overall charge?', o:['The positive "pudding" balances the negative electrons','There are no charged particles','Electrons are neutral','The nucleus cancels it out'], ex:'Equal amounts of positive and negative charge make the atom neutral.'}},
+    {icon:'🥇', title:'Case 2: The gold foil', short:'Rutherford', blurb:'Fire alpha particles and discover the nucleus.', run:mission2,
+      gate:[
+        {q:'Most alpha particles passed straight through the gold foil. This showed that atoms are…', o:['Mostly empty space','Solid all the way through','Made of gold','Negatively charged'], ex:'If most particles hit nothing, the atom must be mostly empty space.', hint:'Look at your tally: what happened to MOST particles?'},
+        {q:'A few alpha particles bounced back. This showed there is…', o:['A tiny, dense, positive nucleus','A layer of electrons','A hole in the foil','Plum pudding'], ex:'Only something small, dense and positive could repel the positive alpha particles straight back.', hint:'Alpha particles are positive. What repels them?'},
+        {q:'Which model did Rutherford propose?', o:['The nuclear model','The plum pudding model','The solid sphere model','The shell model'], ex:'Rutherford\'s nuclear model has a central nucleus with electrons around it.', hint:'It\'s named after the "nucleus".'}],
+      bonus:{q:'Why was the plum pudding model unable to explain the results?', o:['Its spread-out positive charge was too weak to bounce alpha particles back','It had no electrons','It predicted all particles would bounce back','It was invented after the experiment'], ex:'With charge spread thinly, nothing could stop or reverse an alpha particle. Only a concentrated nucleus could.'}},
+    {icon:'⭕', title:'Case 3: Bohr\'s shells', short:'Bohr', blurb:'Discover electron shells and order the timeline.', run:mission3,
+      gate:[
+        {q:'Bohr suggested that electrons…', o:['Orbit the nucleus in fixed shells (energy levels)','Are spread through a positive pudding','Sit inside the nucleus','Can be anywhere at any energy'], ex:'Electrons occupy fixed energy levels and can jump between them.', hint:'What did the electron jump between?'},
+        {q:'What is the correct order of atomic models over time?', o:['Dalton → Thomson → Rutherford → Bohr','Bohr → Rutherford → Thomson → Dalton','Thomson → Dalton → Bohr → Rutherford','Rutherford → Dalton → Bohr → Thomson'], ex:'1803 Dalton, 1897 Thomson, 1911 Rutherford, 1913 Bohr.', hint:'Remember your timeline.'},
+        {q:'Why do scientific models change over time?', o:['New experiments provide evidence the old model can\'t explain','Scientists get bored of old models','Atoms change over time','The old models were never useful'], ex:'Models are updated when new evidence comes along. That\'s how science works!', hint:'What happened after each experiment?'}],
+      bonus:{q:'Which particle was discovered last, by Chadwick in 1932?', o:['The neutron','The electron','The proton','The nucleus'], ex:'Chadwick found the neutral neutron in the nucleus, which explained why atoms were heavier than their protons alone.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reaction Kitchen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: TV cooking show ===== */
+:root{--ink:#2a1414;--ink2:#6b3b3b;--ink3:#a06b6b;--accent:#e63946;--theme:#e63946;--hair:rgba(230,57,70,.15);
+  --head:'Baloo 2','Nunito',sans-serif;--g1:#e63946;--g2:#f4a261;--mint:#2a9d8f;--cream:#fff8ee}
+body{background:#fff;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  linear-gradient(45deg,#fde2e4 25%,transparent 25%,transparent 75%,#fde2e4 75%) 0 0/48px 48px,linear-gradient(45deg,#fde2e4 25%,#fff 25%,#fff 75%,#fde2e4 75%) 24px 24px/48px 48px}
+.lk-bg{display:none}
+.glass{background:var(--cream);border:3px solid #fff;border-radius:24px;box-shadow:0 0 0 3px #e63946,0 14px 30px -14px rgba(120,20,20,.5);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-top{box-shadow:0 0 0 3px #e63946,0 8px 20px -10px rgba(120,20,20,.5)}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:800}
+.lk-hero h1{font-size:clamp(3rem,7vw,4.6rem)}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--accent)}
+.lk-logo{background:#e63946;box-shadow:0 0 0 3px #fff,0 0 0 5px #e63946}
+.lk-kick{color:var(--mint)}
+.lk-step{background:#fff;border:2px solid #f6c6ca}
+.lk-step.now{background:#e63946;color:#fff;box-shadow:none}
+.lk-step.now .n{background:#c1121f}
+.lk-step.done .n{background:var(--mint);color:#fff}
+.lk-mlist{background:#e63946}
+.lk-mlist li{background:#fff}
+.lk-face{background:#fff;box-shadow:0 0 0 3px #e63946}
+.lk-bubble small{color:var(--accent);font-family:var(--head);font-size:1rem}
+.btn{border-radius:16px;border:2px solid #f6c6ca;background:#fff}
+.btn.primary,.btn.green{background:#e63946;color:#fff;border-color:#c1121f;box-shadow:0 5px 0 #a4161a}
+.btn.primary:active{transform:translateY(3px);box-shadow:0 2px 0 #a4161a}
+.lk-card{background:var(--cream);box-shadow:0 0 0 3px #e63946}
+.opt,.lk-mb,.lk-deck .lk-sc{background:#fff;border:2px solid #f6c6ca}
+.lk-bin{background:#fff;border:2px dashed #f4a261}
+.lk-cert{background:#fff;border:3px dashed #e63946}
+.stations{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.station{background:#fff;border:2px solid #f6c6ca;border-radius:20px;padding:14px;text-align:center}
+.station h4{margin:0;font-family:var(--head);font-size:1.25rem}
+.beaker{position:relative;width:120px;height:130px;margin:10px auto;border:4px solid #94a3b8;border-top:0;border-radius:0 0 22px 22px;overflow:hidden;background:#fff}
+.beaker .liq{position:absolute;left:0;right:0;bottom:0;height:60%;transition:background 1.2s}
+.beaker .bub{position:absolute;bottom:0;width:10px;height:10px;border-radius:50%;border:2px solid rgba(255,255,255,.9);animation:up 1.4s ease-in infinite;opacity:0}
+.beaker .ppt{position:absolute;left:10%;right:10%;bottom:0;height:0;background:#3b82f6;border-radius:6px;transition:height 1.5s}
+@keyframes up{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-90px);opacity:0}}
+.flame{font-size:2.4rem;height:40px;margin-top:-10px}
+.thermo{font-family:var(--head);font-size:1.2rem;font-weight:800}
+.ev{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.ev button{padding:6px 10px;border-radius:999px;border:2px solid #f6c6ca;background:#fff;font-weight:800;font-size:.8rem}
+.ev button.on{background:#2a9d8f;color:#fff;border-color:#2a9d8f}
+.ev button.no{background:#fde2e4;border-color:#e63946;opacity:.7}
+.station.done{border-color:#2a9d8f;box-shadow:0 0 0 3px rgba(42,157,143,.25)}
+.atoms svg{display:block;width:100%;height:auto;max-height:360px}
+.tray{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.atom{width:54px;height:54px;border-radius:50%;font-family:var(--head);font-weight:800;font-size:1.2rem;border:3px solid rgba(0,0,0,.15);box-shadow:inset -4px -6px 10px rgba(0,0,0,.18),inset 3px 4px 8px rgba(255,255,255,.6);transition:transform .2s}
+.atom:hover:not(:disabled){transform:scale(1.1)}
+.atom.H{background:#fff;color:#334}.atom.O{background:#e63946;color:#fff}.atom.C{background:#3d3d3d;color:#fff}
+.atom:disabled{opacity:.2}
+.count{width:100%;border-collapse:collapse;margin-top:12px;font-weight:800;text-align:center;background:#fff;border-radius:14px;overflow:hidden}
+.count th,.count td{padding:6px;border-bottom:1px solid #f6c6ca}
+.scales{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:700px){.scales{grid-template-columns:1fr}}
+.scale{background:#fff;border:2px solid #f6c6ca;border-radius:20px;padding:14px;text-align:center}
+.lcd{display:inline-block;font-family:'Courier New',monospace;font-weight:900;font-size:1.8rem;background:#1f2937;color:#a7f3d0;padding:6px 16px;border-radius:10px;letter-spacing:.05em}
+.scale .e{font-size:3rem}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+
+/* ================================================================
+   MISSION 1: COOK-OFF (evidence of reactions)
+   ================================================================ */
+const ST = [
+  {k:'fizz', n:'Vinegar + bicarb soda', liq:'#fef3c7', after:'#fef3c7', ev:['gas','temp'], t:[20, 15], bub:true, msg:'Fizzing = a gas (carbon dioxide) is made. It also got colder!'},
+  {k:'mg', n:'Burning magnesium ribbon', liq:'#e5e7eb', after:'#ffffff', ev:['light','temp','colour'], t:[20, 650], flame:true, msg:'A blinding white light and lots of heat, and the shiny grey ribbon turned into white powder!'},
+  {k:'cu', n:'Copper sulfate + sodium hydroxide', liq:'#7dd3fc', after:'#e0f2fe', ev:['solid','colour'], t:[20, 21], ppt:true, msg:'A blue solid (precipitate) formed and the colour changed.'},
+  {k:'iron', n:'Vinegar-soaked steel wool left in air', liq:'#d1d5db', after:'#b45309', ev:['colour','temp'], t:[20, 34], msg:'It turned orange-brown (rust) and warmed up as it reacted with oxygen.'}
+];
+const EVS = {gas:'🫧 Gas made', light:'💡 Light', temp:'🌡️ Temperature change', colour:'🎨 Colour change', solid:'🧊 Solid (precipitate)'};
+async function mission1(body, kit){
+  kit.say(`Welcome to <b>Reaction Kitchen</b>! 👩‍🍳 In a <b>chemical reaction</b>, new substances are made. Chefs look for clues: <b>gas</b>, <b>colour change</b>, <b>temperature change</b>, <b>light</b>, or a new <b>solid</b>.<br><br>Cook each recipe, then tap ALL the evidence you saw.`);
+  body.innerHTML = `<div class="stations">${ST.map(s => `<div class="station" data-k="${s.k}"><h4>${s.n}</h4>
+      <div class="flame" data-f></div><div class="beaker"><div class="liq" style="background:${s.liq}"></div><div class="ppt"></div></div>
+      <div class="thermo">🌡️ <span data-t>${s.t[0]}</span> °C</div>
+      <button class="btn primary small" data-cook style="margin-top:8px">👩‍🍳 Cook!</button>
+      <div class="ev hidden">${Object.entries(EVS).map(([k, v]) => `<button data-e="${k}">${v}</button>`).join('')}</div><div class="fb hidden"></div></div>`).join('')}</div>
+    <div class="lk-panel glass hidden" id="sortP" style="margin-top:14px"><b style="font-family:var(--head);font-size:1.3rem">🍳 Chemical or physical?</b><p style="margin:4px 0 10px;font-weight:700;color:var(--ink2)">A <b>physical change</b> (like melting) makes no new substance and can often be reversed.</p><div id="sort"></div></div>`;
+  let done = 0;
+  await new Promise(res => {
+    body.querySelectorAll('.station').forEach(st => {
+      const s = ST.find(x => x.k === st.dataset.k), got = new Set();
+      st.querySelector('[data-cook]').onclick = async b => {
+        st.querySelector('[data-cook]').disabled = true;
+        if (s.flame) st.querySelector('[data-f]').textContent = '🔥✨';
+        st.querySelector('.liq').style.background = s.after;
+        if (s.bub) st.querySelector('.beaker').insertAdjacentHTML('beforeend', Array.from({length:10}, (_, i) => `<span class="bub" style="left:${10 + i * 9}%;animation-delay:${i * .13}s"></span>`).join(''));
+        if (s.ppt) st.querySelector('.ppt').style.height = '22%';
+        const t0 = s.t[0], t1 = s.t[1];
+        for (let i = 1; i <= 10; i++) { st.querySelector('[data-t]').textContent = Math.round(t0 + (t1 - t0) * i / 10); await wait(kit.REDUCED ? 0 : 90); }
+        st.querySelector('.ev').classList.remove('hidden');
+      };
+      st.querySelectorAll('[data-e]').forEach(e => e.onclick = () => {
+        const f = st.querySelector('.fb'); f.classList.remove('hidden');
+        if (s.ev.includes(e.dataset.e)) { e.classList.add('on'); e.disabled = true; got.add(e.dataset.e);
+          if (got.size === s.ev.length) { st.classList.add('done'); st.querySelectorAll('[data-e]').forEach(x => x.disabled = true); f.className = 'fb good'; f.textContent = '✓ ' + s.msg; if (++done === ST.length) res(); }
+          else { f.className = 'fb good'; f.textContent = '✓ Yes! Any more evidence?'; } }
+        else { e.classList.add('no'); e.disabled = true; kit.shake(e); f.className = 'fb bad'; f.textContent = '✗ Did you really see that? Watch again.'; }
+      });
+    });
+  });
+  const sp = body.querySelector('#sortP'); sp.classList.remove('hidden'); sp.scrollIntoView({behavior:'smooth', block:'center'});
+  kit.say(`Delicious evidence! 🍽️ But not every change in the kitchen is a chemical reaction. Sort these into <b>chemical</b> or <b>physical</b> changes.`);
+  await kit.sortDeck(body.querySelector('#sort'), [
+    {t:'🎂 Baking a cake from batter', k:'c', why:'New substances form and it can\'t be un-baked.'},
+    {t:'🥚 Frying an egg', k:'c', why:'The egg proteins change permanently.'},
+    {t:'🍞 Toast turning brown and black', k:'c', why:'Burning makes new substances (carbon).'},
+    {t:'🧊 Ice cubes melting', k:'p', why:'Still water, just a different state.'},
+    {t:'🧂 Salt dissolving in water', k:'p', why:'Evaporate the water and the salt comes back.'},
+    {t:'🍫 Chocolate melting', k:'p', why:'Cool it down and it sets again.'}
+  ], [{k:'c', label:'⚗️ Chemical reaction', sub:'New substance made'}, {k:'p', label:'💧 Physical change', sub:'No new substance'}]);
+}
+
+/* ================================================================
+   MISSION 2: REARRANGE THE ATOMS
+   ================================================================ */
+const RX = [
+  {title:'Making water', eq:'2H₂ + O₂ → 2H₂O', react:[['H','H'],['H','H'],['O','O']], prod:[['H','O','H'],['H','O','H']], names:['hydrogen', 'oxygen', 'water']},
+  {title:'Burning methane (natural gas)', eq:'CH₄ + 2O₂ → CO₂ + 2H₂O', react:[['C','H','H','H','H'],['O','O'],['O','O']], prod:[['O','C','O'],['H','O','H'],['H','O','H']], names:['methane + oxygen', '', 'carbon dioxide + water']}
+];
+async function mission2(body, kit){
+  kit.say(`Here's the secret recipe of chemistry: in a reaction, atoms are <b>not created or destroyed</b>. They're just <b>rearranged</b> into new substances!<br><br>The starting substances are <b>reactants</b>. The new ones are <b>products</b>. Break the reactant bonds, then tap the loose atoms to build the products.`);
+  body.innerHTML = `<div class="lk-panel glass atoms" id="rx"></div>`;
+  for (let r = 0; r < RX.length; r++) await doRx(RX[r], r);
+  kit.say(`Master chef! 👩‍🍳 Look at the atom count tables: the <b>same atoms</b> on both sides, just rearranged. That's why mass is conserved!`);
+  function doRx(R, idx){
+    return new Promise(res => {
+      const el = body.querySelector('#rx');
+      const mol = (atoms) => `<span style="display:inline-flex;gap:2px;padding:6px;border-radius:999px;background:#fde2e4;margin:4px">${atoms.map(a => `<span class="atom ${a}" style="width:34px;height:34px;font-size:.9rem;display:inline-grid;place-items:center">${a}</span>`).join('')}</span>`;
+      const counts = arr => arr.flat().reduce((o, a) => (o[a] = (o[a] || 0) + 1, o), {});
+      el.innerHTML = `<b style="font-family:var(--head);font-size:1.3rem">Recipe ${idx + 1}: ${R.title}</b>
+        <div style="margin:10px 0"><span class="chip">🥣 Reactants</span><div>${R.react.map(mol).join(' + ')}</div></div>
+        <button class="btn primary" id="brk">💥 Break the bonds</button>
+        <div id="build" class="hidden" style="margin-top:12px"><span class="chip">🍽️ Products: tap atoms to fill each slot</span>
+          <div id="slots" style="margin-top:8px">${R.prod.map((m, i) => `<span style="display:inline-flex;gap:2px;padding:6px;border-radius:999px;border:2px dashed #e63946;margin:4px" data-m="${i}">${m.map((a, j) => `<span class="atom" data-need="${a}" style="width:34px;height:34px;display:inline-grid;place-items:center;background:#fff;opacity:.5;font-size:.8rem">${a}?</span>`).join('')}</span>`).join(' + ')}</div>
+          <div class="tray" id="tray"></div></div><div id="cnt"></div>`;
+      el.querySelector('#brk').onclick = () => {
+        el.querySelector('#brk').disabled = true; el.querySelector('#build').classList.remove('hidden');
+        const loose = shuffle(R.react.flat());
+        el.querySelector('#tray').innerHTML = loose.map((a, i) => `<button class="atom ${a}" data-a="${a}">${a}</button>`).join('');
+        el.querySelectorAll('#tray .atom').forEach(b => b.onclick = () => {
+          const slot = [...el.querySelectorAll('#slots [data-need]')].find(s => s.dataset.need === b.dataset.a && !s.dataset.got);
+          if (!slot) { kit.shake(b); return; }
+          slot.dataset.got = 1; slot.className = 'atom ' + b.dataset.a; slot.style.opacity = 1; slot.textContent = b.dataset.a; b.disabled = true;
+          if (![...el.querySelectorAll('#slots [data-need]')].some(s => !s.dataset.got)) {
+            const c1 = counts(R.react), c2 = counts(R.prod);
+            el.querySelector('#cnt').innerHTML = `<div class="fb good">✓ Balanced: <b>${R.eq}</b></div><table class="count"><tr><th>Atom</th><th>Reactants</th><th>Products</th></tr>${Object.keys(c1).map(a => `<tr><td>${a}</td><td>${c1[a]}</td><td>${c2[a]}</td></tr>`).join('')}</table>
+              <div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn primary" id="nx">${idx < RX.length - 1 ? 'Next recipe ▸' : 'Done ✓'}</button></div>`;
+            el.querySelector('#nx').onclick = res;
+          }
+        });
+      };
+    });
+  }
+}
+
+/* ================================================================
+   MISSION 3: THE MASS BALANCE
+   ================================================================ */
+async function mission3(body, kit){
+  kit.say(`Final round: the <b>scales challenge</b>! ⚖️ We'll react vinegar and bicarb soda twice: once in an <b>open beaker</b>, once in a <b>sealed bag</b>. Predict what the scale will show, then cook!`);
+  body.innerHTML = `<div class="scales">${[['open','🥛 Open beaker'],['sealed','🛍️ Sealed zip-lock bag']].map(([k, n]) => `<div class="scale" data-k="${k}"><h4 style="font-family:var(--head);font-size:1.25rem;margin:0">${n}</h4><div class="e">${k === 'open' ? '🧪' : '👝'}</div>
+      <div class="lcd" data-m>250.0 g</div><p style="font-weight:800;margin:10px 0 6px">My prediction: the mass will…</p>
+      <div class="lk-bt" style="justify-content:center"><button class="btn small" data-p="down">⬇ Go down</button><button class="btn small" data-p="same">➖ Stay the same</button><button class="btn small" data-p="up">⬆ Go up</button></div>
+      <button class="btn primary small" data-go style="margin-top:10px" disabled>⚗️ React!</button><div class="fb hidden"></div></div>`).join('')}</div>`;
+  let done = 0;
+  return new Promise(res => {
+    body.querySelectorAll('.scale').forEach(sc => {
+      let pred = null; const k = sc.dataset.k;
+      sc.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { sc.querySelectorAll('[data-p]').forEach(x => x.classList.remove('primary')); b.classList.add('primary'); pred = b.dataset.p; sc.querySelector('[data-go]').disabled = false; });
+      sc.querySelector('[data-go]').onclick = async () => {
+        sc.querySelector('[data-go]').disabled = true; sc.querySelectorAll('[data-p]').forEach(x => x.disabled = true);
+        const end = k === 'open' ? 248.6 : 250.0;
+        for (let i = 1; i <= 14; i++) { sc.querySelector('[data-m]').textContent = (250 - (250 - end) * i / 14).toFixed(1) + ' g'; await wait(kit.REDUCED ? 0 : 110); }
+        const right = k === 'open' ? 'down' : 'same', f = sc.querySelector('.fb'); f.classList.remove('hidden');
+        f.className = 'fb ' + (pred === right ? 'good' : 'info');
+        f.innerHTML = (pred === right ? '✓ Great prediction! ' : 'Surprise! ') + (k === 'open' ? 'The mass <b>dropped</b> because the carbon dioxide gas <b>escaped into the air</b>. The atoms didn\'t vanish, they just left the beaker.' : 'The mass <b>stayed the same</b> because no gas could escape. Every atom was still in the bag!');
+        if (++done === 2) { kit.say(`That's the <b>law of conservation of mass</b>: in a reaction, the total mass of the products equals the total mass of the reactants, because atoms are only rearranged, never created or destroyed. 🧑‍🍳`); res(); }
+      };
+    });
+  });
+}
+
+LabKit.init({
+  id:'reaction-kitchen', title:'Reaction Kitchen', icon:'👩‍🍳', theme:'#e63946', kicker:"Mr Trichardt's Science Lab · Now cooking",
+  heroTitle:'Reaction <span class="g">Kitchen</span>',
+  intro:'Lights, camera, chemistry! Cook up reactions and spot the evidence, rearrange atoms into new products, and settle the great mass-balance mystery on live TV.',
+  guide:{name:'Chef Catalyst', emoji:'👩‍🍳'}, certTitle:'Head Chemistry Chef', confetti:['🧁','🔥','🫧','⭐','👩‍🍳','⚗️'],
+  summary:'You can now describe evidence of chemical reactions, explain that reactions rearrange atoms, tell reactants from products, and explain the law of conservation of mass.',
+  missions:[
+    {icon:'🍳', title:'The cook-off', short:'Evidence', blurb:'Cook reactions and spot the evidence.', run:mission1,
+      gate:[
+        {q:'Which of these is evidence that a chemical reaction has happened?', o:['Bubbles of a new gas are produced','Ice melts into water','Sugar dissolves in tea','A rock is broken into pieces'], ex:'Producing a new gas means a new substance was made.', hint:'Which one makes a NEW substance?'},
+        {q:'Melting chocolate is a physical change because…', o:['No new substance is made, and it can set again','It gives off light','It makes a gas','It changes colour permanently'], ex:'It\'s still chocolate, just liquid.', hint:'Is it still chocolate?'},
+        {q:'Burning magnesium gave off light and heat. This is evidence of…', o:['A chemical reaction releasing energy','A physical change','Dissolving','Melting'], ex:'Light and heat show energy is released as new substances form.', hint:'Think about the bright white flame.'}],
+      bonus:{q:'When a blue solid suddenly appears after mixing two clear solutions, the solid is called a…', o:['Precipitate','Reactant','Solvent','Catalyst'], ex:'A precipitate is an insoluble solid formed in a reaction.'}},
+    {icon:'⚛️', title:'Rearrange the atoms', short:'Atoms', blurb:'Break bonds and build products from the same atoms.', run:mission2,
+      gate:[
+        {q:'During a chemical reaction, atoms are…', o:['Rearranged into new substances','Created from nothing','Destroyed','Changed into different elements'], ex:'Atoms just swap partners. None are made or lost.', hint:'Look at your atom count tables.'},
+        {q:'In the reaction methane + oxygen → carbon dioxide + water, the reactants are…', o:['Methane and oxygen','Carbon dioxide and water','Only water','Only methane'], ex:'Reactants are on the left of the arrow; products are on the right.', hint:'What did you START with?'},
+        {q:'What are the products of burning methane?', o:['Carbon dioxide and water','Methane and oxygen','Hydrogen only','Oxygen only'], ex:'The products are the new substances made: CO₂ and H₂O.', hint:'What did you BUILD?'}],
+      bonus:{q:'In 2H₂ + O₂ → 2H₂O, how many hydrogen atoms are on each side?', o:['4','2','1','6'], ex:'2 × H₂ = 4 H atoms on the left; 2 × H₂O = 4 H atoms on the right.'}},
+    {icon:'⚖️', title:'The mass balance', short:'Mass', blurb:'Discover the law of conservation of mass.', run:mission3,
+      gate:[
+        {q:'The law of conservation of mass says that in a chemical reaction…', o:['The total mass of the products equals the total mass of the reactants','Mass always increases','Mass always decreases','Mass is turned into energy'], ex:'Atoms are rearranged, not created or destroyed, so the total mass stays the same.', hint:'What happened in the sealed bag?'},
+        {q:'Why did the mass go DOWN in the open beaker?', o:['A gas was produced and escaped into the air','Atoms were destroyed','The vinegar evaporated instantly','The scale broke'], ex:'The CO₂ gas left the beaker, taking its mass with it.', hint:'What were the bubbles?'},
+        {q:'Why did the mass stay the same in the sealed bag?', o:['No atoms could escape, so all the mass was still there','No reaction happened','The bag absorbed the gas','Bags are weightless'], ex:'In a closed system nothing escapes, so mass is conserved.', hint:'Could the gas get out?'}],
+      bonus:{q:'When steel wool burns in air, its mass INCREASES. Why?', o:['Oxygen atoms from the air combine with the iron','The flame adds mass','Iron atoms multiply','Heat has mass'], ex:'The product (iron oxide) includes oxygen atoms that were taken from the air.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

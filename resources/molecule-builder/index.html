@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Molecule Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: soft molecular model kit ===== */
+:root{--ink:#1e3a3a;--ink2:#466a68;--ink3:#7c9e9b;--accent:#0f9d8a;--theme:#0f9d8a;--hair:rgba(15,157,138,.15);
+  --head:'Comfortaa','Nunito',sans-serif;--g1:#0f9d8a;--g2:#f97362}
+body{background:#e8f6f3;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(circle at 15% 20%,rgba(249,115,98,.18) 0 90px,transparent 91px),radial-gradient(circle at 85% 30%,rgba(59,130,246,.15) 0 70px,transparent 71px),
+  radial-gradient(circle at 70% 85%,rgba(15,157,138,.18) 0 110px,transparent 111px),linear-gradient(160deg,#f2fbf9,#dff2ee)}
+.lk-bg{display:none}
+.glass{background:#fbfffe;border:0;border-radius:32px;box-shadow:0 16px 34px -20px rgba(30,80,75,.45),inset 0 -6px 0 rgba(15,157,138,.08);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:700}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:#f97362}
+.lk-logo{background:radial-gradient(circle at 35% 30%,#fff 0 10%,#f97362 45%,#c2410c);border-radius:50%}
+.lk-step.now{box-shadow:0 0 0 3px rgba(15,157,138,.35)}
+.lk-step.done .n{background:var(--accent)}
+.btn{border-radius:999px;background:#fff;border:2px solid #cfe9e4}
+.btn.primary,.btn.green{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 8px 16px -8px rgba(15,157,138,.8)}
+.lk-cert{border-color:var(--accent);background:#fff}
+.kit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:16px;align-items:start}
+@media (max-width:860px){.kit{grid-template-columns:1fr}}
+.bench svg{display:block;width:100%;height:auto;max-height:380px;border-radius:26px;background:radial-gradient(circle at 50% 45%,#ffffff,#e6f4f1)}
+.ball{cursor:pointer}
+.ball:hover .core{filter:brightness(1.08)}
+.ball.sel .ring{stroke:#f59e0b;stroke-width:5}
+.palette{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pal{width:64px;height:64px;border-radius:50%;font-family:var(--head);font-weight:700;font-size:1.3rem;border:0;
+  box-shadow:inset -6px -8px 14px rgba(0,0,0,.25),inset 4px 5px 10px rgba(255,255,255,.55),0 8px 14px -8px rgba(0,0,0,.4);transition:transform .2s}
+.pal:hover{transform:translateY(-3px) scale(1.05)}
+.pal small{display:block;font-size:.6rem;font-family:'Nunito',sans-serif;font-weight:800}
+.pal.H{background:#f8fafc;color:#334155}.pal.C{background:#27272a;color:#fff}.pal.O{background:#ef4444;color:#fff}.pal.N{background:#3b82f6;color:#fff}.pal.Cl{background:#22c55e;color:#fff}
+.goal{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;background:#fff7ed;border:2px dashed #f97362;margin-bottom:12px}
+.goal b{font-family:var(--head);font-size:1.6rem}
+.how{font-size:.86rem;font-weight:700;color:var(--ink2);margin:10px 0 0}
+.prog{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.prog span{padding:4px 10px;border-radius:999px;background:#eef7f5;font-weight:800;font-size:.85rem}
+.prog span.d{background:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const VAL = {H:1, C:4, N:3, O:2, Cl:1};
+const COL = {H:'#f8fafc', C:'#27272a', O:'#ef4444', N:'#3b82f6', Cl:'#22c55e'}, TXT = {H:'#334155', C:'#fff', O:'#fff', N:'#fff', Cl:'#fff'};
+const SUBD = n => String(n).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);
+
+/* ================================================================
+   MISSION 1: VALENCE CHECK
+   ================================================================ */
+async function mission1(body, kit){
+  kit.say(`Welcome to the model kit! 🧪 <b>Covalent bonds</b> form between <b>non-metal</b> atoms. Instead of stealing electrons, they <b>share</b> them so every atom gets a full outer shell.<br><br>The number of bonds an atom makes depends on its <b>valence electrons</b> (outer-shell electrons). Match each atom to its card.`);
+  body.innerHTML = `<div class="lk-panel glass" id="m"></div>`;
+  await kit.matchPairs(body.querySelector('#m'), [
+    {k:'H', a:'⚪ Hydrogen (H)', b:'1 valence e⁻ · needs 1 more (shell holds 2) · makes 1 bond', why:'H\'s shell only holds 2, so it needs 1 more.'},
+    {k:'O', a:'🔴 Oxygen (O)', b:'6 valence e⁻ · needs 2 more · makes 2 bonds', why:'O needs 2 electrons to reach 8.'},
+    {k:'N', a:'🔵 Nitrogen (N)', b:'5 valence e⁻ · needs 3 more · makes 3 bonds', why:'N needs 3 to reach 8.'},
+    {k:'C', a:'⚫ Carbon (C)', b:'4 valence e⁻ · needs 4 more · makes 4 bonds', why:'C needs 4 to reach 8.'},
+    {k:'Cl', a:'🟢 Chlorine (Cl)', b:'7 valence e⁻ · needs 1 more · makes 1 bond', why:'Cl needs just 1 more to reach 8.'}
+  ], ['Atom', 'Valence card']);
+  kit.say(`Remember: <b>bonds needed = 8 − valence electrons</b> (or 2 − 1 for hydrogen). That's the number of "hands" each atom has for holding bonds!`);
+}
+
+/* ================================================================
+   MISSION 2: BUILD MOLECULES
+   ================================================================ */
+const GOALS = [
+  {f:'H₂', name:'hydrogen gas', need:{H:2}}, {f:'O₂', name:'oxygen gas', need:{O:2}}, {f:'H₂O', name:'water', need:{H:2, O:1}},
+  {f:'CO₂', name:'carbon dioxide', need:{C:1, O:2}}, {f:'CH₄', name:'methane', need:{C:1, H:4}}, {f:'NH₃', name:'ammonia', need:{N:1, H:3}}
+];
+async function mission2(body, kit){
+  kit.say(`Build each molecule! Add atoms from the kit, then tap <b>two atoms</b> to bond them. Tap the same pair again to make a <b>double</b> (or triple) bond. Each atom's grey dots are its free "hands". A molecule is stable when <b>every hand is used</b>.`);
+  body.innerHTML = `<div class="kit"><div class="lk-panel glass bench"><svg viewBox="0 0 500 380" id="sv"></svg></div>
+    <div class="lk-panel glass"><div class="goal" id="goal"></div>
+      <div class="palette">${Object.keys(VAL).map(e => `<button class="pal ${e}" data-e="${e}">${e}<small>${VAL[e]} bond${VAL[e] > 1 ? 's' : ''}</small></button>`).join('')}</div>
+      <p class="how">👆 Tap an atom, then another to bond them. Tap a bonded pair again to add another bond (up to 3); a 4th tap removes it.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="chk">✅ Check molecule</button><button class="btn" id="undo">↶ Remove last atom</button><button class="btn" id="clr">Clear</button></div>
+      <div class="fb hidden" id="fb"></div><div class="prog" id="prog">${GOALS.map(g => `<span>${g.f}</span>`).join('')}</div></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    let g = 0, atoms = [], bonds = {}, sel = null;
+    const key = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+    const used = i => Object.entries(bonds).reduce((t, [k, n]) => t + (k.split('-').map(Number).includes(i) ? n : 0), 0);
+    const pos = (i, n) => { if (n === 1) return [250, 190]; if (n === 2) return [175 + i * 150, 190]; const a = i / n * Math.PI * 2 - Math.PI / 2, r = n <= 3 ? 110 : 130; return i === 0 && n >= 4 ? [250, 190] : (n >= 4 ? [250 + Math.cos((i - 1) / (n - 1) * Math.PI * 2 - Math.PI / 2) * 135, 190 + Math.sin((i - 1) / (n - 1) * Math.PI * 2 - Math.PI / 2) * 135] : [250 + Math.cos(a) * r, 190 + Math.sin(a) * r]); };
+    const draw = () => {
+      const P = atoms.map((_, i) => pos(i, atoms.length));
+      let s = '';
+      Object.entries(bonds).forEach(([k, n]) => { const [a, b] = k.split('-').map(Number), [x1, y1] = P[a], [x2, y2] = P[b], dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), ox = -dy / L * 8, oy = dx / L * 8;
+        for (let j = 0; j < n; j++) { const off = j - (n - 1) / 2; s += `<line x1="${x1 + ox * off}" y1="${y1 + oy * off}" x2="${x2 + ox * off}" y2="${y2 + oy * off}" stroke="#94a3b8" stroke-width="7" stroke-linecap="round"/>`; } });
+      atoms.forEach((e, i) => { const [x, y] = P[i], free = VAL[e] - used(i), r = e === 'H' ? 26 : 34;
+        s += `<g class="ball${sel === i ? ' sel' : ''}" data-i="${i}"><circle class="ring" cx="${x}" cy="${y}" r="${r + 4}" fill="none" stroke="transparent" stroke-width="3"/>
+          <circle class="core" cx="${x}" cy="${y}" r="${r}" fill="${COL[e]}" stroke="rgba(0,0,0,.18)" stroke-width="2"/><circle cx="${x - r * .35}" cy="${y - r * .35}" r="${r * .3}" fill="#fff" opacity=".45"/>
+          <text x="${x}" y="${y + 7}" text-anchor="middle" font-family="Comfortaa" font-weight="700" font-size="${e === 'H' ? 18 : 22}" fill="${TXT[e]}">${e}</text>
+          ${Array.from({length:Math.max(0, free)}, (_, k) => { const a = k / Math.max(free, 1) * Math.PI * 2 + .6; return `<circle cx="${x + Math.cos(a) * (r + 12)}" cy="${y + Math.sin(a) * (r + 12)}" r="6" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>`; }).join('')}
+          ${free < 0 ? `<text x="${x}" y="${y - r - 10}" text-anchor="middle" font-size="13" font-weight="800" fill="#e11d48">too many bonds!</text>` : ''}</g>`; });
+      if (!atoms.length) s = '<text x="250" y="195" text-anchor="middle" font-family="Comfortaa" font-size="16" fill="#7c9e9b">Add atoms from the kit →</text>';
+      $('#sv').innerHTML = s;
+      $('#sv').querySelectorAll('.ball').forEach(b => b.onclick = () => tap(+b.dataset.i));
+    };
+    const tap = i => {
+      if (sel === null) { sel = i; return draw(); }
+      if (sel === i) { sel = null; return draw(); }
+      const k = key(sel, i); bonds[k] = ((bonds[k] || 0) + 1) % 4; if (!bonds[k]) delete bonds[k];
+      sel = null; draw();
+    };
+    const showGoal = () => { const G = GOALS[g]; $('#goal').innerHTML = `<span style="font-size:2rem">🎯</span><div><div class="lk-kick">Build ${g + 1} of ${GOALS.length}</div><b>${G.f}</b> <span style="font-weight:800;color:var(--ink2)">${G.name}</span></div>`;
+      body.querySelectorAll('#prog span').forEach((x, i) => x.classList.toggle('d', i < g)); };
+    body.querySelectorAll('.pal').forEach(b => b.onclick = () => { if (atoms.length >= 6) return kit.toast('That\'s plenty of atoms for these molecules!'); atoms.push(b.dataset.e); draw(); });
+    $('#undo').onclick = () => { const i = atoms.length - 1; if (i < 0) return; atoms.pop(); Object.keys(bonds).forEach(k => { if (k.split('-').map(Number).includes(i)) delete bonds[k]; }); sel = null; draw(); };
+    $('#clr').onclick = () => { atoms = []; bonds = {}; sel = null; draw(); };
+    $('#chk').onclick = () => {
+      const G = GOALS[g], f = $('#fb'); f.classList.remove('hidden');
+      const count = atoms.reduce((o, e) => (o[e] = (o[e] || 0) + 1, o), {});
+      const sameAtoms = Object.keys({...count, ...G.need}).every(e => (count[e] || 0) === (G.need[e] || 0));
+      if (!sameAtoms) { f.className = 'fb bad'; f.textContent = `✗ ${G.f} needs ${Object.entries(G.need).map(([e, n]) => n + ' × ' + e).join(' and ')}. Check your atoms.`; return; }
+      const bad = atoms.findIndex((e, i) => used(i) !== VAL[e]);
+      if (bad >= 0) { const e = atoms[bad], u = used(bad); f.className = 'fb bad'; f.textContent = `✗ A ${e} atom has ${u} bond${u === 1 ? '' : 's'} but needs exactly ${VAL[e]}. ${u < VAL[e] ? 'It still has free hands (grey dots). Try a double bond?' : 'It has too many bonds.'}`; return; }
+      const seen = new Set([0]), st = [0]; while (st.length) { const a = st.pop(); Object.keys(bonds).forEach(k => { const [x, y] = k.split('-').map(Number); const o = x === a ? y : y === a ? x : -1; if (o >= 0 && !seen.has(o)) { seen.add(o); st.push(o); } }); }
+      if (seen.size !== atoms.length) { f.className = 'fb bad'; f.textContent = '✗ All the atoms must be joined into ONE molecule.'; return; }
+      const dbl = Object.values(bonds).some(n => n === 2) ? ' It uses a <b>double bond</b> (2 shared pairs)!' : '';
+      f.className = 'fb good'; f.innerHTML = `✓ Stable ${G.name}: <b>${G.f}</b>. Every atom has a full outer shell.${dbl}`;
+      if (++g < GOALS.length) setTimeout(() => { atoms = []; bonds = {}; sel = null; draw(); showGoal(); }, kit.REDUCED ? 300 : 1600);
+      else { body.querySelectorAll('#prog span').forEach(x => x.classList.add('d')); kit.say(`Kit complete! 🧪 Did you notice O₂ and CO₂ needed <b>double bonds</b>? Atoms keep sharing until every atom has a full outer shell.`); res(); }
+    };
+    draw(); showGoal();
+  });
+}
+
+/* ================================================================
+   MISSION 3: COVALENT OR IONIC?
+   ================================================================ */
+async function mission3(body, kit){
+  kit.say(`Final test: how do you know if a substance is <b>covalent</b> or <b>ionic</b>? Look at the elements!<br>🤝 Non-metal + non-metal → <b>covalent</b> (shared electrons)<br>⚡ Metal + non-metal → <b>ionic</b> (transferred electrons)`);
+  body.innerHTML = `<div class="lk-panel glass" id="s"></div>`;
+  await kit.sortDeck(body.querySelector('#s'), [
+    {t:'H₂O (water)', k:'cov', why:'H and O are both non-metals.'}, {t:'CO₂ (carbon dioxide)', k:'cov', why:'C and O are both non-metals.'},
+    {t:'CH₄ (methane)', k:'cov', why:'C and H are both non-metals.'}, {t:'NH₃ (ammonia)', k:'cov', why:'N and H are both non-metals.'}, {t:'HCl (hydrogen chloride)', k:'cov', why:'H and Cl are both non-metals.'},
+    {t:'NaCl (sodium chloride)', k:'ion', why:'Na is a metal, Cl is a non-metal.'}, {t:'MgO (magnesium oxide)', k:'ion', why:'Mg is a metal.'}, {t:'KBr (potassium bromide)', k:'ion', why:'K is a metal.'}, {t:'CaCl₂ (calcium chloride)', k:'ion', why:'Ca is a metal.'}
+  ], [{k:'cov', label:'🤝 Covalent', sub:'non-metal + non-metal'}, {k:'ion', label:'⚡ Ionic', sub:'metal + non-metal'}], {hint:'Is there a METAL in it? Metals are on the left of the periodic table.'});
+  kit.say(`Brilliant! 🧪 Covalent molecules are written by counting the atoms: oxygen gas is <b>O₂</b>, hydrogen gas is <b>H₂</b> and carbon dioxide is <b>CO₂</b>.`);
+}
+
+LabKit.init({
+  id:'molecule-builder', title:'Molecule Builder', icon:'🧪', theme:'#0f9d8a', kicker:"Mr Trichardt's Science Lab · Model kit",
+  heroTitle:'Molecule <span class="g">Builder</span>',
+  intro:'Open the molecular model kit! Learn how many bonds each atom makes, snap atoms together by sharing electrons, and build real molecules like water, carbon dioxide and methane.',
+  guide:{name:'Professor Bond', emoji:'👩‍🔬'}, certTitle:'Master Molecule Builder', confetti:['🧪','⚪','🔴','⚫','🔵','⭐'],
+  summary:'You can now identify that covalent bonds form between non-metals, use valence electrons to predict bonding, and write formulae for simple covalent molecules.',
+  missions:[
+    {icon:'🔢', title:'Valence check', short:'Valence', blurb:'Match atoms to their valence electrons and bonds.', run:mission1,
+      gate:[
+        {q:'Covalent bonds form between…', o:['Two non-metal atoms','A metal and a non-metal','Two metal atoms','Noble gases only'], ex:'Non-metals share electrons to form covalent bonds.', hint:'Which atoms want to GAIN electrons?'},
+        {q:'In a covalent bond, electrons are…', o:['Shared between atoms','Transferred from one atom to another','Destroyed','Turned into protons'], ex:'A covalent bond is a shared pair of electrons.', hint:'The model kit word was "share".'},
+        {q:'How many bonds does carbon usually make?', o:['4','2','1','3'], ex:'Carbon has 4 valence electrons and needs 4 more, so it makes 4 bonds.', hint:'8 − valence electrons.'}],
+      bonus:{q:'Why does hydrogen make only ONE bond?', o:['Its only shell is full with 2 electrons, so it needs just 1 more','It has 7 valence electrons','It is a metal','It has no electrons'], ex:'Hydrogen\'s single shell holds 2. With 1 electron, it needs 1 more.'}},
+    {icon:'🏗️', title:'Build the molecules', short:'Build', blurb:'Snap atoms together into H₂, O₂, H₂O, CO₂, CH₄ and NH₃.', run:mission2,
+      gate:[
+        {q:'What is the formula for water?', o:['H₂O','HO₂','H₂O₂','OH'], ex:'Two hydrogen atoms bonded to one oxygen atom.', hint:'How many H did you use?'},
+        {q:'Why does oxygen gas (O₂) need a double bond?', o:['Each oxygen needs 2 more electrons, so they share 2 pairs','Oxygen is a metal','It needs to lose electrons','Double bonds are always stronger'], ex:'Sharing two pairs gives each oxygen a full outer shell of 8.', hint:'How many hands did each O have?'},
+        {q:'What is the formula for carbon dioxide?', o:['CO₂','C₂O','CO','C₂O₂'], ex:'One carbon double-bonded to two oxygens.', hint:'"Di" means two.'}],
+      bonus:{q:'How many shared pairs of electrons are in a methane (CH₄) molecule?', o:['4','1','8','2'], ex:'Carbon forms 4 single bonds, one to each hydrogen.'}},
+    {icon:'⚖️', title:'Covalent or ionic?', short:'Sort', blurb:'Sort compounds by bond type.', run:mission3,
+      gate:[
+        {q:'Which of these is a covalent substance?', o:['CO₂','NaCl','MgO','KBr'], ex:'Carbon and oxygen are both non-metals.', hint:'Look for a compound with NO metal.'},
+        {q:'What is the formula of hydrogen gas?', o:['H₂','H','2H','H₂O'], ex:'Hydrogen atoms pair up by sharing electrons: H₂.', hint:'Hydrogen is diatomic: it comes in pairs.'},
+        {q:'Sodium chloride is ionic because…', o:['It contains a metal (Na) and a non-metal (Cl), so electrons are transferred','Both atoms share electrons','It has no charges','It is a gas'], ex:'Metals transfer electrons to non-metals, forming ions.', hint:'Is sodium a metal?'}],
+      bonus:{q:'Ammonia (NH₃) is used to make fertilisers. How many covalent bonds are in one ammonia molecule?', o:['3','1','4','6'], ex:'Nitrogen forms 3 single bonds, one to each hydrogen.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

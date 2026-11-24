@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe0ff"/><stop offset="1" stop-color="#e9f5ff"/></linearGradient></defs>
+  <rect width="640" height="400" fill="url(#s)"/><rect y="290" width="640" height="110" fill="#c5e3b8"/>
+  <g fill="#7a8ca8"><rect x="80" y="180" width="140" height="110"/><rect x="100" y="110" width="26" height="70"/><rect x="150" y="130" width="26" height="50"/><rect x="250" y="210" width="90" height="80"/><rect x="380" y="160" width="120" height="130"/></g>
+  <g fill="#14213d" opacity=".25"><circle cx="113" cy="90" r="16"/><circle cx="130" cy="64" r="22"/><circle cx="163" cy="112" r="12"/></g>
+  <g font-family="Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif" font-size="44" text-anchor="middle"><text x="150" y="250">🌾</text><text x="295" y="265">💊</text><text x="440" y="240">🧴</text><text x="560" y="270">🛡️</text></g>
+  <g font-family="Arial Black,sans-serif" font-size="20"><rect x="40" y="320" width="170" height="54" rx="10" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="56" y="355" fill="#2e7d32">💰 100</text>
+  <rect x="235" y="320" width="170" height="54" rx="10" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="251" y="355" fill="#1e88e5">😊 85</text>
+  <rect x="430" y="320" width="170" height="54" rx="10" fill="#fff" stroke="#14213d" stroke-width="3"/><text x="446" y="355" fill="#43a047">🌳 60</text></g>
+</svg>

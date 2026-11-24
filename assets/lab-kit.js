@@ -151,9 +151,66 @@
     };
   }
 
+  /* ---------- reusable game pieces (resolve when finished) ---------- */
+  // Sort cards into bins. items: [{t:'text', k:'binKey', hint:'optional'}], bins: [{k, label, sub}]
+  function sortDeck(el, items, bins, opts) {
+    opts = opts || {};
+    return new Promise(res => {
+      const list = shuffle(items); let left = list.length;
+      el.innerHTML = `<div class="lk-deck">${list.map((c, i) => `<div class="lk-sc" data-i="${i}"><span>${c.t}</span><span class="lk-bt">${bins.map(b => `<button class="btn small" data-to="${b.k}">${b.label}</button>`).join('')}</span></div>`).join('')}</div>
+        <div class="lk-bins" style="grid-template-columns:repeat(${Math.min(bins.length, 3)},1fr)">${bins.map(b => `<div class="lk-bin" data-k="${b.k}"><h4>${b.label}</h4>${b.sub ? `<small>${b.sub}</small>` : ''}<div class="lk-got"></div></div>`).join('')}</div>
+        <div class="fb hidden"></div>`;
+      const fb = el.querySelector(':scope > .fb');
+      el.querySelectorAll('.lk-sc').forEach(sc => sc.querySelectorAll('[data-to]').forEach(b => b.onclick = () => {
+        const c = list[+sc.dataset.i]; fb.classList.remove('hidden');
+        if (b.dataset.to === c.k) {
+          sc.remove(); el.querySelector(`.lk-bin[data-k="${c.k}"] .lk-got`).insertAdjacentHTML('beforeend', `<span class="lk-placed">✓ ${c.t}</span>`);
+          fb.className = 'fb good'; fb.innerHTML = --left ? `✓ ${c.why || 'Correct!'} <b>${left} to go.</b>` : '✓ ' + (c.why || '') + ' All sorted!';
+          if (!left) res();
+        } else { shake(sc); fb.className = 'fb bad'; fb.innerHTML = '✗ ' + (c.hint || opts.hint || 'Not that one. Try again!'); }
+      }));
+    });
+  }
+  // Match left items to right items. pairs: [{k, a:'left', b:'right', why}]
+  function matchPairs(el, pairs, labels) {
+    labels = labels || ['', ''];
+    return new Promise(res => {
+      let sel = null, left = pairs.length;
+      el.innerHTML = `<div class="lk-match"><div class="lk-col">${labels[0] ? `<div class="lk-collab">${labels[0]}</div>` : ''}${shuffle(pairs).map(p => `<button class="lk-mb" data-s="a" data-k="${p.k}">${p.a}</button>`).join('')}</div>
+        <div class="lk-col">${labels[1] ? `<div class="lk-collab">${labels[1]}</div>` : ''}${shuffle(pairs).map(p => `<button class="lk-mb" data-s="b" data-k="${p.k}">${p.b}</button>`).join('')}</div></div>`;
+      el.querySelectorAll('.lk-mb').forEach(b => b.onclick = () => {
+        if (b.disabled) return;
+        if (!sel || sel.dataset.s === b.dataset.s) { el.querySelectorAll('.lk-mb.sel').forEach(x => x.classList.remove('sel')); sel = b; b.classList.add('sel'); return; }
+        if (sel.dataset.k === b.dataset.k) {
+          [sel, b].forEach(x => { x.classList.remove('sel'); x.classList.add('done'); x.disabled = true; });
+          const p = pairs.find(q => q.k === b.dataset.k); if (p.why) toast('✓ ' + p.why.replace(/<[^>]+>/g, ''), 3000);
+          sel = null; if (--left === 0) res();
+        } else { shake(b); toast('✗ Not a match. Try again!'); sel.classList.remove('sel'); sel = null; }
+      });
+    });
+  }
+  // Tap items in the correct order. items: in CORRECT order [{t, sub}]
+  function orderTap(el, items, opts) {
+    opts = opts || {};
+    return new Promise(res => {
+      const mixed = shuffle(items.map((x, i) => ({...x, i}))); let n = 0;
+      el.innerHTML = `<div class="lk-slots">${items.map((_, i) => `<div class="lk-slot"><b>${i + 1}</b><span></span></div>`).join('')}</div>
+        <div class="lk-pool">${mixed.map(x => `<button class="lk-mb" data-i="${x.i}">${x.t}${x.sub ? `<small>${x.sub}</small>` : ''}</button>`).join('')}</div><div class="fb hidden"></div>`;
+      const fb = el.querySelector('.fb');
+      el.querySelectorAll('.lk-pool .lk-mb').forEach(b => b.onclick = () => {
+        if (+b.dataset.i === n) {
+          b.disabled = true; b.classList.add('done');
+          const s = el.querySelectorAll('.lk-slot')[n]; s.classList.add('on'); s.querySelector('span').innerHTML = items[n].t;
+          n++; fb.classList.remove('hidden'); fb.className = 'fb good'; fb.textContent = n < items.length ? '✓ Next…' : '✓ ' + (opts.done || 'All in order!');
+          if (n === items.length) res();
+        } else { shake(b); fb.classList.remove('hidden'); fb.className = 'fb bad'; fb.textContent = '✗ ' + (opts.hint || 'Not next. Try another!'); }
+      });
+    });
+  }
+
   function makeKit(token) {
     return {
-      esc, shuffle, wait, toast, card, closeCard, choose, head, shake, REDUCED,
+      esc, shuffle, wait, toast, card, closeCard, choose, head, shake, REDUCED, sortDeck, matchPairs, orderTap,
       say(html, who) { const s = $('#lkSay'); if (!s || openMission.token !== token) return; s.innerHTML = `<small>${esc(who || cfg.guide.name)}</small>${html}`; s.style.animation = 'none'; void s.offsetWidth; s.style.animation = ''; },
       alive() { return openMission.token === token; }
     };

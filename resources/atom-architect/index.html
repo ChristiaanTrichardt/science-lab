@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atom Architect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: neon sci-fi construction bay ===== */
+:root{--ink:#eef0ff;--ink2:#b7b9e8;--ink3:#8587c4;--accent:#ff4fd8;--theme:#ff4fd8;--hair:rgba(255,79,216,.2);
+  --head:'Orbitron','Segoe UI',sans-serif;--g1:#ff4fd8;--g2:#4fe3ff;--cy:#4fe3ff;--mg:#ff4fd8;--panel:rgba(22,16,58,.85);--line:rgba(126,110,255,.45)}
+body{background:#07051a;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(900px 500px at 80% -10%,rgba(255,79,216,.25),transparent 60%),radial-gradient(900px 600px at 0% 110%,rgba(79,227,255,.22),transparent 60%),#07051a}
+body::after{content:'';position:fixed;left:-50%;right:-50%;bottom:-10%;height:45vh;z-index:-1;pointer-events:none;opacity:.35;
+  background:linear-gradient(rgba(126,110,255,.6) 1px,transparent 1px) 0 0/60px 40px,linear-gradient(90deg,rgba(126,110,255,.6) 1px,transparent 1px) 0 0/60px 40px;
+  transform:perspective(400px) rotateX(60deg);transform-origin:bottom;mask-image:linear-gradient(transparent,#000)}
+.lk-bg{display:none}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 0 0 1px rgba(255,79,216,.08),0 0 40px -14px rgba(126,110,255,.7);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);letter-spacing:.04em;text-transform:uppercase}
+.lk-hero h1 .g{background:linear-gradient(90deg,var(--mg),var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lk-logo{background:linear-gradient(135deg,var(--mg),var(--cy));box-shadow:0 0 20px rgba(255,79,216,.6)}
+.lk-kick{color:var(--cy);font-family:var(--head);font-size:.68rem}
+.lk-step{background:rgba(255,255,255,.04);border-color:var(--line);color:var(--ink2)}
+.lk-step .n{background:#1b1446}
+.lk-step.now{background:#1b1446;color:#fff;box-shadow:0 0 0 2px var(--mg),0 0 18px rgba(255,79,216,.6)}
+.lk-step.done .n{background:var(--cy);color:#07051a}
+.lk-chip,.chip{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--ink)}
+.lk-mlist li{background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.lk-mlist .ic,.lk-face{background:#1b1446;box-shadow:0 0 14px rgba(79,227,255,.4)}
+.lk-bubble small{font-family:var(--head);font-size:.75rem;color:var(--mg);letter-spacing:.08em}
+.btn{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.12);filter:none}
+.btn.primary,.btn.green{background:linear-gradient(90deg,var(--mg),#9b5cff);color:#fff;border:0;box-shadow:0 0 22px -4px rgba(255,79,216,.9)}
+.lk-name input{background:#120c33;border-color:var(--line);color:var(--ink)}
+#lkModal{background:rgba(5,3,18,.7)}
+.lk-card{background:#120c33;color:var(--ink)}
+.opt,.lk-mb,.lk-deck .lk-sc{background:#1b1446;color:var(--ink);border:1px solid var(--line)}
+.opt:hover:not(:disabled),.lk-mb:hover:not(:disabled){border-color:var(--cy)}
+.opt.right,.lk-mb.done{background:rgba(79,227,255,.15);border-color:var(--cy);color:#d5f8ff}
+.opt.wrong{background:rgba(255,79,216,.15);border-color:var(--mg)}
+.lk-mb small{color:var(--ink2)}
+.fb.good{background:rgba(79,227,255,.12);color:#c8f6ff;border:1px solid rgba(79,227,255,.4)}
+.fb.bad{background:rgba(255,79,216,.12);color:#ffd0f3;border:1px solid rgba(255,79,216,.4)}
+.fb.info{background:rgba(126,110,255,.14);color:#dcd8ff}
+.tile{background:#1b1446;border-color:var(--line);color:var(--ink)}
+.lk-cert{background:#120c33;border-color:var(--mg)}
+.lk-stats div{background:#1b1446}
+#lkToast{background:#1b1446;color:var(--ink);border-color:var(--line)}
+.lk-collab{color:var(--cy)}
+
+/* builder */
+.bay{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:16px;align-items:start}
+@media (max-width:880px){.bay{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:480px){.pbtns{gap:6px}.pb{padding:8px 4px}.pb .row button{width:32px;height:34px}.pb b{font-size:.62rem}.read b{font-size:.95rem}}
+.bay svg{display:block;width:100%;height:auto;max-height:440px}
+.pbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pb{border-radius:14px;padding:10px;text-align:center;border:1px solid var(--line);background:#1b1446}
+.pb b{display:block;font-family:var(--head);font-size:.8rem;letter-spacing:.06em}
+.pb .n{font-family:var(--head);font-size:1.8rem}
+.pb .row{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.pb .row button{width:40px;height:36px;border-radius:10px;font-weight:900;font-size:1.2rem;background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line)}
+.pb.p{box-shadow:inset 0 0 0 2px #ff5c7a}.pb.n0{box-shadow:inset 0 0 0 2px #9aa3c7}.pb.e{box-shadow:inset 0 0 0 2px var(--cy)}
+.read{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.read div{background:#0f0a2c;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:.8rem;color:var(--ink2);font-weight:800}
+.read b{display:block;font-family:var(--head);font-size:1.15rem;color:var(--ink)}
+.target{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;border:1px dashed var(--mg);margin-bottom:12px}
+.target .sym{font-family:var(--head);font-size:2rem;width:68px;height:68px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(255,79,216,.25),rgba(79,227,255,.25))}
+.prog{display:flex;gap:6px;margin-bottom:10px}
+.prog i{flex:1;height:8px;border-radius:9px;background:rgba(255,255,255,.08)}.prog i.d{background:var(--cy);box-shadow:0 0 10px var(--cy)}
+.speed{text-align:center}
+.speed .sym{font-family:var(--head);font-size:3.4rem;margin:6px 0}
+.speed input{width:min(260px,100%);height:54px;border-radius:14px;border:2px solid var(--line);background:#0f0a2c;color:var(--ink);font-family:var(--head);font-size:1.4rem;text-align:center;outline:none}
+.speed input:focus{border-color:var(--cy)}
+.big{font-family:var(--head);font-size:1.6rem}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const EL = [null,['H','Hydrogen'],['He','Helium'],['Li','Lithium'],['Be','Beryllium'],['B','Boron'],['C','Carbon'],['N','Nitrogen'],['O','Oxygen'],['F','Fluorine'],['Ne','Neon'],
+  ['Na','Sodium'],['Mg','Magnesium'],['Al','Aluminium'],['Si','Silicon'],['P','Phosphorus'],['S','Sulfur'],['Cl','Chlorine'],['Ar','Argon'],['K','Potassium'],['Ca','Calcium']];
+const config = e => { const caps = [2, 8, 8, 2], out = []; let left = e; for (const c of caps) { if (left <= 0) break; out.push(Math.min(c, left)); left -= c; } return out; };
+const SHELLS = [58, 96, 134, 170];
+
+function atomSVG(p, n, e, opts){
+  opts = opts || {};
+  const parts = []; const tot = p + n; let pi = 0, ni = 0;
+  for (let i = 0; i < tot; i++) { const isP = (pi < p && (ni >= n || i % 2 === 0)); isP ? pi++ : ni++;
+    const a = i * 2.399, r = 5.2 * Math.sqrt(i); parts.push(`<circle cx="${200 + Math.cos(a) * r}" cy="${200 + Math.sin(a) * r}" r="6.5" fill="${isP ? '#ff5c7a' : '#9aa3c7'}" stroke="#07051a" stroke-width="1"/>`); }
+  const cfg = config(e), elec = [];
+  cfg.forEach((cnt, s) => { for (let k = 0; k < cnt; k++) { const a = (k / cnt) * Math.PI * 2 - Math.PI / 2 + s * .3; elec.push(`<circle cx="${200 + Math.cos(a) * SHELLS[s]}" cy="${200 + Math.sin(a) * SHELLS[s]}" r="7" fill="#4fe3ff" style="filter:drop-shadow(0 0 5px #4fe3ff)"/>`); } });
+  const full = s => cfg[s] === [2, 8, 8, 2][s];
+  return `<svg viewBox="0 0 400 400" role="img" aria-label="Atom with ${p} protons, ${n} neutrons and ${e} electrons">
+    ${SHELLS.map((r, s) => `<circle cx="200" cy="200" r="${r}" fill="none" stroke="${full(s) ? '#4fe3ff' : 'rgba(126,110,255,.45)'}" stroke-width="${full(s) ? 2.5 : 1.5}" stroke-dasharray="${full(s) ? '' : '4 5'}"/>`).join('')}
+    ${opts.pull ? elec.map(() => '').join('') : ''}
+    <g>${parts.join('')}</g><g>${elec.join('')}</g>
+    ${p === 0 && n === 0 ? '<text x="200" y="206" text-anchor="middle" fill="#8587c4" font-size="14" font-family="Orbitron">EMPTY BAY</text>' : ''}
+  </svg>`;
+}
+
+/* ================================================================
+   MISSION 1: PARTICLE SPECS
+   ================================================================ */
+async function mission1(body, kit){
+  kit.say(`Welcome to the Atom Construction Bay, architect! Every atom is built from 3 particles. Match each particle to its <b>spec sheet</b> (charge, mass and location).`);
+  body.innerHTML = `<div class="lk-panel glass" id="m"></div>
+    <div class="lk-panel glass hidden" id="force" style="margin-top:14px"><div class="lk-kick">▸ Force field test</div>
+      <div class="bay"><div id="fa">${atomSVG(3, 4, 3)}</div><div><p style="font-weight:700;color:var(--ink2)">What stops the electrons flying away? The <b>positive</b> protons in the nucleus attract the <b>negative</b> electrons. This pull is called <b>electrostatic attraction</b>.</p>
+        <button class="btn primary" id="off">⚡ Switch the attraction OFF</button><div class="fb hidden" id="ff"></div></div></div></div>`;
+  const $ = s => body.querySelector(s);
+  await kit.matchPairs($('#m'), [
+    {k:'p', a:'🔴 Proton', b:'Charge +1 · mass 1 · in the nucleus', why:'Protons are positive and sit in the nucleus.'},
+    {k:'n', a:'⚪ Neutron', b:'Charge 0 · mass 1 · in the nucleus', why:'Neutrons have no charge and sit in the nucleus.'},
+    {k:'e', a:'🔵 Electron', b:'Charge −1 · almost no mass (1/1836) · in shells', why:'Electrons are negative, tiny, and orbit in shells.'}
+  ], ['Particle', 'Spec sheet']);
+  $('#force').classList.remove('hidden'); $('#force').scrollIntoView({behavior:'smooth', block:'center'});
+  kit.say(`Specs locked in! 🔒 Now a safety test: what holds the atom together?`);
+  return new Promise(res => {
+    $('#off').onclick = async () => {
+      $('#off').disabled = true;
+      const els = [...$('#fa').querySelectorAll('circle[fill="#4fe3ff"]')];
+      els.forEach((c, i) => { const a = i * 2.1; c.style.transition = 'transform 1.2s ease-in, opacity 1.2s'; c.style.transform = `translate(${Math.cos(a) * 260}px,${Math.sin(a) * 260}px)`; c.style.opacity = 0; });
+      await wait(kit.REDUCED ? 0 : 1300);
+      const f = $('#ff'); f.classList.remove('hidden'); f.className = 'fb info';
+      f.innerHTML = '💥 Without the attraction between <b>positive protons</b> and <b>negative electrons</b>, the electrons fly off! Opposite charges attract, and that\'s what keeps electrons around the nucleus.';
+      res();
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 2: BUILD ATOMS
+   ================================================================ */
+const TARGETS = [{z:1, a:1}, {z:2, a:4}, {z:6, a:12}, {z:8, a:16}, {z:11, a:23}, {z:20, a:40}];
+async function mission2(body, kit){
+  kit.say(`Time to build! Use the controls to add protons, neutrons and electrons. Electrons fill shells automatically using the <b>2, 8, 8, 2 rule</b>: up to 2 in the first shell, then 8, then 8, then 2.<br><br>Build each <b>neutral</b> atom on the order list.`);
+  body.innerHTML = `<div class="bay"><div class="lk-panel glass" id="view"></div>
+    <div class="lk-panel glass"><div class="prog" id="prog">${TARGETS.map(() => '<i></i>').join('')}</div><div class="target" id="tgt"></div>
+      <div class="pbtns">${[['p','Protons','p'],['n','Neutrons','n0'],['e','Electrons','e']].map(x => `<div class="pb ${x[2]}"><b>${x[1]}</b><div class="n" id="c${x[0]}">0</div><div class="row"><button data-k="${x[0]}" data-d="-1" aria-label="remove ${x[1]}">−</button><button data-k="${x[0]}" data-d="1" aria-label="add ${x[1]}">+</button></div></div>`).join('')}</div>
+      <div class="read"><div>Element<b id="rEl">-</b></div><div>Mass number<b id="rA">0</b></div><div>Overall charge<b id="rQ">0</b></div><div>Electron shells<b id="rC">-</b></div></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn primary" id="chk">✅ Check build</button><button class="btn" id="clr">Clear</button></div><div class="fb hidden" id="bf"></div></div></div>`;
+  const $ = s => body.querySelector(s), c = {p:0, n:0, e:0};
+  let t = 0;
+  const draw = () => {
+    ['p','n','e'].forEach(k => $('#c' + k).textContent = c[k]);
+    $('#view').innerHTML = atomSVG(c.p, c.n, c.e);
+    $('#rEl').textContent = c.p ? `${EL[c.p][1]} (${EL[c.p][0]})` : '-';
+    $('#rA').textContent = c.p + c.n; const q = c.p - c.e; $('#rQ').textContent = q === 0 ? '0 (neutral)' : (q > 0 ? '+' + q : q);
+    $('#rC').textContent = c.e ? config(c.e).join(', ') : '-';
+  };
+  const showT = () => { const T = TARGETS[t]; $('#tgt').innerHTML = `<div class="sym">${EL[T.z][0]}</div><div><div class="lk-kick">Build order ${t + 1} of ${TARGETS.length}</div><b style="font-size:1.1rem">${EL[T.z][1]}-${T.a}</b><div style="color:var(--ink2);font-weight:700;font-size:.85rem">Atomic number ${T.z} · mass number ${T.a} · neutral atom</div></div>`;
+    body.querySelectorAll('#prog i').forEach((x, i) => x.classList.toggle('d', i < t)); };
+  body.querySelectorAll('.pb button').forEach(b => b.onclick = () => { const k = b.dataset.k; c[k] = Math.max(0, Math.min(k === 'n' ? 22 : 20, c[k] + +b.dataset.d)); draw(); });
+  $('#clr').onclick = () => { c.p = c.n = c.e = 0; draw(); };
+  draw(); showT();
+  return new Promise(res => {
+    $('#chk').onclick = () => {
+      const T = TARGETS[t], f = $('#bf'); f.classList.remove('hidden');
+      const issues = [];
+      if (c.p !== T.z) issues.push(`The <b>atomic number</b> tells you the number of protons. ${EL[T.z][1]} needs ${T.z}.`);
+      else if (c.p + c.n !== T.a) issues.push(`Mass number = protons + neutrons. You need ${T.a} − ${T.z} = <b>${T.a - T.z} neutrons</b>.`);
+      else if (c.e !== c.p) issues.push(`A neutral atom has the same number of electrons as protons.`);
+      if (issues.length) { f.className = 'fb bad'; f.innerHTML = '✗ ' + issues[0]; return; }
+      f.className = 'fb good'; f.innerHTML = `✓ ${EL[T.z][1]} built! Shells: <b>${config(c.e).join(', ')}</b>.`;
+      t++; c.p = c.n = c.e = 0;
+      if (t < TARGETS.length) { setTimeout(() => { draw(); showT(); }, kit.REDUCED ? 0 : 1200); }
+      else { body.querySelectorAll('#prog i').forEach(x => x.classList.add('d')); kit.say(`All six atoms built! 🏗️ Remember: <b>protons = atomic number</b>, <b>neutrons = mass number − atomic number</b>, and in a neutral atom <b>electrons = protons</b>.`); res(); }
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 3: SPEED ROUND
+   ================================================================ */
+async function mission3(body, kit){
+  kit.say(`⚡ <b>Speed round!</b> You have <b>60 seconds</b>. Type the electron configuration for each element, like <b>2,8,1</b>. Get <b>6 correct</b> to pass. Ready?`);
+  body.innerHTML = `<div class="lk-panel glass speed" id="sp"><button class="btn primary" id="go">🚀 Start the clock</button></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    const start = () => {
+      let score = 0, tries = 0, z, timer, left = 60;
+      const pool = shuffle(Array.from({length:20}, (_, i) => i + 1));
+      $('#sp').innerHTML = `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><span class="big">⏱ <span id="tm">60</span>s</span><span class="big">✅ <span id="sc">0</span>/6</span></div>
+        <div class="sym" id="sym"></div><div style="color:var(--ink2);font-weight:800" id="nm"></div>
+        <p style="margin:10px 0 6px;font-weight:700;color:var(--ink2)">Electron configuration:</p><input id="ans" autocomplete="off" inputmode="numeric" placeholder="e.g. 2,8,1" aria-label="Electron configuration">
+        <div style="margin-top:10px"><button class="btn primary" id="sub">Submit</button></div><div class="fb hidden" id="sf"></div>`;
+      const next = () => { z = pool[tries % 20]; tries++; $('#sym').textContent = EL[z][0]; $('#nm').textContent = `${EL[z][1]} · atomic number ${z}`; $('#ans').value = ''; $('#ans').focus(); };
+      const submit = () => {
+        if (left <= 0) return;
+        const v = $('#ans').value.replace(/\s/g, '').replace(/[.\/;]/g, ','), want = config(z).join(','), f = $('#sf'); f.classList.remove('hidden');
+        if (v === want) { score++; $('#sc').textContent = score; f.className = 'fb good'; f.textContent = `✓ ${EL[z][1]}: ${want}`; }
+        else { f.className = 'fb bad'; f.textContent = `✗ ${EL[z][1]} is ${want} (${z} electrons: fill 2, then 8, then 8, then 2).`; }
+        if (score >= 6) { clearInterval(timer); f.className = 'fb good'; f.textContent = `🏆 6 correct with ${left}s to spare!`; kit.say(`Speed certified! ⚡ You can work out the electron configuration of the first 20 elements using <b>2, 8, 8, 2</b>.`); res(); return; }
+        next();
+      };
+      $('#sub').onclick = submit; $('#ans').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+      timer = setInterval(() => { left--; $('#tm').textContent = left; if (left <= 0) { clearInterval(timer); $('#sp').innerHTML = `<div class="big">⏱ Time's up! You got ${score}/6.</div><p style="font-weight:700;color:var(--ink2)">Tip: count the electrons into shells: 2 → 8 → 8 → 2.</p><button class="btn primary" id="go">↺ Try again</button>`; $('#go').onclick = start; } }, 1000);
+      next();
+    };
+    $('#go').onclick = start;
+  });
+}
+
+LabKit.init({
+  id:'atom-architect', title:'Atom Architect', icon:'⚛️', theme:'#ff4fd8', kicker:"Mr Trichardt's Science Lab · Construction bay",
+  heroTitle:'Atom <span class="g">Architect</span>',
+  intro:'Report to the Atom Construction Bay! Learn the specs of every particle, test the force that holds atoms together, build real atoms from scratch, then beat the clock in the electron-shell speed round.',
+  guide:{name:'Unit A-7 · Build bot', emoji:'🤖'}, certTitle:'Certified Atom Architect', confetti:['⚛️','🔴','🔵','⚡','✨','🤖'],
+  summary:'You can now identify protons, neutrons and electrons, describe their charge, mass and location, explain electrostatic attraction, and use the 2,8,8,2 rule for the first 20 elements.',
+  missions:[
+    {icon:'📋', title:'Particle specs', short:'Particles', blurb:'Match particles to their charge, mass and location.', run:mission1,
+      gate:[
+        {q:'Where are protons and neutrons found?', o:['In the nucleus','In the electron shells','Outside the atom','Only in hydrogen'], ex:'Protons and neutrons are packed into the tiny central nucleus.', hint:'Look at the centre of the atom.'},
+        {q:'What is the charge of an electron?', o:['−1','+1','0','+2'], ex:'Electrons are negative (−1). Protons are +1 and neutrons 0.', hint:'Electrons were the particles that bent towards + plates.'},
+        {q:'What holds electrons around the nucleus?', o:['Electrostatic attraction between positive protons and negative electrons','Gravity','Neutrons gluing them in place','Magnetism from the shells'], ex:'Opposite charges attract. That\'s electrostatic attraction.', hint:'What happened when you switched it off?'}],
+      bonus:{q:'Why do we say electrons have "almost no mass"?', o:['An electron\'s mass is about 1/1836 of a proton\'s','Electrons weigh nothing at all','Electrons are bigger but lighter','Because they move fast'], ex:'Electrons are about 1836 times lighter than protons, so they barely count towards an atom\'s mass.'}},
+    {icon:'🏗️', title:'Build-an-atom', short:'Build', blurb:'Build six real atoms from protons, neutrons and electrons.', run:mission2,
+      gate:[
+        {q:'The atomic number tells you the number of…', o:['Protons','Neutrons','Protons + neutrons','Shells'], ex:'Atomic number = number of protons. It decides which element it is.', hint:'What did you match to the element first?'},
+        {q:'An atom has a mass number of 23 and atomic number 11. How many neutrons?', o:['12','11','23','34'], ex:'Neutrons = mass number − atomic number = 23 − 11 = 12.', hint:'Subtract.'},
+        {q:'What is the electron configuration of oxygen (8 electrons)?', o:['2,6','2,8','8','2,4,2'], ex:'2 in the first shell, then the remaining 6 in the second.', hint:'Fill the first shell with 2 first.'}],
+      bonus:{q:'What is the electron configuration of calcium (20 electrons)?', o:['2,8,8,2','2,8,10','2,18','2,8,8,1,1'], ex:'2 + 8 + 8 + 2 = 20.'}},
+    {icon:'⏱️', title:'Electron speed round', short:'Speed', blurb:'Beat the clock with the 2,8,8,2 rule.', run:mission3,
+      gate:[
+        {q:'What is the electron configuration of chlorine (17 electrons)?', o:['2,8,7','2,8,8','2,7,8','2,15'], ex:'2 + 8 + 7 = 17.', hint:'Fill 2, then 8, then the rest.'},
+        {q:'How many electrons fit in the FIRST shell?', o:['2','8','18','1'], ex:'The first shell holds a maximum of 2 electrons.', hint:'The first number in every configuration.'},
+        {q:'Which element has the configuration 2,8,1?', o:['Sodium (11)','Neon (10)','Magnesium (12)','Fluorine (9)'], ex:'2 + 8 + 1 = 11 electrons, which is sodium.', hint:'Add up the numbers.'}],
+      bonus:{q:'Why does potassium (19) have 2,8,8,1 and not 2,8,9?', o:['The third shell is treated as full at 8 for the first 20 elements','Potassium is special','Shells can only hold odd numbers','It has a missing electron'], ex:'Using the 2,8,8,2 rule, the 19th electron starts the fourth shell.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

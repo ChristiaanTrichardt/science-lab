@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chemical Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: management sim / city builder ===== */
+:root{--ink:#14213d;--ink2:#3d4f74;--ink3:#7686a6;--accent:#f9a825;--theme:#f9a825;--hair:rgba(20,33,61,.1);
+  --head:'Bungee','Impact',sans-serif;--g1:#f9a825;--g2:#1e88e5;--money:#2e7d32;--well:#1e88e5;--env:#43a047}
+body{background:#cfe8ff;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:linear-gradient(#bfe0ff 0%,#e9f5ff 60%,#d8ecd0 60%,#c5e3b8 100%)}
+body::after{content:'';position:fixed;left:0;right:0;bottom:38vh;height:120px;z-index:-1;pointer-events:none;opacity:.35;
+  background:linear-gradient(transparent 60%,#7a8ca8 60%) 0 0/60px 100%,linear-gradient(transparent 30%,#8d9eb8 30%) 30px 0/90px 100%;
+  -webkit-mask-image:linear-gradient(#000,#000)}
+.lk-bg{display:none}
+.glass{background:#fff;border:3px solid #14213d;border-radius:14px;box-shadow:0 6px 0 #14213d;-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-top{box-shadow:0 4px 0 #14213d}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:400;letter-spacing:.01em}
+.lk-hero h1{font-size:clamp(2.2rem,6vw,3.8rem)}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--accent);text-shadow:3px 3px 0 #14213d}
+.lk-mhead h1{font-size:clamp(1.4rem,3.2vw,2rem)}
+.lk-card h2{font-size:1.3rem}
+.lk-logo{border-radius:10px;background:var(--accent);border:3px solid #14213d}
+.lk-kick{color:#1e88e5}
+.lk-step{border:2px solid #14213d;background:#fff;color:var(--ink)}
+.lk-step.now{background:var(--accent);box-shadow:0 3px 0 #14213d}
+.lk-step.done .n{background:var(--money);color:#fff}
+.lk-mlist{background:#1e88e5}
+.lk-mlist li{background:#fff;border:2px solid #14213d}
+.lk-face{border:3px solid #14213d;background:#fff6dc}
+.lk-bubble small{font-family:var(--head);font-weight:400;color:#1e88e5}
+.btn{border:2px solid #14213d;border-radius:10px;background:#fff;box-shadow:0 3px 0 #14213d;font-weight:900}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #14213d}
+.btn.primary,.btn.green{background:var(--accent);color:#14213d;border-color:#14213d}
+.lk-name input{border:2px solid #14213d;border-radius:10px}
+.lk-card{border:3px solid #14213d;box-shadow:0 8px 0 #14213d}
+.opt,.lk-mb,.lk-deck .lk-sc{border:2px solid #14213d;border-radius:10px;background:#fff;box-shadow:0 3px 0 rgba(20,33,61,.3)}
+.lk-bin{border:2px dashed #14213d;background:#f5f9ff}
+.lk-cert{border:3px dashed #14213d;background:#fff}
+.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media (max-width:700px){.dash{grid-template-columns:repeat(2,1fr)}}
+.stat{border:3px solid #14213d;border-radius:12px;padding:10px 12px;background:#fff;box-shadow:0 4px 0 #14213d}
+.stat .l{font-weight:900;font-size:.8rem;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
+.stat .v{font-family:var(--head);font-size:1.5rem}
+.stat .bar{height:10px;border-radius:6px;background:#e5ecf6;overflow:hidden;margin-top:4px}
+.stat .bar i{display:block;height:100%;transition:width .6s}
+.stat.low{animation:warn 1s infinite}
+@keyframes warn{50%{box-shadow:0 4px 0 #14213d,0 0 0 4px rgba(229,57,53,.4)}}
+.projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.proj{text-align:left;border:3px solid #14213d;border-radius:14px;background:#fff;padding:12px;box-shadow:0 4px 0 #14213d;transition:transform .15s}
+.proj:hover:not(:disabled){transform:translateY(-3px)}
+.proj .e{font-size:2rem}
+.proj b{display:block;font-family:var(--head);font-weight:400;font-size:1rem;margin:4px 0}
+.proj .rx{font-size:.82rem;font-weight:800;color:#1e88e5;margin-bottom:6px}
+.proj .fx{display:flex;flex-wrap:wrap;gap:4px}
+.proj .fx span{font-size:.75rem;font-weight:900;padding:2px 7px;border-radius:6px;border:1.5px solid #14213d}
+.pos{background:#dcfce7}.neg{background:#fee2e2}
+.town{display:flex;gap:6px;flex-wrap:wrap;min-height:44px;padding:8px;border-radius:12px;background:#eef6ff;border:2px dashed #14213d;margin-bottom:12px;font-size:1.6rem}
+.event{border:3px solid #14213d;border-radius:14px;padding:12px 14px;background:#fff8e1;margin:12px 0;animation:lkPop .4s}
+.event b{font-family:var(--head);font-weight:400}
+.turn{font-family:var(--head);font-size:1.1rem}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+
+/* ================================================================
+   MISSION 1: REACTIONS EVERYWHERE
+   ================================================================ */
+async function mission1(body, kit){
+  kit.say(`Welcome, future CEO! 💼 Chemical reactions are everywhere: in <b>industry</b> (factories making products), in <b>biology</b> (inside living things) and in <b>daily life</b>. Sort these reactions to scout the market.`);
+  body.innerHTML = `<div class="lk-panel glass" id="s"></div>`;
+  await kit.sortDeck(body.querySelector('#s'), [
+    {t:'🌾 Making ammonia for fertiliser (Haber process)', k:'ind', why:'A huge industrial reaction that helps feed the world.'},
+    {t:'🛢️ Turning crude oil into plastics', k:'ind', why:'Factories join small molecules into long polymer chains.'},
+    {t:'🏗️ Extracting iron from iron ore to make steel', k:'ind', why:'Blast furnaces use reactions to free iron from rock.'},
+    {t:'🫁 Respiration in your cells', k:'bio', why:'Glucose + oxygen → CO₂ + water + energy.'},
+    {t:'🌿 Photosynthesis in leaves', k:'bio', why:'Plants make glucose from CO₂ and water.'},
+    {t:'🍽️ Enzymes digesting your lunch', k:'bio', why:'Enzymes break big food molecules into small ones.'},
+    {t:'🎂 Baking a cake', k:'life', why:'Heat causes reactions that make new substances (and bubbles of CO₂).'},
+    {t:'🔥 Cooking on a gas stove', k:'life', why:'Combustion of natural gas releases heat.'},
+    {t:'💊 Taking an antacid for heartburn', k:'life', why:'A base neutralises extra stomach acid.'}
+  ], [{k:'ind', label:'🏭 Industry'}, {k:'bio', label:'🧬 Biology'}, {k:'life', label:'🏠 Daily life'}]);
+  kit.say(`Market research complete! 📈 Industry uses reactions to turn cheap raw materials into <b>useful products</b>: food, medicine, materials and energy.`);
+}
+
+/* ================================================================
+   MISSION 2: RUN THE COMPANY
+   ================================================================ */
+const PROJ = [
+  {k:'fert', e:'🌾', n:'Fertiliser plant', rx:'nitrogen + hydrogen → ammonia', fx:{money:30, well:20, env:-20}, why:'Fertilisers help farmers grow much more food, but runoff can pollute rivers.'},
+  {k:'med', e:'💊', n:'Medicine lab', rx:'salicylic acid → aspirin', fx:{money:15, well:25, env:-5}, why:'Medicines treat pain and disease. Making them still creates some chemical waste.'},
+  {k:'soap', e:'🧼', n:'Soap factory', rx:'fat + sodium hydroxide → soap', fx:{money:10, well:15, env:-5}, why:'Soap stops the spread of germs. A small, fairly clean industry.'},
+  {k:'plas', e:'🧴', n:'Plastics plant', rx:'ethene → polyethene (polymerisation)', fx:{money:35, well:5, env:-25}, why:'Plastics are cheap and useful, but they last for centuries as litter.'},
+  {k:'bio', e:'🌽', n:'Biofuel refinery', rx:'sugar → ethanol + CO₂ (fermentation)', fx:{money:15, well:5, env:5}, why:'Biofuel from plants can replace some petrol.'},
+  {k:'safe', e:'🛡️', n:'Pollution controls', rx:'scrubbers + wastewater treatment', fx:{money:-25, well:5, env:30}, why:'Safety upgrades cost money but protect the town and environment.'}
+];
+const EVENTS = [
+  {t:'🌧️ Heavy rain washes chemicals into the river!', fx:o => o.fert && !o.safe ? {env:-15, well:-5} : {}, msg:o => o.fert && !o.safe ? 'Fertiliser runoff causes an algal bloom. (Pollution controls would have helped!)' : 'Your site handled it safely.'},
+  {t:'🤧 Flu season hits the town!', fx:o => o.med ? {well:15, money:10} : {well:-10}, msg:o => o.med ? 'Your medicine lab saves the day!' : 'The town had no local medicine supply.'},
+  {t:'🏖️ Plastic litter washes up on the beach!', fx:o => o.plas ? {env:-15} : {}, msg:o => o.plas ? 'Your plastic packaging is spotted in the litter.' : 'Not your plastic. Phew!'},
+  {t:'🌾 Drought! Farmers need more fertiliser.', fx:o => o.fert ? {money:15, well:5} : {well:-5}, msg:o => o.fert ? 'Your fertiliser keeps farms going.' : 'Food prices rise.'},
+  {t:'🏛️ The government rewards clean industry!', fx:o => o.safe || o.bio ? {money:15} : {}, msg:o => o.safe || o.bio ? 'You win a green-industry grant!' : 'No grant this year.'},
+  {t:'⚠️ A worker spills sodium hydroxide!', fx:o => o.safe ? {} : {well:-10}, msg:o => o.safe ? 'Safety training means nobody is hurt.' : 'Without safety upgrades, someone gets a chemical burn.'}
+];
+async function mission2(body, kit){
+  kit.say(`You're the CEO of <b>ChemCo</b>! 🏭 Each year, choose one project. Each uses a chemical reaction to make something useful, but every choice has <b>benefits</b> and <b>risks</b>.<br><br>Run the company for <b>6 years</b>. To win, finish with <b>Money, Town wellbeing AND Environment all at 40 or more</b>.`);
+  body.innerHTML = `<div class="dash" id="dash"></div><div class="lk-panel glass"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span class="turn" id="yr"></span><span style="font-weight:800;color:var(--ink2)">Your town:</span></div>
+    <div class="town" id="town"></div><div class="projects" id="proj"></div><div id="ev"></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    let st, owned, year;
+    const reset = () => { st = {money:50, well:50, env:60}; owned = {}; year = 1; $('#town').innerHTML = '🏘️'; $('#ev').innerHTML = ''; draw(); showProjects(); };
+    const clamp = v => Math.max(0, Math.min(100, v));
+    const draw = () => {
+      const cols = {money:'var(--money)', well:'var(--well)', env:'var(--env)'}, lab = {money:'💰 Money', well:'😊 Town wellbeing', env:'🌳 Environment'};
+      $('#dash').innerHTML = Object.keys(st).map(k => `<div class="stat${st[k] < 40 ? ' low' : ''}"><div class="l">${lab[k]}</div><div class="v">${st[k]}</div><div class="bar"><i style="width:${st[k]}%;background:${cols[k]}"></i></div></div>`).join('') +
+        `<div class="stat"><div class="l">📅 Year</div><div class="v">${Math.min(year, 6)}/6</div><div class="bar"><i style="width:${Math.min(year, 6) / 6 * 100}%;background:#f9a825"></i></div></div>`;
+      $('#yr').textContent = year <= 6 ? `YEAR ${year}: CHOOSE A PROJECT` : 'FINAL REPORT';
+    };
+    const apply = fx => Object.entries(fx).forEach(([k, v]) => st[k] = clamp(st[k] + v));
+    const fxTags = fx => Object.entries(fx).map(([k, v]) => `<span class="${v >= 0 ? 'pos' : 'neg'}">${({money:'💰', well:'😊', env:'🌳'})[k]} ${v > 0 ? '+' : ''}${v}</span>`).join('');
+    const showProjects = () => {
+      $('#proj').innerHTML = PROJ.map(p => `<button class="proj" data-k="${p.k}"><span class="e">${p.e}</span><b>${p.n}</b><div class="rx">⚗️ ${p.rx}</div><div class="fx">${fxTags(p.fx)}</div></button>`).join('');
+      $('#proj').querySelectorAll('.proj').forEach(b => b.onclick = () => choose(PROJ.find(p => p.k === b.dataset.k)));
+    };
+    const choose = async P => {
+      $('#proj').querySelectorAll('.proj').forEach(b => b.disabled = true);
+      apply(P.fx); owned[P.k] = (owned[P.k] || 0) + 1; $('#town').insertAdjacentHTML('beforeend', `<span title="${P.n}">${P.e}</span>`); draw();
+      const E = EVENTS[(year - 1) % EVENTS.length], efx = E.fx(owned); apply(efx); draw();
+      $('#ev').innerHTML = `<div class="event"><div style="font-weight:800">✅ You built a <b>${P.n}</b>. ${esc(P.why)}</div><div style="margin-top:8px"><b>EVENT:</b> ${esc(E.t)}</div><div style="font-weight:700;margin-top:4px">${esc(E.msg(owned))} ${Object.keys(efx).length ? `<span class="fx" style="display:inline-flex;gap:4px">${fxTags(efx)}</span>` : ''}</div>
+        <div style="text-align:right;margin-top:8px"><button class="btn primary" id="nx">${year < 6 ? 'Next year ▸' : 'See final report ▸'}</button></div></div>`;
+      $('#nx').onclick = () => {
+        year++; draw();
+        if (year <= 6) { $('#ev').innerHTML = ''; showProjects(); return; }
+        const win = st.money >= 40 && st.well >= 40 && st.env >= 40;
+        $('#proj').innerHTML = '';
+        $('#ev').innerHTML = `<div class="event" style="background:${win ? '#dcfce7' : '#fee2e2'}"><b style="font-size:1.3rem">${win ? '🏆 SUCCESS! A thriving, sustainable company!' : '📉 The board isn\'t happy…'}</b>
+          <p style="font-weight:700;margin:6px 0 0">${win ? 'You balanced profit, people and the planet. That\'s exactly how chemical industries should be run!' : `One of your meters ended below 40 (${Object.entries(st).filter(([, v]) => v < 40).map(([k]) => ({money:'money', well:'town wellbeing', env:'environment'})[k]).join(', ')}). Too much of one thing has costs. Try a better balance, and think about pollution controls!`}</p>
+          <div style="text-align:right;margin-top:8px">${win ? '' : '<button class="btn primary" id="again">↺ Try again</button>'}</div></div>`;
+        if (win) { kit.say(`Brilliant leadership! 💼 Chemical reactions make food, medicine and materials possible, but we must also manage the <b>risks</b>: pollution, waste and safety.`); res(); }
+        else $('#again').onclick = reset;
+      };
+    };
+    reset();
+  });
+}
+
+/* ================================================================
+   MISSION 3: BENEFITS VS RISKS
+   ================================================================ */
+async function mission3(body, kit){
+  kit.say(`Final board meeting! 📊 Good scientists <b>evaluate</b> both sides. Match each chemical product to its main <b>benefit</b>, then to its main <b>risk</b>.`);
+  body.innerHTML = `<div class="lk-panel glass"><b style="font-family:var(--head);font-size:1.1rem">👍 Benefits</b><div id="b" style="margin-top:10px"></div></div>
+    <div class="lk-panel glass hidden" id="rp" style="margin-top:14px"><b style="font-family:var(--head);font-size:1.1rem">⚠️ Risks</b><div id="r" style="margin-top:10px"></div></div>`;
+  const $ = s => body.querySelector(s);
+  await kit.matchPairs($('#b'), [
+    {k:'f', a:'🌾 Fertilisers', b:'Grow enough food to feed billions of people'}, {k:'p', a:'🧴 Plastics', b:'Cheap, light, waterproof materials'},
+    {k:'u', a:'⛽ Burning fuels', b:'Energy for transport and electricity'}, {k:'m', a:'💊 Medicines', b:'Cure diseases and relieve pain'}
+  ], ['Product', 'Benefit']);
+  $('#rp').classList.remove('hidden'); $('#rp').scrollIntoView({behavior:'smooth', block:'center'});
+  await kit.matchPairs($('#r'), [
+    {k:'f', a:'🌾 Fertilisers', b:'Runoff causes algal blooms in rivers'}, {k:'p', a:'🧴 Plastics', b:'Litter that lasts hundreds of years and harms wildlife'},
+    {k:'u', a:'⛽ Burning fuels', b:'Releases CO₂, adding to climate change'}, {k:'m', a:'💊 Medicines', b:'Side effects and waste from manufacturing'}
+  ], ['Product', 'Risk']);
+  kit.say(`Evaluation complete! ⚖️ Every useful reaction has benefits AND risks. Society decides how to use chemistry <b>responsibly</b>: recycling, pollution controls, safety rules and greener reactions.`);
+}
+
+LabKit.init({
+  id:'chemical-tycoon', title:'Chemical Tycoon', icon:'🏭', theme:'#f9a825', kicker:"Mr Trichardt's Science Lab · Management sim",
+  heroTitle:'Chemical <span class="g">Tycoon</span>',
+  intro:'Take charge of ChemCo! Scout where reactions are used, build factories that turn raw materials into useful products, survive surprise events, and balance profit, people and the planet.',
+  guide:{name:'Ms Ledger · Board chair', emoji:'👩‍💼'}, certTitle:'Sustainable Chemical CEO', confetti:['🏭','💰','🌳','😊','⭐'],
+  summary:'You can now identify uses of chemical reactions in industry, biology and daily life, explain how reactions make useful substances, and evaluate their benefits and risks.',
+  missions:[
+    {icon:'🔎', title:'Reactions everywhere', short:'Uses', blurb:'Sort reactions into industry, biology and daily life.', run:mission1,
+      gate:[
+        {q:'Which of these is a chemical reaction that happens in biology?', o:['Respiration in cells','Making plastics','Making steel','Burning petrol in a car'], ex:'Respiration happens inside living cells.', hint:'Which one happens inside your body?'},
+        {q:'The Haber process is used to make…', o:['Ammonia for fertilisers','Soap','Plastic bottles','Aspirin'], ex:'Nitrogen + hydrogen → ammonia, which is used to make fertilisers.', hint:'Think about the farm 🌾.'},
+        {q:'An antacid tablet works by…', o:['Neutralising extra stomach acid with a base','Adding more acid','Killing bacteria','Dissolving food'], ex:'A neutralisation reaction reduces acidity.', hint:'Acid + base → ?'}],
+      bonus:{q:'Why do industries use chemical reactions?', o:['To turn raw materials into more useful substances','Because reactions are always free','To destroy atoms','To make things heavier'], ex:'Reactions rearrange atoms to make useful new products.'}},
+    {icon:'🏭', title:'Run the company', short:'Tycoon', blurb:'Build factories and balance money, people and environment.', run:mission2,
+      gate:[
+        {q:'What useful product does a fertiliser plant make?', o:['Ammonia-based fertilisers that help grow food','Plastic bags','Fuel for cars','Medicine'], ex:'Fertilisers increase crop yields.', hint:'🌾'},
+        {q:'What is a major RISK of fertiliser use?', o:['Runoff into rivers can cause algal blooms','It makes food taste bad','It causes earthquakes','There are no risks'], ex:'Extra nutrients feed algae, which then reduce oxygen in the water.', hint:'Remember the heavy-rain event.'},
+        {q:'Why might a company spend money on pollution controls?', o:['To reduce harm to people and the environment','To make more plastic','Because it increases pollution','To stop all reactions'], ex:'Safety and environmental controls reduce risks, even though they cost money.', hint:'What did the 🛡️ card do?'}],
+      bonus:{q:'Fermenting sugar into ethanol biofuel is an example of…', o:['Using a chemical reaction to produce a useful fuel','A physical change','Nuclear fusion','Photosynthesis'], ex:'Fermentation is a chemical reaction carried out by yeast.'}},
+    {icon:'⚖️', title:'Benefits vs risks', short:'Evaluate', blurb:'Evaluate the benefits and risks of chemistry in society.', run:mission3,
+      gate:[
+        {q:'A benefit of plastics is…', o:['They are cheap, light and waterproof','They break down in a few days','They absorb CO₂','They are made from air'], ex:'Plastics are very useful materials.', hint:'Why are drink bottles made of plastic?'},
+        {q:'A risk of burning fossil fuels is…', o:['Releasing CO₂, which contributes to climate change','Making too much oxygen','It makes water disappear','There is no risk'], ex:'Combustion releases carbon dioxide.', hint:'Remember Carbon Quest!'},
+        {q:'To "evaluate" a use of chemistry means…', o:['Weighing up its benefits AND its risks to make a judgement','Only listing the good things','Only listing the bad things','Measuring its mass'], ex:'Evaluation considers both sides before deciding.', hint:'Think about what you did in this mission.'}],
+      bonus:{q:'Which choice best reduces the risks of plastics while keeping their benefits?', o:['Recycling and using plastics that break down more easily','Banning all chemistry','Burning all plastic waste in the open','Throwing plastic in rivers'], ex:'Recycling and better materials keep the benefits but reduce the harm.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ion Match</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: candy block puzzle ===== */
+:root{--ink:#2d1b4e;--ink2:#5c4a80;--ink3:#8d7fb0;--accent:#7c3aed;--theme:#7c3aed;--hair:rgba(124,58,237,.15);
+  --head:'Rubik Mono One','Rubik',sans-serif;--body:'Rubik','Nunito',sans-serif;--g1:#f43f5e;--g2:#7c3aed;--pos:#f43f5e;--neg:#3b82f6}
+body{background:#f3efff;color:var(--ink);font-family:var(--body)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  linear-gradient(rgba(124,58,237,.07) 2px,transparent 2px) 0 0/44px 44px,linear-gradient(90deg,rgba(124,58,237,.07) 2px,transparent 2px) 0 0/44px 44px,linear-gradient(160deg,#fdf2ff,#e9e4ff)}
+.lk-bg{display:none}
+.glass{background:#fff;border:0;border-radius:22px;box-shadow:0 6px 0 #d9cdfb,0 18px 30px -16px rgba(80,40,160,.4);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-brand b{font-family:var(--head);font-size:.9rem;font-weight:400}
+.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:400;letter-spacing:-.01em}
+.lk-hero h1{font-size:clamp(2.2rem,6vw,3.8rem)}
+.lk-mhead h1{font-size:clamp(1.3rem,3vw,1.9rem)}
+.lk-card h2{font-size:1.25rem}
+.lk-hero h1 .g{background:linear-gradient(90deg,#f43f5e,#f59e0b,#10b981,#3b82f6,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lk-logo{background:linear-gradient(135deg,#f43f5e,#7c3aed);border-radius:12px;box-shadow:0 4px 0 #5b21b6}
+.lk-step{background:#f6f2ff;border-color:#e6dcff}
+.lk-step.now{background:#7c3aed;color:#fff;box-shadow:0 4px 0 #5b21b6}
+.lk-step.now .n{background:#6d28d9}
+.lk-step.done .n{background:#10b981;color:#fff}
+.lk-mlist li{background:#f8f5ff}
+.btn{border:0;background:#f1ebff;box-shadow:0 4px 0 #d9cdfb;border-radius:14px;font-weight:800}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #d9cdfb}
+.btn.primary,.btn.green{background:#7c3aed;color:#fff;box-shadow:0 4px 0 #5b21b6}
+.lk-card{box-shadow:0 8px 0 #d9cdfb}
+.opt,.lk-mb{background:#f8f5ff;border:2px solid #e6dcff;box-shadow:0 3px 0 #e6dcff}
+.lk-cert{background:#fff;border:3px dashed #7c3aed}
+.puzzle{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:16px;align-items:start}
+@media (max-width:860px){.puzzle{grid-template-columns:1fr}}
+.target{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.target b{font-family:var(--head);font-size:clamp(.9rem,2.4vw,1.2rem);font-weight:400}
+.board{min-height:150px;border-radius:18px;background:#f6f2ff;border:3px dashed #d9cdfb;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;justify-content:center}
+.block{position:relative;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:76px;height:64px;padding:0 10px;border-radius:12px;color:#fff;font-weight:800;font-size:1.2rem;
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 4px 0 rgba(255,255,255,.35);animation:drop .35s cubic-bezier(.3,1.6,.5,1)}
+.block small{font-size:.7rem;opacity:.9}
+.block.c{background:var(--pos)}.block.a{background:var(--neg)}
+.block .tabs{position:absolute;top:-9px;display:flex;gap:4px}
+.block.c .tabs i{width:12px;height:10px;border-radius:4px 4px 0 0;background:var(--pos)}
+.block.a .tabs i{width:12px;height:10px;border-radius:4px 4px 0 0;background:#fff;border:2px solid var(--neg);border-bottom:0}
+@keyframes drop{from{transform:translateY(-30px) scale(.8);opacity:0}}
+.meter{display:flex;align-items:center;gap:10px;margin:12px 0}
+.meter .bar{flex:1;height:18px;border-radius:9px;background:#efe9ff;position:relative;overflow:hidden}
+.meter .bar i{position:absolute;top:0;bottom:0;left:50%;transition:all .3s}
+.meter .num{font-family:var(--head);font-size:1.2rem;min-width:60px;text-align:center}
+.tray{display:flex;gap:8px;flex-wrap:wrap}
+.tray button{border:0;border-radius:12px;padding:10px 14px;color:#fff;font-weight:800;font-size:1.05rem;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.tray button.c{background:var(--pos)}.tray button.a{background:var(--neg)}
+.sheet{font-size:.88rem}
+.sheet h4{margin:4px 0;font-family:var(--head);font-size:.8rem;font-weight:400}
+.sheet .row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.sheet span{padding:3px 8px;border-radius:8px;font-weight:800}
+.sheet .c span{background:#ffe4e6;color:#9f1239}.sheet .a span{background:#dbeafe;color:#1e3a8a}
+.stars{font-size:1.6rem;letter-spacing:4px}
+.lvl{font-weight:800;color:var(--ink2)}
+.fpick{display:grid;gap:8px;margin-top:10px}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const SUBD = n => String(n).replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);
+const SUPC = q => (Math.abs(q) === 1 ? '' : String(Math.abs(q)).replace(/\d/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d])) + (q > 0 ? '⁺' : '⁻');
+const ION = {Na:['Na',1], K:['K',1], Li:['Li',1], NH4:['NH₄',1,1], Mg:['Mg',2], Ca:['Ca',2], Cu:['Cu',2], Al:['Al',3], Fe:['Fe',3],
+  Cl:['Cl',-1], F:['F',-1], Br:['Br',-1], OH:['OH',-1,1], NO3:['NO₃',-1,1], O:['O',-2], S:['S',-2], SO4:['SO₄',-2,1], CO3:['CO₃',-2,1], N:['N',-3], PO4:['PO₄',-3,1]};
+const part = (k, n) => { const [s, , poly] = ION[k]; return n === 1 ? s : (poly ? `(${s})${SUBD(n)}` : s + SUBD(n)); };
+const formula = (c, nc, a, na) => part(c, nc) + part(a, na);
+const gcd = (a, b) => b ? gcd(b, a % b) : a;
+const correctRatio = (c, a) => { const qc = ION[c][1], qa = -ION[a][1], l = qc * qa / gcd(qc, qa); return [l / qc, l / qa]; };
+function sheetHTML(){ const c = Object.keys(ION).filter(k => ION[k][1] > 0), a = Object.keys(ION).filter(k => ION[k][1] < 0);
+  return `<div class="sheet"><h4>📄 Ion sheet</h4><div class="row c">${c.map(k => `<span>${ION[k][0]}${SUPC(ION[k][1])}</span>`).join('')}</div><div class="row a">${a.map(k => `<span>${ION[k][0]}${SUPC(ION[k][1])}</span>`).join('')}</div>
+  <div style="color:var(--ink2);font-weight:700">Red = cations (+) · Blue = anions (−)</div></div>`; }
+
+/* ================================================================
+   MISSION 1: CHARGE CHART
+   ================================================================ */
+async function mission1(body, kit){
+  kit.say(`Welcome to <b>Ion Match</b>! 🧩 Before we snap blocks, you need to know each ion's charge. The periodic table group tells you: Groups 1, 2, 3 → <b>+1, +2, +3</b> · Groups 15, 16, 17 → <b>−3, −2, −1</b>.<br><br>Match each element to the charge of its ion.`);
+  body.innerHTML = `<div class="lk-panel glass" id="m"></div>`;
+  await kit.matchPairs(body.querySelector('#m'), [
+    {k:'na', a:'Na · Group 1', b:'+1 (Na⁺)', why:'Group 1 loses 1 electron.'}, {k:'mg', a:'Mg · Group 2', b:'+2 (Mg²⁺)', why:'Group 2 loses 2 electrons.'},
+    {k:'al', a:'Al · Group 13', b:'+3 (Al³⁺)', why:'Group 13 loses 3 electrons.'}, {k:'n', a:'N · Group 15', b:'−3 (N³⁻)', why:'Group 15 gains 3 electrons.'},
+    {k:'o', a:'O · Group 16', b:'−2 (O²⁻)', why:'Group 16 gains 2 electrons.'}, {k:'f', a:'F · Group 17', b:'−1 (F⁻)', why:'Group 17 gains 1 electron.'}
+  ], ['Element', 'Ion charge']);
+  kit.say(`Charges locked in! 🔒 Now you're ready to snap ions together.`);
+}
+
+/* ================================================================
+   PUZZLE ENGINE (used by missions 2 and 3)
+   ================================================================ */
+function puzzle(body, kit, levels, opts){
+  const $ = s => body.querySelector(s);
+  body.innerHTML = `<div class="puzzle"><div class="lk-panel glass"><div class="target"><span class="lvl" id="lv"></span><b id="tn"></b>${opts.timed ? '<span class="stars" id="tm">⏱ 0s</span>' : ''}</div>
+      <div class="board" id="board"></div>
+      <div class="meter"><span class="num" id="q">0</span><div class="bar"><i id="qb"></i></div><span style="font-weight:800">total charge</span></div>
+      <div class="tray" id="tray"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn primary" id="lock">🔒 Lock it in</button><button class="btn" id="undo">↶ Undo</button><button class="btn" id="clr">Clear</button></div>
+      <div class="fb hidden" id="fb"></div><div id="fp"></div></div>
+    <div class="lk-panel glass">${sheetHTML()}</div></div>`;
+  return new Promise(res => {
+    let L = 0, stack = [], t0 = performance.now(), timer;
+    if (opts.timed) timer = setInterval(() => { const el = $('#tm'); if (el) el.textContent = '⏱ ' + Math.round((performance.now() - t0) / 1000) + 's'; }, 500);
+    const show = () => {
+      const lv = levels[L]; stack = [];
+      $('#lv').textContent = `Level ${L + 1}/${levels.length}`; $('#tn').textContent = lv.name;
+      $('#tray').innerHTML = [lv.c, lv.a].map(k => `<button class="${ION[k][1] > 0 ? 'c' : 'a'}" data-k="${k}">+ ${ION[k][0]}${SUPC(ION[k][1])}</button>`).join('');
+      $('#tray').querySelectorAll('button').forEach(b => b.onclick = () => { if (stack.length >= 8) return kit.toast('That\'s a lot of blocks! Check the charges.'); stack.push(b.dataset.k); draw(); });
+      $('#fp').innerHTML = ''; $('#fb').classList.add('hidden'); draw();
+    };
+    const draw = () => {
+      $('#board').innerHTML = stack.length ? stack.map(k => { const q = ION[k][1]; return `<span class="block ${q > 0 ? 'c' : 'a'}"><span class="tabs">${'<i></i>'.repeat(Math.abs(q))}</span>${ION[k][0]}<small>${q > 0 ? '+' : '−'}${Math.abs(q)}</small></span>`; }).join('') : '<span style="color:var(--ink3);font-weight:800;align-self:center">Tap the ion buttons to drop blocks here</span>';
+      const q = stack.reduce((t, k) => t + ION[k][1], 0); $('#q').textContent = q > 0 ? '+' + q : q;
+      const bar = $('#qb'), w = Math.min(50, Math.abs(q) * 10);
+      bar.style.background = q === 0 ? '#10b981' : q > 0 ? 'var(--pos)' : 'var(--neg)'; bar.style.width = (q === 0 ? 4 : w) + '%'; bar.style.left = q >= 0 ? (q === 0 ? 48 : 50) + '%' : (50 - w) + '%';
+    };
+    $('#undo').onclick = () => { stack.pop(); draw(); };
+    $('#clr').onclick = () => { stack = []; draw(); };
+    $('#lock').onclick = () => {
+      const lv = levels[L], f = $('#fb'); f.classList.remove('hidden');
+      const nc = stack.filter(k => k === lv.c).length, na = stack.filter(k => k === lv.a).length, q = stack.reduce((t, k) => t + ION[k][1], 0);
+      if (!nc || !na) { f.className = 'fb bad'; f.textContent = '✗ You need at least one of each ion.'; return; }
+      if (q !== 0) { f.className = 'fb bad'; f.textContent = `✗ Total charge is ${q > 0 ? '+' + q : q}. Ionic compounds must be neutral (0). Add more ${q > 0 ? 'negative' : 'positive'} ions.`; return; }
+      const [rc, ra] = correctRatio(lv.c, lv.a);
+      if (nc !== rc || na !== ra) { f.className = 'fb bad'; f.textContent = '✗ Balanced, but use the SMALLEST whole-number ratio.'; return; }
+      const right = formula(lv.c, rc, lv.a, ra);
+      if (!opts.pick) return win(right);
+      const wrong = [ION[lv.c][0] + (rc > 1 ? SUBD(rc) : '') + ION[lv.a][0] + (ra > 1 ? SUBD(ra) : ''), ION[lv.c][0] + ION[lv.a][0] + SUBD(rc + ra), part(lv.a, ra) + part(lv.c, rc)].filter(w => w !== right);
+      const optsF = shuffle([right, ...[...new Set(wrong)].slice(0, 2)]);
+      f.className = 'fb good'; f.textContent = `✓ Balanced: ${rc} × ${ION[lv.c][0]}${SUPC(ION[lv.c][1])} and ${ra} × ${ION[lv.a][0]}${SUPC(ION[lv.a][1])}. Now pick the correctly written formula:`;
+      $('#fp').innerHTML = `<div class="fpick">${optsF.map(o => `<button class="opt" data-f="${o}">${o}</button>`).join('')}</div>`;
+      $('#fp').querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        if (b.dataset.f === right) { b.classList.add('right'); win(right); }
+        else { b.disabled = true; b.classList.add('wrong'); kit.shake(b); f.className = 'fb bad'; f.textContent = '✗ Remember: put brackets around a polyatomic ion when you need more than one of it, and write the metal first.'; }
+      });
+    };
+    const win = async right => {
+      const f = $('#fb'); f.className = 'fb good'; f.innerHTML = `🧩 Perfect match! <b style="font-size:1.3rem">${right}</b>`;
+      $('#board').querySelectorAll('.block').forEach(b => b.style.filter = 'brightness(1.15) drop-shadow(0 0 8px #10b981)');
+      await wait(kit.REDUCED ? 300 : 1500);
+      if (++L < levels.length) show();
+      else {
+        clearInterval(timer); const secs = Math.round((performance.now() - t0) / 1000);
+        if (opts.timed) f.innerHTML = `🏁 All done in <b>${secs}s</b> <span class="stars">${secs < 120 ? '⭐⭐⭐' : secs < 200 ? '⭐⭐' : '⭐'}</span>`;
+        res();
+      }
+    };
+    show();
+  });
+}
+
+/* ================================================================
+   MISSIONS 2 + 3
+   ================================================================ */
+async function mission2(body, kit){
+  kit.say(`Snap ion blocks together until the <b>total charge is 0</b>. Ionic compounds are always <b>neutral</b>! Then lock it in and the formula writes itself. The number of each ion becomes a little <b>subscript</b> number.`);
+  await puzzle(body, kit, [
+    {name:'sodium chloride', c:'Na', a:'Cl'}, {name:'magnesium oxide', c:'Mg', a:'O'}, {name:'magnesium chloride', c:'Mg', a:'Cl'}, {name:'sodium oxide', c:'Na', a:'O'},
+    {name:'aluminium chloride', c:'Al', a:'Cl'}, {name:'calcium fluoride', c:'Ca', a:'F'}, {name:'aluminium oxide', c:'Al', a:'O'}
+  ], {});
+  kit.say(`Puzzle master! 🧩 Notice aluminium oxide: 2 × Al³⁺ (+6) and 3 × O²⁻ (−6) gives <b>Al₂O₃</b>. Shortcut: <b>swap and drop</b> the charge numbers!`);
+}
+async function mission3(body, kit){
+  kit.say(`⏱ <b>Speed level with the ion sheet!</b> These include <b>polyatomic ions</b>: groups of atoms with one overall charge, like OH⁻ or SO₄²⁻. If you need more than one, it goes in <b>brackets</b>: Ca(OH)₂. Balance each one, then pick the correctly written formula. Finish in under 2 minutes for 3 stars!`);
+  await puzzle(body, kit, [
+    {name:'sodium hydroxide', c:'Na', a:'OH'}, {name:'calcium hydroxide', c:'Ca', a:'OH'}, {name:'magnesium sulfate', c:'Mg', a:'SO4'},
+    {name:'sodium carbonate', c:'Na', a:'CO3'}, {name:'aluminium nitrate', c:'Al', a:'NO3'}, {name:'ammonium chloride', c:'NH4', a:'Cl'}, {name:'potassium sulfide', c:'K', a:'S'}
+  ], {pick:true, timed:true});
+  kit.say(`Ion sheet expert! 📄 You can predict any ionic formula: find the charges, balance them to 0, then write the formula with subscripts, using brackets for polyatomic ions.`);
+}
+
+LabKit.init({
+  id:'ion-match', title:'Ion Match', icon:'🧩', theme:'#7c3aed', kicker:"Mr Trichardt's Science Lab · Puzzle",
+  heroTitle:'Ion <span class="g">Match</span>',
+  intro:'A chemistry puzzle game! Learn ion charges from the periodic table, snap positive and negative ion blocks together until the charge balances, and race the clock to write formulas from the ion sheet.',
+  guide:{name:'Pixel · Puzzle master', emoji:'🧩'}, certTitle:'Ionic Formula Champion', confetti:['🧩','🟥','🟦','⭐','✨'],
+  summary:'You can now identify ion charges from the periodic table, combine ions into neutral compounds, and write correct ionic formulae using an ion sheet.',
+  missions:[
+    {icon:'🎨', title:'Charge chart', short:'Charges', blurb:'Match elements to their ion charges.', run:mission1,
+      gate:[
+        {q:'What is the charge on a calcium ion (Group 2)?', o:['+2','−2','+1','+3'], ex:'Group 2 metals lose 2 electrons, so they\'re +2.', hint:'Group number = electrons lost for metals.'},
+        {q:'What is the charge on a chloride ion (Group 17)?', o:['−1','+1','−7','+7'], ex:'Group 17 gains 1 electron to reach 8.', hint:'How many more does it need?'},
+        {q:'Why do metals form POSITIVE ions?', o:['They lose electrons','They gain electrons','They gain protons','They lose protons'], ex:'Losing negative electrons leaves extra positive charge.', hint:'Think about the Electron Heist!'}],
+      bonus:{q:'What is the charge on an aluminium ion (Group 13)?', o:['+3','+13','−3','−5'], ex:'Aluminium has 3 outer electrons and loses them, so it\'s +3.'}},
+    {icon:'🧩', title:'Snap the ions', short:'Balance', blurb:'Balance charges to build neutral ionic compounds.', run:mission2,
+      gate:[
+        {q:'Why must an ionic compound have a total charge of 0?', o:['Positive and negative charges must cancel out for a stable, neutral compound','Because ions have no charge','Because metals are neutral','It doesn\'t have to be 0'], ex:'Ionic compounds are neutral overall.', hint:'What did the charge meter need to show?'},
+        {q:'What is the formula of magnesium chloride (Mg²⁺ and Cl⁻)?', o:['MgCl₂','MgCl','Mg₂Cl','Mg₂Cl₂'], ex:'One Mg²⁺ (+2) needs two Cl⁻ (−2).', hint:'How many −1 ions balance +2?'},
+        {q:'What is the formula of aluminium oxide (Al³⁺ and O²⁻)?', o:['Al₂O₃','AlO','Al₃O₂','AlO₃'], ex:'2 × (+3) = +6 and 3 × (−2) = −6.', hint:'Swap and drop the charges.'}],
+      bonus:{q:'What does the subscript 2 in Na₂O mean?', o:['There are two sodium ions for every oxide ion','There are two oxygen atoms','The charge is 2','There are two molecules'], ex:'Subscripts show how many of the ion before them.'}},
+    {icon:'📄', title:'Ion sheet speed run', short:'Formulae', blurb:'Write formulae with polyatomic ions against the clock.', run:mission3,
+      gate:[
+        {q:'What is the formula of calcium hydroxide (Ca²⁺, OH⁻)?', o:['Ca(OH)₂','CaOH₂','CaOH','Ca₂OH'], ex:'Two OH⁻ ions are needed, and brackets show the whole OH group is doubled.', hint:'Polyatomic ions need brackets when there\'s more than one.'},
+        {q:'A polyatomic ion is…', o:['A group of atoms bonded together with an overall charge','An atom with many electrons','A very large metal atom','An ion with no charge'], ex:'For example sulfate, SO₄²⁻, is one sulfur and four oxygens with a 2− charge.', hint:'Think of OH⁻ or NO₃⁻.'},
+        {q:'What is the formula of sodium carbonate (Na⁺, CO₃²⁻)?', o:['Na₂CO₃','NaCO₃','Na(CO₃)₂','Na₂(CO)₃'], ex:'Two Na⁺ balance one CO₃²⁻. No brackets are needed because there is only one carbonate.', hint:'How many +1 ions balance −2?'}],
+      bonus:{q:'What is the formula of ammonium sulfate (NH₄⁺, SO₄²⁻)?', o:['(NH₄)₂SO₄','NH₄SO₄','NH₄(SO₄)₂','N₂H₈SO₄'], ex:'Two ammonium ions balance one sulfate, and ammonium needs brackets.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

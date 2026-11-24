@@ -131,6 +131,30 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .howto{display:flex;gap:8px;align-items:flex-start;font-weight:700;color:var(--ink2);font-size:.92rem;margin:0 0 10px}
 .big-ic{font-size:2.6rem;line-height:1;text-align:center}
 
+/* reusable game pieces (themes can restyle these) */
+.lk-deck .lk-sc{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.9);margin-bottom:8px;font-weight:800;box-shadow:0 4px 10px -8px rgba(30,40,110,.5)}
+.lk-bt{display:flex;gap:6px;flex-wrap:wrap}
+.lk-bins{display:grid;gap:12px;margin-top:12px}
+@media (max-width:640px){.lk-bins{grid-template-columns:1fr!important}}
+.lk-bin{border-radius:18px;padding:12px;min-height:90px;border:2px dashed rgba(28,34,66,.18);background:rgba(255,255,255,.45)}
+.lk-bin h4{margin:0 0 4px;font-family:var(--head);font-size:1.1rem}
+.lk-bin small{display:block;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.lk-placed{display:block;padding:6px 10px;margin:5px 0;border-radius:10px;background:rgba(255,255,255,.95);font-weight:700;font-size:.88rem;animation:lkPop .3s}
+.lk-match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lk-col{display:grid;gap:8px;align-content:start}
+.lk-collab{font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.lk-mb{text-align:left;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.92);border:2px solid rgba(28,34,66,.1);font-weight:800;transition:all .2s;color:var(--ink)}
+.lk-mb small{display:block;font-weight:600;color:var(--ink2);font-size:.8rem}
+.lk-mb:hover:not(:disabled){border-color:var(--accent)}
+.lk-mb.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.lk-mb.done{border-color:#22c55e;background:#dcfce7;color:#14532d}
+.lk-mb:disabled{cursor:default}
+.lk-slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.lk-slot{border:2px dashed rgba(28,34,66,.2);border-radius:14px;padding:10px;min-height:64px;font-weight:800;font-size:.88rem}
+.lk-slot b{display:block;font-family:var(--head);color:var(--ink3)}
+.lk-slot.on{border-style:solid;border-color:#22c55e;background:#f0fdf4}
+.lk-pool{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+
 /* certificate */
 .lk-cert{margin-top:16px;padding:22px;border-radius:24px;text-align:center;border:2px dashed #a5b4fc;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(224,231,255,.85))}
 .lk-cert small{font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-size:.7rem}
