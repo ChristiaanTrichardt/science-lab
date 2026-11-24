@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grow Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Caveat:wght@600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: misty greenhouse ===== */
+:root{
+  --ink:#1f3a2b;--ink2:#476b55;--ink3:#7d9a86;--accent:#c2562a;--theme:#3f8f5a;--hair:rgba(31,58,43,.1);
+  --head:'Fraunces',Georgia,serif;--hand:'Caveat',cursive;--g1:#3f8f5a;--g2:#c2562a;
+  --pane:rgba(244,250,243,.72);--frame:rgba(255,255,255,.95);
+}
+body{background:#dfeee2;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.75) 6px,transparent 6px) 0 0/220px 100%,
+    linear-gradient(rgba(255,255,255,.75) 6px,transparent 6px) 0 0/100% 260px,
+    radial-gradient(900px 600px at 15% 10%,rgba(255,255,255,.9),transparent 60%),
+    radial-gradient(800px 600px at 90% 80%,rgba(190,227,196,.9),transparent 60%),
+    linear-gradient(170deg,#eef7ee,#cfe6d4)}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.55;
+  background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.9) 0 2px,transparent 3px),radial-gradient(circle at 70% 60%,rgba(255,255,255,.8) 0 1.5px,transparent 2.5px),radial-gradient(circle at 40% 80%,rgba(255,255,255,.8) 0 2.5px,transparent 3.5px);
+  background-size:90px 110px,130px 90px,170px 150px}
+.lk-bg{display:none}
+.glass{background:var(--pane);border:6px solid var(--frame);border-radius:20px;box-shadow:0 18px 40px -22px rgba(31,58,43,.45),inset 0 0 40px rgba(255,255,255,.55);-webkit-backdrop-filter:blur(12px) saturate(140%);backdrop-filter:blur(12px) saturate(140%)}
+.lk-top{border-width:4px;border-radius:999px}
+.lk-logo{background:radial-gradient(circle at 35% 30%,#bbf7d0,#3f8f5a);box-shadow:0 6px 14px -6px rgba(63,143,90,.8)}
+.lk-brand b{font-family:var(--head)}
+.lk-step{background:rgba(255,255,255,.75);border-color:#fff;color:var(--ink2)}
+.lk-step.now{box-shadow:0 0 0 3px rgba(63,143,90,.35);color:var(--ink)}
+.lk-step.done .n{background:#3f8f5a}
+.lk-hero h1{font-weight:700}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:#3f8f5a;font-style:italic}
+.lk-mhead h1{font-weight:700}
+.lk-kick{color:var(--accent);font-family:var(--hand);font-size:1.25rem;letter-spacing:.02em;text-transform:none;font-weight:700}
+.lk-mlist li{background:rgba(255,255,255,.7)}
+.lk-face{background:radial-gradient(circle at 35% 30%,#fff,#d9f2dc);box-shadow:0 8px 16px -8px rgba(31,58,43,.5)}
+.lk-bubble{background:#fffdf5;border:2px dashed #d8c9a3;border-radius:16px;box-shadow:0 10px 24px -16px rgba(31,58,43,.5)}
+.lk-bubble small{font-family:var(--hand);font-size:1.3rem;color:var(--accent)}
+.btn{border-radius:999px;background:#fffdf5;border:2px solid #e8dcc0;color:var(--ink)}
+.btn.primary,.btn.green{background:linear-gradient(180deg,#d9733f,#b4471d);color:#fff;border-color:#b4471d;box-shadow:0 10px 20px -10px rgba(180,71,29,.8),inset 0 1px 0 rgba(255,255,255,.35)}
+.lk-card{background:#f7fbf5;border:6px solid #fff}
+.lk-card h2{font-weight:700}
+.opt{background:#fff;border-color:#e6efe5}
+.opt:hover:not(:disabled){border-color:#3f8f5a}
+.tile{background:#fffdf5;border:2px solid #efe6cf}
+.lk-name input{border-color:#e8dcc0;background:#fffdf5}
+.lk-cert{background:#fffdf5;border-color:#3f8f5a}
+.hand{font-family:var(--hand);font-size:1.35rem;color:var(--accent);font-weight:700}
+
+/* ===== grow chamber ===== */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.lab{grid-template-columns:1fr}}
+.chamber svg{display:block;width:100%;height:auto;border-radius:14px}
+.lamp{cursor:pointer}
+.lamp circle.bulb{fill:#fef3c7;stroke:#d6a636;stroke-width:3;transition:all .3s}
+.lamp.on circle.bulb{fill:#fde047;filter:drop-shadow(0 0 14px #facc15)}
+.lamp .hit{fill:transparent}
+.controls{display:grid;gap:12px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ctl .lbl{font-weight:800;min-width:110px}
+.seg{display:inline-flex;background:#fff;border:2px solid #e8dcc0;border-radius:999px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:999px;font-weight:800;font-size:.9rem;color:var(--ink2)}
+.seg button.on{background:#3f8f5a;color:#fff}
+.checklist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.checklist li{display:flex;gap:8px;align-items:center;font-weight:700;color:var(--ink2);padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.7)}
+.checklist li.done{color:#166534;background:#dcfce7;text-decoration:line-through}
+.journal{width:100%;border-collapse:collapse;font-size:.92rem;background:#fffdf5;border-radius:12px;overflow:hidden;
+  background-image:repeating-linear-gradient(transparent 0 33px,#e7dcc2 33px 34px)}
+.journal th{font-family:var(--hand);font-size:1.25rem;color:var(--accent);text-align:left;padding:6px 10px}
+.journal td{padding:6px 10px;font-weight:700;height:34px}
+.journal td.hw{font-family:var(--hand);font-size:1.3rem;color:#1d4ed8;font-weight:700}
+.predict{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stem{fill:none;stroke:#4d9a4f;stroke-width:9;stroke-linecap:round}
+.auxin{fill:#f97316;stroke:#fff;stroke-width:1.5}
+.tray{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tray button{padding:10px;border-radius:14px;background:#fff;border:2px solid #e8dcc0;font-weight:800;font-size:.88rem}
+.tray button .e{display:block;font-size:1.6rem}
+.tray button.on{border-color:#2563eb;background:#dbeafe}
+/* field guide */
+.guide{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.gcard{border-radius:16px;background:#fffdf5;border:2px solid #efe6cf;padding:14px;box-shadow:0 10px 20px -16px rgba(31,58,43,.6);position:relative}
+.gcard::before{content:'';position:absolute;top:-10px;left:50%;width:70px;height:20px;transform:translateX(-50%) rotate(-3deg);background:rgba(250,240,200,.85);border:1px solid rgba(0,0,0,.05)}
+.gcard .e{font-size:2.2rem}
+.gcard p{margin:6px 0 10px;font-weight:700}
+.gcard .opts4{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gcard .opts4 button{padding:8px;border-radius:10px;background:#fff;border:2px solid #e6efe5;font-weight:800;font-size:.82rem}
+.gcard .opts4 button.ok{background:#dcfce7;border-color:#22c55e}
+.gcard .opts4 button.no{background:#ffe4e6;border-color:#fb7185;opacity:.7}
+.gcard .why{margin-top:8px;font-family:var(--hand);font-size:1.25rem;color:#166534;line-height:1.2}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px}
+.types div{background:rgba(255,255,255,.75);border-radius:12px;padding:8px 12px;font-size:.88rem;font-weight:700;color:var(--ink2)}
+.types b{color:var(--ink)}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+const NS = 'http://www.w3.org/2000/svg';
+const lerp = (a, b, k) => a + (b - a) * k;
+function animate(dur, reduced, fn){ return new Promise(res => { if (reduced) { fn(1); return res(); } const t0 = performance.now(); (function f(now){ const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; fn(e); k < 1 ? requestAnimationFrame(f) : res(); })(t0); }); }
+
+/* ================================================================
+   MISSION 1: PHOTOTROPISM
+   ================================================================ */
+function stemPath(dx, h){ const tipX = 200 + dx, tipY = 280 - h + Math.abs(dx) * .35; return {d:`M200 280 Q200 ${280 - h * .55} ${tipX} ${tipY}`, tipX, tipY}; }
+function chamberSVG(){
+  return `<svg viewBox="0 0 400 340" id="ch" role="img" aria-label="Growth chamber with a seedling and lamps">
+    <defs><linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f2937"/><stop offset="1" stop-color="#374151"/></linearGradient>
+      <radialGradient id="glowL" cx="0" cy="50%" r="80%"><stop offset="0" stop-color="#fde68a" stop-opacity=".55"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="glowR" cx="100%" cy="50%" r="80%"><stop offset="0" stop-color="#fde68a" stop-opacity=".55"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="glowT" cx="50%" cy="0" r="80%"><stop offset="0" stop-color="#fde68a" stop-opacity=".55"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient></defs>
+    <rect width="400" height="340" fill="url(#wall)"/>
+    <rect id="glow" width="400" height="340" fill="url(#glowL)"/>
+    <path d="M150 290 L250 290 L240 335 L160 335Z" fill="#c2562a"/><rect x="144" y="282" width="112" height="14" rx="4" fill="#d9733f"/>
+    <ellipse cx="200" cy="284" rx="50" ry="6" fill="#5b3a26"/>
+    <path id="stem" class="stem" d="M200 280 Q200 230 200 190"/>
+    <g id="auxins"></g>
+    <g id="leaves"></g>
+    <g id="cap" opacity="0"><path d="M-11 4 Q0 -22 11 4Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/></g>
+    ${[['L',22,170],['T',200,22],['R',378,170]].map(l => `<g class="lamp" data-l="${l[0]}" tabindex="0" role="button" aria-label="Light from ${l[0] === 'L' ? 'the left' : l[0] === 'R' ? 'the right' : 'above'}"><circle class="hit" cx="${l[1]}" cy="${l[2]}" r="30"/><circle class="bulb" cx="${l[1]}" cy="${l[2]}" r="16"/></g>`).join('')}
+    <text x="200" y="330" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" opacity=".8" id="dayLbl">Day 0</text>
+  </svg>`;
+}
+function drawPlant(svg, dx, h, showAux, cap, auxSide){
+  const p = stemPath(dx, h);
+  svg.querySelector('#stem').setAttribute('d', p.d);
+  const ang = Math.atan2(p.tipY - (280 - h * .55), p.tipX - 200) * 180 / Math.PI + 90;
+  svg.querySelector('#leaves').innerHTML = `<g transform="translate(${p.tipX} ${p.tipY}) rotate(${ang})"><ellipse cx="-14" cy="-2" rx="16" ry="7" transform="rotate(-25)" fill="#65a30d"/><ellipse cx="14" cy="-2" rx="16" ry="7" transform="rotate(25)" fill="#84cc16"/></g>`;
+  svg.querySelector('#cap').setAttribute('transform', `translate(${p.tipX} ${p.tipY - 4}) rotate(${ang})`);
+  svg.querySelector('#cap').setAttribute('opacity', cap ? 1 : 0);
+  const g = svg.querySelector('#auxins'); g.innerHTML = '';
+  if (showAux) {
+    const path = svg.querySelector('#stem'), L = path.getTotalLength();
+    for (let i = 1; i <= 7; i++) {
+      const k = i / 8, pt = path.getPointAtLength(L * k), pt2 = path.getPointAtLength(Math.min(L, L * k + 1));
+      const nx = -(pt2.y - pt.y), ny = pt2.x - pt.x, n = Math.hypot(nx, ny) || 1;
+      const side = auxSide === 0 ? [-1, 1] : [auxSide];
+      side.forEach(s => { const c = document.createElementNS(NS, 'circle'); c.setAttribute('class', 'auxin'); c.setAttribute('r', auxSide === 0 ? 3 : 4.5); c.setAttribute('cx', pt.x + s * nx / n * 9); c.setAttribute('cy', pt.y + s * ny / n * 9); g.appendChild(c); });
+    }
+  }
+}
+async function mission1(body, kit){
+  kit.say(`Welcome to the greenhouse! Plants can't walk towards what they need, so they <b>grow</b> towards it. A <b>tropism</b> is a growth response <b>towards or away from</b> a stimulus.<br><br>Run 3 experiments in the grow box. Before each one, <b>predict</b> which way the seedling will grow!`);
+  body.innerHTML = `<div class="lab"><div class="glass chamber" style="padding:10px">${chamberSVG()}</div>
+    <div class="controls">
+      <div class="lk-panel glass"><div class="lk-kick">Set up the experiment</div>
+        <div class="ctl"><span class="lbl">💡 Light from</span><span class="seg" id="segL"><button data-v="L" class="on">Left</button><button data-v="T">Above</button><button data-v="R">Right</button></span></div>
+        <div class="ctl" style="margin-top:8px"><span class="lbl">🥫 Foil cap on tip</span><span class="seg" id="segC"><button data-v="0" class="on">No</button><button data-v="1">Yes</button></span></div>
+        <div class="ctl" style="margin-top:8px"><span class="lbl">🔬 Auxin vision</span><span class="seg" id="segA"><button data-v="0" class="on">Off</button><button data-v="1">On</button></span></div>
+        <div class="ctl" style="margin-top:12px"><span class="lbl">🤔 I predict it grows</span><span class="predict" id="pred"><button class="btn small" data-p="L">↖ Left</button><button class="btn small" data-p="U">⬆ Straight up</button><button class="btn small" data-p="R">↗ Right</button></span></div>
+        <div style="margin-top:12px"><button class="btn primary" id="grow" disabled>🌱 Grow for 3 days</button></div></div>
+      <div class="lk-panel glass"><div class="lk-kick">Experiments to run</div><ul class="checklist" id="todo">
+        <li data-t="L0">☐ Light from the left, no cap</li><li data-t="R0">☐ Light from the right, no cap</li><li data-t="L1">☐ Light from the left WITH a foil cap on the tip</li></ul></div>
+    </div></div>
+    <div class="lk-panel glass" style="margin-top:14px"><div class="lk-kick">Lab journal</div>
+      <table class="journal"><thead><tr><th>Light</th><th>Foil cap</th><th>Prediction</th><th>Result</th></tr></thead><tbody id="jb"></tbody></table>
+      <div class="fb hidden" id="gfb"></div></div>`;
+  const $ = s => body.querySelector(s), svg = $('#ch');
+  const st = {L:'L', C:'0', A:'0', P:null, busy:false};
+  const NAMES = {L:'Left', T:'Above', R:'Right'}, PN = {L:'↖ Left', U:'⬆ Up', R:'↗ Right'};
+  const glow = () => { $('#glow').setAttribute('fill', `url(#glow${st.L})`); svg.querySelectorAll('.lamp').forEach(l => l.classList.toggle('on', l.dataset.l === st.L)); };
+  const reset = () => { drawPlant(svg, 0, 40, st.A === '1', st.C === '1', 0); $('#dayLbl').textContent = 'Day 0'; };
+  const seg = (id, key) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { if (st.busy) return; $(id).querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on'); st[key] = b.dataset.v; glow(); if (key !== 'A') reset(); else drawPlant(svg, 0, 40, st.A === '1', st.C === '1', 0); });
+  seg('#segL', 'L'); seg('#segC', 'C'); seg('#segA', 'A');
+  svg.querySelectorAll('.lamp').forEach(l => l.addEventListener('click', () => $(`#segL [data-v="${l.dataset.l}"]`).click()));
+  $('#pred').querySelectorAll('button').forEach(b => b.onclick = () => { if (st.busy) return; if (st.grown) { st.grown = false; reset(); } $('#pred').querySelectorAll('button').forEach(x => x.classList.remove('primary')); b.classList.add('primary'); st.P = b.dataset.p; $('#grow').disabled = false; });
+  glow(); reset();
+  const done = new Set();
+  return new Promise(res => {
+    $('#grow').onclick = async () => {
+      if (st.busy) return; st.busy = true; $('#grow').disabled = true;
+      const cap = st.C === '1', dir = cap || st.L === 'T' ? 0 : (st.L === 'L' ? -1 : 1), target = dir * 80;
+      const auxSide = cap || st.L === 'T' ? 0 : (st.L === 'L' ? 1 : -1); // auxin goes to the shaded side (away from light): +1 = right side of the stem
+      await animate(1800, kit.REDUCED, k => { drawPlant(svg, target * k, lerp(40, 150, k), st.A === '1', cap, auxSide); $('#dayLbl').textContent = 'Day ' + Math.round(k * 3); });
+      const result = dir < 0 ? 'L' : dir > 0 ? 'R' : 'U', ok = result === st.P;
+      $('#jb').insertAdjacentHTML('beforeend', `<tr><td>${NAMES[st.L]}</td><td>${cap ? 'Yes' : 'No'}</td><td class="hw">${PN[st.P]}</td><td class="hw" style="color:${ok ? '#166534' : '#b91c1c'}">${PN[result]} ${ok ? '✓' : '✗'}</td></tr>`);
+      const fb = $('#gfb'); fb.classList.remove('hidden');
+      fb.className = 'fb ' + (ok ? 'good' : 'info');
+      fb.innerHTML = cap ? `${ok ? '✓ Great prediction! ' : ''}With the tip covered, the seedling grew <b>straight up</b>. The <b>tip</b> is the part that detects light, so with the cap on it can't tell where the light is.`
+        : st.L === 'T' ? `${ok ? '✓ ' : ''}Light from directly above, so auxin spreads evenly and the shoot grows straight up.`
+        : `${ok ? '✓ Correct! ' : 'Not quite: '}The shoot bent <b>towards</b> the light. ${st.A === '1' ? 'See the orange dots? <b>Auxin</b> builds up on the <b>shaded</b> side' : 'Turn on <b>auxin vision</b> to see why: the hormone auxin builds up on the shaded side'}, making those cells grow longer, so the stem curves towards the light.`;
+      const key = st.L + st.C;
+      if (['L0','R0','L1'].includes(key) && !done.has(key)) { done.add(key); $(`#todo [data-t="${key}"]`).classList.add('done'); $(`#todo [data-t="${key}"]`).textContent = '☑ ' + $(`#todo [data-t="${key}"]`).textContent.slice(2); }
+      st.busy = false; st.P = null; st.grown = true; $('#pred').querySelectorAll('button').forEach(x => x.classList.remove('primary'));
+      if (done.size === 3 && !res.done) { res.done = true;
+        kit.say(`Brilliant science! You discovered <b>positive phototropism</b>: shoots grow <b>towards</b> light. The tip detects the light, the plant hormone <b>auxin</b> moves to the <b>shaded side</b>, and those cells elongate more, so the shoot bends towards the light.`); res(); }
+      else if (done.size < 3) kit.say(`Recorded in the journal! ${3 - done.size} experiment${3 - done.size > 1 ? 's' : ''} left. Check the list and set up the next one. 🌱`);
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 2: GRAVITY + WATER
+   ================================================================ */
+function tiltSVG(){
+  return `<svg viewBox="0 0 400 300" id="tilt" role="img" aria-label="A pot tipped on its side with a seedling">
+    <rect width="400" height="300" fill="#fdf8ec"/>
+    <rect x="0" y="262" width="400" height="38" fill="#e7dcc2"/>
+    <g transform="translate(120 200)"><path d="M0 -50 L0 50 L-60 40 L-60 -40Z" fill="#c2562a"/><rect x="-6" y="-56" width="14" height="112" rx="4" fill="#d9733f"/>
+      <rect x="-56" y="-40" width="52" height="80" fill="#7c5236"/></g>
+    <path id="shoot" fill="none" stroke="#4d9a4f" stroke-width="8" stroke-linecap="round" d="M126 190 L170 190"/>
+    <path id="root" fill="none" stroke="#e7d3b0" stroke-width="5" stroke-linecap="round" d="M110 200 L80 200"/>
+    <text x="330" y="40" text-anchor="middle" font-size="40">⬇️</text><text x="330" y="70" text-anchor="middle" font-size="12" font-weight="800" fill="#7d9a86">GRAVITY</text>
+    <text x="200" y="288" text-anchor="middle" font-size="12" font-weight="800" fill="#476b55" id="tday">Day 0</text>
+  </svg>`;
+}
+function soilSVG(){
+  return `<svg viewBox="0 0 400 300" id="soil" role="img" aria-label="Soil cross-section with a seed and possible water sources">
+    <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5e3c"/><stop offset="1" stop-color="#5b3a26"/></linearGradient></defs>
+    <rect width="400" height="300" fill="url(#sg)"/><rect width="400" height="34" fill="#a3d977"/>
+    ${Array.from({length:40}, (_, i) => `<circle cx="${(i * 97) % 400}" cy="${50 + (i * 53) % 240}" r="${2 + i % 3}" fill="#4a2f1f" opacity=".5"/>`).join('')}
+    <ellipse cx="200" cy="46" rx="10" ry="7" fill="#e7c98a"/><path d="M200 40 L200 18" stroke="#4d9a4f" stroke-width="6" stroke-linecap="round"/>
+    <path id="hroot" fill="none" stroke="#f1e0bd" stroke-width="6" stroke-linecap="round" d="M200 52 L200 60"/>
+    <g id="water"></g>
+  </svg>`;
+}
+async function mission2(body, kit){
+  kit.say(`Light isn't the only stimulus plants respond to! Let's test <b>gravity</b> first. We've knocked a pot over onto its side… 🙈 Predict how the <b>shoot</b> and <b>root</b> will grow.`);
+  body.innerHTML = `<div class="lab"><div class="glass" style="padding:10px">${tiltSVG()}</div>
+      <div class="lk-panel glass"><div class="lk-kick">Experiment A: the tipped pot</div>
+        <div class="ctl"><span class="lbl">🌿 The shoot will grow</span><span class="predict" data-q="s"><button class="btn small" data-p="up">⬆ Up</button><button class="btn small" data-p="down">⬇ Down</button><button class="btn small" data-p="side">➡ Sideways</button></span></div>
+        <div class="ctl" style="margin-top:8px"><span class="lbl">🥕 The root will grow</span><span class="predict" data-q="r"><button class="btn small" data-p="up">⬆ Up</button><button class="btn small" data-p="down">⬇ Down</button><button class="btn small" data-p="side">⬅ Sideways</button></span></div>
+        <div style="margin-top:12px"><button class="btn primary" id="tgo" disabled>⏳ Wait 4 days</button></div><div class="fb hidden" id="tfb"></div></div></div>
+    <div class="lab hidden" id="partB" style="margin-top:14px"><div class="glass" style="padding:10px">${soilSVG()}</div>
+      <div class="lk-panel glass"><div class="lk-kick">Experiment B: thirsty roots</div>
+        <p style="margin:4px 0 10px;font-weight:700;color:var(--ink2)">Choose where the water is in the soil, then watch the root grow.</p>
+        <div class="tray" id="tray"><button data-w="L"><span class="e">💧</span>Leaky pipe, left</button><button data-w="R"><span class="e">💧</span>Leaky pipe, right</button><button data-w="D"><span class="e">🌊</span>Water table below</button></div>
+        <div style="margin-top:12px"><button class="btn primary" id="wgo" disabled>⏳ Grow the root</button></div><div class="fb hidden" id="wfb"></div></div></div>`;
+  const $ = s => body.querySelector(s), pred = {};
+  body.querySelectorAll('.predict[data-q]').forEach(r => r.querySelectorAll('button').forEach(b => b.onclick = () => { r.querySelectorAll('button').forEach(x => x.classList.remove('primary')); b.classList.add('primary'); pred[r.dataset.q] = b.dataset.p; $('#tgo').disabled = !(pred.s && pred.r); }));
+  return new Promise(res => {
+    $('#tgo').onclick = async () => {
+      $('#tgo').disabled = true;
+      await animate(2000, kit.REDUCED, k => {
+        $('#shoot').setAttribute('d', `M126 190 Q ${170 + 40 * k} 190 ${lerp(170, 205, k)} ${lerp(190, 110, k)}`);
+        $('#root').setAttribute('d', `M110 200 Q ${80 - 30 * k} 200 ${lerp(80, 70, k)} ${lerp(200, 255, k)}`);
+        $('#tday').textContent = 'Day ' + Math.round(k * 4);
+      });
+      const ok = pred.s === 'up' && pred.r === 'down', fb = $('#tfb'); fb.classList.remove('hidden'); fb.className = 'fb ' + (ok ? 'good' : 'info');
+      fb.innerHTML = `${ok ? '✓ Spot on! ' : ''}The <b>shoot grew up</b>, away from gravity (<b>negative gravitropism</b>), and the <b>root grew down</b>, towards gravity (<b>positive gravitropism</b>). Auxin builds up on the lower side of both, but shoot cells grow MORE with auxin while root cells grow LESS, so they bend opposite ways!`;
+      $('#partB').classList.remove('hidden'); $('#partB').scrollIntoView({behavior:'smooth', block:'center'});
+      kit.say(`Roots respond to <b>water</b> too. Place the water somewhere in the soil and watch the root. 💧`);
+    };
+    let w = null;
+    $('#tray').querySelectorAll('button').forEach(b => b.onclick = () => {
+      $('#tray').querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on'); w = b.dataset.w; $('#wgo').disabled = false;
+      const pos = {L:[60,200], R:[340,200], D:[200,280]}[w];
+      $('#water').innerHTML = w === 'D' ? `<rect x="0" y="262" width="400" height="38" fill="#3b82f6" opacity=".7"/>` : `<rect x="${pos[0] - 40}" y="${pos[1] - 8}" width="80" height="16" rx="8" fill="#94a3b8"/><circle cx="${pos[0]}" cy="${pos[1] + 22}" r="26" fill="#60a5fa" opacity=".55"/>`;
+      $('#hroot').setAttribute('d', 'M200 52 L200 60');
+    });
+    $('#wgo').onclick = async () => {
+      $('#wgo').disabled = true;
+      const end = {L:[80,205], R:[320,205], D:[200,258]}[w];
+      await animate(2000, kit.REDUCED, k => $('#hroot').setAttribute('d', `M200 52 Q 200 ${lerp(60, 150, k)} ${lerp(200, end[0], k)} ${lerp(60, end[1], k)}`));
+      const fb = $('#wfb'); fb.classList.remove('hidden'); fb.className = 'fb good';
+      fb.innerHTML = `✓ The root grew towards the water. That's <b>positive hydrotropism</b>! ${w === 'D' ? 'Here gravity and water both pulled the root downwards.' : 'It even grew sideways to reach it. This is why tree roots sometimes crack leaky pipes!'} Try another spot if you like.`;
+      $('#wgo').disabled = false;
+      if (!res.done) { res.done = true; kit.say(`Two more tropisms discovered! <b>Gravitropism</b> (response to gravity) and <b>hydrotropism</b> (response to water). "Positive" means growing <b>towards</b> the stimulus; "negative" means growing <b>away</b> from it.`); res(); }
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 3: FIELD GUIDE
+   ================================================================ */
+const TYPES = [['photo','☀️ Phototropism'],['gravi','⬇️ Gravitropism'],['hydro','💧 Hydrotropism'],['thigmo','🤝 Thigmotropism']];
+const CASES = [
+  {e:'🌻', t:'Young sunflowers bend to face the sun', a:'photo', why:'More light reaches the leaves, so more photosynthesis and more food!'},
+  {e:'🫘', t:'A bean planted upside down still sends its root downwards', a:'gravi', why:'Roots anchor the plant and reach water and minerals deep in the soil.'},
+  {e:'🌱', t:'A seedling buried in dark soil grows its shoot up to the surface', a:'gravi', why:'Negative gravitropism gets the shoot out of the soil and into the light before its food store runs out.'},
+  {e:'🚰', t:'Tree roots grow into a cracked, leaky water pipe', a:'hydro', why:'Finding water helps the tree survive dry times. Water is needed for photosynthesis.'},
+  {e:'🥒', t:'Cucumber tendrils coil tightly around a fence wire', a:'thigmo', why:'Climbing lets the plant reach up towards sunlight without growing a thick, strong stem.'},
+  {e:'🪴', t:'A pot plant on a windowsill leans towards the window', a:'photo', why:'Leaning towards the window gives the leaves more light for photosynthesis.'}
+];
+async function mission3(body, kit){
+  kit.say(`Time to fill in your <b>field guide</b>! For each plant, identify the tropism, then read how it helps the plant <b>survive</b>. There's a new one too: <b>thigmotropism</b>, a growth response to <b>touch</b>.`);
+  body.innerHTML = `<div class="types">${TYPES.map(t => `<div><b>${t[1]}</b><br>${{photo:'response to light', gravi:'response to gravity', hydro:'response to water', thigmo:'response to touch'}[t[0]]}</div>`).join('')}</div>
+    <div class="guide">${shuffle(CASES).map((c, i) => `<div class="gcard" data-a="${c.a}"><span class="e">${c.e}</span><p>${esc(c.t)}</p><div class="opts4">${TYPES.map(t => `<button data-v="${t[0]}">${t[1]}</button>`).join('')}</div><div class="why hidden">${esc(c.why)}</div></div>`).join('')}</div>`;
+  return new Promise(res => {
+    let left = CASES.length;
+    body.querySelectorAll('.gcard').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => {
+      if (b.disabled) return;
+      if (b.dataset.v === g.dataset.a) {
+        g.querySelectorAll('button').forEach(x => x.disabled = true); b.classList.add('ok'); g.querySelector('.why').classList.remove('hidden');
+        if (--left === 0) { kit.say(`Field guide complete! 📗 Every tropism helps plants get what they need to survive: <b>light</b> for photosynthesis, <b>water</b> and <b>minerals</b> from the soil, <b>support</b> to climb, and <b>anchorage</b>. All without moving from the spot!`); res(); }
+      } else { b.disabled = true; b.classList.add('no'); kit.shake(b); kit.toast('Not that one. What is the plant responding to?'); }
+    }));
+  });
+}
+
+/* ================================================================
+   SET UP THE PAGE
+   ================================================================ */
+LabKit.init({
+  id:'grow-box', title:'Grow Box', icon:'🌱', theme:'#3f8f5a', kicker:"Mr Trichardt's Science Lab · The greenhouse",
+  heroTitle:'Grow <span class="g">Box</span>',
+  intro:'Step into the greenhouse lab. Move the lights, tip over pots, hide water in the soil and discover how plants grow towards (and away from) what they need.',
+  guide:{name:'Professor Fern', emoji:'🧑‍🌾'},
+  certTitle:'Greenhouse Scientist', confetti:['🌱','🌻','🍃','💧','☀️','🌿'],
+  summary:'You can now define a tropism, describe phototropism, gravitropism, hydrotropism and thigmotropism, explain how auxin causes shoots to bend, and describe how tropisms help plants survive.',
+  missions:[
+    {icon:'☀️', title:'Chasing the light', short:'Light', blurb:'Run experiments in the grow box and discover phototropism.', run:mission1,
+      gate:[
+        {q:'A tropism is…', o:['A growth response of a plant towards or away from a stimulus','A type of plant hormone','How a plant makes food','A plant moving its whole body to a new place'],
+          ex:'Tropisms are directional growth responses: the plant grows towards or away from a stimulus.', hint:'Think about how the seedling responded to the lamp.'},
+        {q:'Why does a shoot bend towards light?', o:['Auxin builds up on the shaded side, making those cells grow longer','Auxin builds up on the lit side, making those cells grow longer','The light pulls the shoot towards it','Cells on the lit side die'],
+          ex:'Auxin collects on the shaded side; the cells there elongate more, so the shoot curves towards the light.', hint:'Turn on auxin vision. Which side were the orange dots on?'},
+        {q:'With a foil cap on its tip, the seedling grew straight up. What does this show?', o:['The tip is the part that detects the direction of light','The foil cap gave the plant extra food','Plants don\'t respond to light at all','The roots detect light'],
+          ex:'Covering the tip stopped the response, so the tip must detect light. (Charles Darwin did this experiment in 1880!)', hint:'What was different about the capped seedling?'}
+      ],
+      bonus:{q:'A shoot growing towards light is described as…', o:['Positive phototropism','Negative phototropism','Positive gravitropism','Negative hydrotropism'],
+        ex:'Growth TOWARDS a stimulus is positive. Growth towards light is positive phototropism.'}},
+    {icon:'⬇️', title:'Gravity and water', short:'Gravity', blurb:'Tip a pot over and hide water in the soil.', run:mission2,
+      gate:[
+        {q:'In the tipped pot, the root grew downwards. This is…', o:['Positive gravitropism','Negative gravitropism','Positive phototropism','Thigmotropism'],
+          ex:'Roots grow towards the pull of gravity, which is positive gravitropism.', hint:'Did the root grow towards or away from gravity?'},
+        {q:'Hydrotropism is a growth response to…', o:['Water','Light','Touch','Gravity'],
+          ex:'"Hydro" means water. Roots growing towards water show positive hydrotropism.', hint:'Think of the leaky pipe.'},
+        {q:'Why is it useful for a shoot to grow upwards, against gravity?', o:['It reaches the surface and the light it needs for photosynthesis','It helps the shoot absorb water from the soil','It anchors the plant in the ground','It stops insects eating it'],
+          ex:'Growing up (negative gravitropism) gets the shoot out of the soil and into the light.', hint:'What do leaves need to make food?'}
+      ],
+      bonus:{q:'Auxin collects on the lower side of BOTH a sideways shoot and root, yet they bend opposite ways. Why?', o:['Auxin makes shoot cells grow more but root cells grow less','Roots don\'t contain any auxin','Gravity pushes the root down by force','The shoot is heavier than the root'],
+        ex:'Shoot and root cells respond differently to auxin. It speeds up growth in shoots but slows it in roots, so they curve opposite ways.'}},
+    {icon:'📗', title:'Field guide: tropisms for survival', short:'Survival', blurb:'Identify tropisms in the wild and how they help plants survive.', run:mission3,
+      gate:[
+        {q:'Cucumber tendrils coiling around a fence is an example of…', o:['Thigmotropism (response to touch)','Phototropism','Hydrotropism','Gravitropism'],
+          ex:'Tendrils respond to touch by coiling, which is thigmotropism.', hint:'What stimulus does the fence give the tendril?'},
+        {q:'How does phototropism help a plant survive?', o:['It gets more light to its leaves for photosynthesis','It helps roots find water','It protects the plant from frost','It helps the plant make seeds faster'],
+          ex:'More light means more photosynthesis, which means more glucose (food) for growth.', hint:'Why do plants need light?'},
+        {q:'Tree roots cracking a leaky sewer pipe show…', o:['Positive hydrotropism','Negative gravitropism','Phototropism','Thigmotropism'],
+          ex:'The roots grew towards the water leaking from the pipe.', hint:'What is coming out of the pipe?'}
+      ],
+      bonus:{q:'Why do plants need tropisms when animals don\'t?', o:['Plants can\'t move from place to place, so they change their growth instead','Plants have no stimuli to respond to','Animals have no hormones','Plants grow faster than animals'],
+        ex:'Animals can walk or swim to food, water and light. Plants are rooted to the spot, so they grow in the best direction instead.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

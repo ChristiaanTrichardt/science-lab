@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Population Island</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: tabletop strategy board game ===== */
+:root{
+  --ink:#3b2412;--ink2:#6b4a2b;--ink3:#9a7752;--accent:#2f7d4f;--theme:#2f7d4f;--hair:rgba(124,74,30,.2);
+  --head:'Lilita One','Arial Rounded MT Bold',system-ui,sans-serif;--g1:#2f7d4f;--g2:#e0a100;
+  --parch:#fff4dc;--wood:#7c4a1e;--felt:#2f7d4f;--gold:#f4b400;--red:#c0392b;
+}
+body{background:#8a5a2b;color:var(--ink);font-weight:700}
+body::before{content:'';position:fixed;inset:0;z-index:-2;
+  background:repeating-linear-gradient(92deg,rgba(0,0,0,.06) 0 2px,transparent 2px 22px),repeating-linear-gradient(88deg,rgba(255,255,255,.05) 0 1px,transparent 1px 37px),
+  radial-gradient(1200px 700px at 50% 0%,#b07a43,#7a4a22 70%)}
+.lk-bg{display:none}
+.glass{background:var(--parch);border:5px solid var(--wood);border-radius:22px;box-shadow:0 10px 0 #5a3414,0 18px 30px -10px rgba(0,0,0,.45),inset 0 0 0 4px #fff4dc,inset 0 0 0 6px rgba(124,74,30,.25);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-top{border-radius:22px;box-shadow:0 6px 0 #5a3414,0 12px 20px -10px rgba(0,0,0,.5)}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);font-weight:400;letter-spacing:.01em}
+.lk-hero h1{color:#fff4dc;text-shadow:0 4px 0 #5a3414,0 8px 16px rgba(0,0,0,.4)}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--gold)}
+.lk-hero p{color:#fbe8c5}
+.lk-hero .lk-kick{color:var(--gold)}
+.lk-mhead h1{color:#fff4dc;text-shadow:0 3px 0 #5a3414}
+.lk-mhead .lk-kick{color:var(--gold)}
+.lk-kick{color:var(--felt);font-family:var(--head);font-weight:400;letter-spacing:.06em}
+.lk-logo{background:radial-gradient(circle at 35% 30%,#ffe08a,#e0a100);border:3px solid var(--wood)}
+.lk-step{background:#fff4dc;border:3px solid var(--wood);color:var(--ink)}
+.lk-step .n{background:#f6e3b8}
+.lk-step.now{background:var(--gold);box-shadow:0 0 0 2px var(--wood)}
+.lk-step.done .n{background:var(--felt);color:#fff}
+.lk-chip,.chip{background:#fff4dc;border:3px solid var(--wood);color:var(--ink)}
+.lk-mlist{background:var(--felt)}
+.lk-mlist li{background:#fff4dc;border:3px solid var(--wood)}
+.lk-mlist .ic{background:#f6e3b8;border:2px solid var(--wood)}
+.lk-face{background:#fff4dc;border:4px solid var(--wood)}
+.lk-bubble small{font-family:var(--head);font-size:1.05rem;color:var(--felt);font-weight:400}
+.btn{border-radius:14px;background:#fff4dc;border:3px solid var(--wood);color:var(--ink);box-shadow:0 4px 0 var(--wood);font-weight:900}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--wood)}
+.btn.primary,.btn.green{background:var(--felt);color:#fff;border-color:#1d5233;box-shadow:0 4px 0 #1d5233}
+.lk-name input{border:3px solid var(--wood);background:#fff4dc;border-radius:14px}
+.lk-card{background:var(--parch);border:5px solid var(--wood)}
+#lkModal{background:rgba(40,20,5,.5)}
+.opt{background:#fff;border:3px solid #e8d3a8;border-radius:14px}
+.opt:hover:not(:disabled){border-color:var(--wood)}
+.tile{background:#fff;border:3px solid #e8d3a8}
+.lk-cert{background:#fff;border:4px dashed var(--wood)}
+#lkToast{background:#fff4dc;border:3px solid var(--wood)}
+.lk-done{background:#fff4dc}
+
+/* tokens */
+.tokens{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.tok{width:118px;padding:10px 6px;border-radius:50%/40%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;
+  background:radial-gradient(circle at 35% 30%,#fffaf0,#f1dcae);border:4px solid var(--wood);box-shadow:0 5px 0 #5a3414;font-weight:900;font-size:.8rem;transition:transform .2s}
+.tok .e{font-size:1.9rem;line-height:1}
+.tok.sel{transform:translateY(-6px) scale(1.06);box-shadow:0 10px 0 #5a3414;border-color:var(--gold)}
+.tok.gone{transform:scale(0);opacity:0}
+.trays{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media (max-width:640px){.trays{grid-template-columns:1fr}}
+.tray{border-radius:18px;padding:12px;min-height:110px;border:4px dashed var(--wood);cursor:pointer;transition:background .2s}
+.tray:hover{background:rgba(244,180,0,.15)}
+.tray h4{margin:0 0 6px;font-family:var(--head);font-weight:400;font-size:1.35rem}
+.tray small{display:block;font-weight:800;color:var(--ink2);margin-bottom:6px}
+.tray .placed{display:inline-flex;gap:4px;align-items:center;margin:3px;padding:4px 10px;border-radius:999px;background:#fff;border:2px solid var(--wood);font-size:.8rem;font-weight:900;animation:lkPop .3s}
+.tray.bio{background:rgba(47,125,79,.12)}.tray.abio{background:rgba(52,120,200,.12)}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:start}
+@media (max-width:900px){.sim{grid-template-columns:1fr}}
+.board{position:relative;height:300px;border-radius:18px;border:5px solid var(--wood);overflow:hidden;background:radial-gradient(circle at 50% 50%,#9bd06b,#6fae4a 60%,#4f8f3a);box-shadow:inset 0 0 0 6px rgba(255,255,255,.25)}
+.board .water{position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 26px #5aa9e6}
+.board .ani{position:absolute;font-size:1.4rem;transition:left 1s,top 1s,opacity .5s}
+.board .tuft{position:absolute;width:16px;height:12px;border-radius:50%;background:#3f7f2a;opacity:.75;transition:opacity .6s}
+.year{position:absolute;top:10px;left:10px;background:#fff4dc;border:3px solid var(--wood);border-radius:12px;padding:3px 10px;font-family:var(--head)}
+.dials{display:grid;gap:12px}
+.dial{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center}
+.dial .lbl{font-weight:900}
+.dial .seg{display:flex;gap:4px;flex-wrap:wrap}
+.dial .seg button{padding:6px 10px;border-radius:10px;border:2px solid var(--wood);background:#fff;font-weight:900;font-size:.82rem}
+.dial .seg button.on{background:var(--gold)}
+.events{display:flex;gap:8px;flex-wrap:wrap}
+.charts{display:grid;gap:8px}
+.chartrow{display:grid;grid-template-columns:96px 1fr 56px;gap:8px;align-items:center;font-weight:900;font-size:.85rem}
+.chartrow svg{display:block;width:100%;height:56px;background:#fff;border:2px solid #e8d3a8;border-radius:10px}
+.chartrow .v{font-family:var(--head);font-size:1.1rem;text-align:right}
+.challenge{border-radius:16px;padding:12px 14px;background:#fff;border:3px solid var(--gold);margin-bottom:12px}
+.challenge b{font-family:var(--head);font-weight:400;font-size:1.2rem}
+.challenge .done{color:var(--felt)}
+.cq{display:grid;gap:6px;margin-top:8px}
+.clist{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.clist span{padding:4px 10px;border-radius:999px;border:2px solid var(--wood);background:#fff;font-size:.8rem;font-weight:900}
+.clist span.d{background:var(--felt);color:#fff}
+.clist span.n{background:var(--gold)}
+
+/* diversity */
+.habitats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.habitats{grid-template-columns:1fr}}
+.hab{border-radius:18px;padding:12px}
+.hab h3{margin:0;font-family:var(--head);font-weight:400;font-size:1.35rem}
+.field{position:relative;height:210px;border-radius:14px;border:4px solid var(--wood);overflow:hidden;margin:8px 0}
+.field span{position:absolute;font-size:1.35rem;transform:translate(-50%,-50%);animation:lkPop .4s both}
+.cnt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.events2{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
+.ecard{border-radius:16px;background:#fff;border:4px solid var(--wood);padding:12px;box-shadow:0 5px 0 #5a3414}
+.ecard .e{font-size:2rem}
+.ecard p{margin:4px 0 8px;font-weight:800}
+.ecard .bt{display:flex;gap:6px}
+.ecard .bt button{flex:1;padding:8px;border-radius:10px;border:2px solid var(--wood);background:#fff4dc;font-weight:900}
+.ecard .bt button.ok{background:#bbf7d0}.ecard .bt button.no{background:#fecaca;opacity:.7}
+.ecard .why{font-size:.86rem;font-weight:700;color:var(--ink2);margin-top:8px}
+.ftag{display:inline-block;font-size:.7rem;font-weight:900;padding:2px 8px;border-radius:999px;color:#fff;margin-left:4px;vertical-align:middle}
+.ftag.b{background:var(--felt)}.ftag.a{background:#3478c8}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+
+/* ================================================================
+   MISSION 1: BIOTIC OR ABIOTIC
+   ================================================================ */
+const FACTORS = [
+  ['🌡️','Temperature','a'],['🌧️','Rainfall','a'],['☀️','Sunlight','a'],['🧂','Soil salt level','a'],['💨','Wind','a'],['🔥','Bushfire heat','a'],
+  ['🦊','Predators','b'],['🌿','Food plants','b'],['🦠','Disease','b'],['🐇','Competition for food','b'],['🐝','Pollinators','b'],['🪱','Parasites','b']
+];
+async function mission1(body, kit){
+  kit.say(`Welcome to Population Island! 🏝️ Every population is shaped by two kinds of factors:<br>🌿 <b>Biotic</b> factors are the <b>living</b> parts of an ecosystem (or things caused by living things).<br>🪨 <b>Abiotic</b> factors are the <b>non-living</b> parts, like weather, water and soil.<br><br>Tap a token, then tap the tray it belongs in.`);
+  body.innerHTML = `<div class="lk-panel glass"><div class="tokens" id="toks"></div>
+    <div class="trays"><div class="tray bio" data-t="b"><h4>🌿 Biotic</h4><small>Living things</small><div class="got"></div></div>
+      <div class="tray abio" data-t="a"><h4>🪨 Abiotic</h4><small>Non-living things</small><div class="got"></div></div></div><div class="fb hidden" id="ffb"></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    const list = shuffle(FACTORS); let sel = null, left = list.length;
+    $('#toks').innerHTML = list.map((f, i) => `<button class="tok" data-i="${i}"><span class="e">${f[0]}</span>${f[1]}</button>`).join('');
+    body.querySelectorAll('.tok').forEach(t => t.onclick = () => { body.querySelectorAll('.tok').forEach(x => x.classList.remove('sel')); sel = t; t.classList.add('sel'); });
+    body.querySelectorAll('.tray').forEach(tr => tr.onclick = async () => {
+      if (!sel) { kit.toast('👆 Pick a token first!'); return; }
+      const f = list[+sel.dataset.i], fb = $('#ffb'); fb.classList.remove('hidden');
+      if (f[2] === tr.dataset.t) {
+        const s = sel; sel = null; s.classList.remove('sel'); s.classList.add('gone');
+        tr.querySelector('.got').insertAdjacentHTML('beforeend', `<span class="placed">${f[0]} ${f[1]}</span>`);
+        fb.className = 'fb good'; fb.textContent = --left ? `✓ Correct! ${left} tokens left.` : '✓ All tokens sorted!';
+        await wait(kit.REDUCED ? 0 : 250); s.remove();
+        if (!left) { kit.say(`Board set up! Remember: if it's <b>alive</b> (or comes from something alive, like disease or competition) it's <b>biotic</b>. Weather, water, light, soil and fire are <b>abiotic</b>.`); res(); }
+      } else { kit.shake(sel); fb.className = 'fb bad'; fb.textContent = f[2] === 'b' ? '✗ Hint: does this involve living things?' : '✗ Hint: is this alive?'; }
+    });
+  });
+}
+
+/* ================================================================
+   MISSION 2: RUN THE ISLAND
+   ================================================================ */
+const RAIN = {drought:.5, normal:1, wet:1.4}, TEMP = {cool:.85, normal:1, heatwave:.65};
+// A simple yearly model: grass grows towards a limit set by rain and temperature (abiotic);
+// rabbits eat grass and are hunted by foxes (biotic).
+function step(s, p){
+  const K = 1000 * RAIN[p.rain] * TEMP[p.temp];
+  const eatG = .9 * s.R * s.G / (s.G + 250);
+  const grow = Math.max(-.3 * s.G, .5 * s.G * (1 - s.G / K));
+  const G = Math.max(5, s.G + grow - eatG);
+  const born = .75 * s.R * s.G / (s.G + 250), hunted = 1.1 * s.F * s.R / (s.R + 40);
+  const R = Math.max(0, s.R + born - .35 * s.R - hunted);
+  const F = Math.max(0, s.F + .45 * s.F * s.R / (s.R + 40) - .3 * s.F);
+  return {G, R, F};
+}
+const CHALL = [
+  {id:'base', t:'1. A normal decade', d:'Leave rainfall and temperature on Normal, then run 10 years. Watch how the populations settle.', check:p => p.rain === 'normal' && p.temp === 'normal' && !p.ev,
+    q:'What happened to the three populations in a normal decade?', o:['They went up and down a bit but stayed fairly balanced','They all went extinct','They all grew forever'], why:'With normal conditions, food, prey and predators balance each other out.'},
+  {id:'drought', t:'2. The big drought', d:'Set rainfall to Drought, then run 10 years.', check:p => p.rain === 'drought',
+    q:'In the drought, which population fell FIRST?', o:['Grass','Foxes','Rabbits'], why:'Less rain (abiotic) meant less grass grew. Then rabbits had less food, and then foxes had fewer rabbits to eat. The effect passes up the food chain!'},
+  {id:'disease', t:'3. Rabbit disease outbreak', d:'Set rainfall back to Normal, press 🦠 Rabbit disease, then run 10 years.', check:p => p.rain === 'normal' && p.ev === 'disease',
+    q:'What happened to the FOXES after the rabbit disease?', o:['They decreased, because they had less food','They increased, because there was less competition','Nothing changed'], why:'Disease (biotic) killed many rabbits, so foxes, which eat rabbits, also declined. Grass got a break and grew back!'},
+  {id:'foxes', t:'4. Too many predators', d:'Press 🦊 Release 30 foxes, then run 10 years.', check:p => p.ev === 'foxes',
+    q:'What happened when lots of extra foxes were released?', o:['Rabbits crashed, then many foxes starved too','Rabbits increased','Foxes kept increasing forever'], why:'Extra predators ate most of the rabbits. With their prey gone, the foxes ran out of food and declined too.'}
+];
+function spark(data, col, max){
+  const w = 300, h = 56, n = Math.max(2, data.length), mx = max || Math.max(1, ...data);
+  const pts = data.map((v, i) => `${(i / (n - 1)) * (w - 8) + 4},${h - 6 - (v / mx) * (h - 14)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
+}
+async function mission2(body, kit){
+  kit.say(`Time to play the island! 🎲 Grass feeds the rabbits 🐇, rabbits feed the foxes 🦊. Change the <b>abiotic</b> dials (rainfall, temperature) and trigger <b>biotic</b> events, then run the island year by year.<br><br>Complete all <b>4 challenge cards</b>.`);
+  body.innerHTML = `<div class="sim"><div>
+      <div class="board" id="board"><div class="water"></div><div class="year" id="yr">Year 0</div></div>
+      <div class="lk-panel glass" style="margin-top:12px"><div class="dials">
+        <div class="dial"><span class="lbl">🌧️ Rainfall</span><span class="seg" data-k="rain"><button data-v="drought">Drought</button><button data-v="normal" class="on">Normal</button><button data-v="wet">Wet</button></span></div>
+        <div class="dial"><span class="lbl">🌡️ Temperature</span><span class="seg" data-k="temp"><button data-v="cool">Cool</button><button data-v="normal" class="on">Normal</button><button data-v="heatwave">Heatwave</button></span></div>
+        <div class="dial"><span class="lbl">⚡ Events</span><span class="events"><button class="btn small" data-ev="disease">🦠 Rabbit disease</button><button class="btn small" data-ev="foxes">🦊 Release 30 foxes</button></span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="run">▶ Run 10 years</button><button class="btn" id="resetSim">↺ Reset island</button></div></div></div></div>
+    <div><div class="clist" id="clist">${CHALL.map((c, i) => `<span data-i="${i}">${c.t.split('. ')[1]}</span>`).join('')}</div>
+      <div class="challenge" id="ch"></div>
+      <div class="lk-panel glass charts" id="charts"></div></div></div>`;
+  const $ = s => body.querySelector(s), board = $('#board');
+  let p = {rain:'normal', temp:'normal', ev:null}, s, hist, year, ci = 0, running = false;
+  const reset = () => { s = {G:860, R:85, F:24}; hist = {G:[s.G], R:[s.R], F:[s.F]}; year = 0; p.ev = null; draw(); };
+  const placeAnimals = () => {
+    const make = (cls, e, n) => { const cur = board.querySelectorAll('.' + cls); for (let i = cur.length; i < n; i++) { const a = document.createElement('span'); a.className = 'ani ' + cls; a.textContent = e; board.appendChild(a); } [...board.querySelectorAll('.' + cls)].forEach((a, i) => { a.style.opacity = i < n ? 1 : 0; a.style.left = (12 + Math.random() * 72) + '%'; a.style.top = (12 + Math.random() * 70) + '%'; }); };
+    if (!board.querySelector('.tuft')) for (let i = 0; i < 40; i++) { const t = document.createElement('span'); t.className = 'tuft'; t.style.left = (10 + Math.random() * 78) + '%'; t.style.top = (10 + Math.random() * 76) + '%'; board.appendChild(t); }
+    board.querySelectorAll('.tuft').forEach((t, i) => t.style.opacity = i < Math.round(s.G / 25) ? .8 : 0);
+    make('rab', '🐇', Math.min(30, Math.round(s.R / 6))); make('fox', '🦊', Math.min(14, Math.round(s.F / 2)));
+  };
+  const draw = () => {
+    $('#yr').textContent = 'Year ' + year;
+    $('#charts').innerHTML = [['🌿 Grass', 'G', '#2f7d4f', 1400], ['🐇 Rabbits', 'R', '#a16207', 0], ['🦊 Foxes', 'F', '#c0392b', 0]].map(r =>
+      `<div class="chartrow"><span>${r[0]}</span>${spark(hist[r[1]], r[2], r[3] || Math.max(...hist[r[1]], r[1] === 'R' ? 150 : 25))}<span class="v">${Math.round(s[r[1]])}</span></div>`).join('') +
+      `<div style="font-size:.75rem;font-weight:800;color:var(--ink3);text-align:center">← years →</div>`;
+    placeAnimals();
+  };
+  const showChallenge = () => {
+    body.querySelectorAll('#clist span').forEach((x, i) => x.className = i < ci ? 'd' : i === ci ? 'n' : '');
+    if (ci >= CHALL.length) { $('#ch').innerHTML = `<b class="done">🏆 All challenges complete!</b><p style="margin:4px 0 0;font-weight:700">Keep experimenting if you like. Try a wet year with a heatwave!</p>`; return; }
+    const C = CHALL[ci]; $('#ch').innerHTML = `<b>🃏 ${C.t}</b><p style="margin:4px 0 0;font-weight:700">${C.d}</p><div id="cq"></div>`;
+  };
+  body.querySelectorAll('.seg').forEach(sg => sg.querySelectorAll('button').forEach(b => b.onclick = () => { if (running) return; sg.querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on'); p[sg.dataset.k] = b.dataset.v; }));
+  body.querySelectorAll('[data-ev]').forEach(b => b.onclick = () => {
+    if (running) return; p.ev = b.dataset.ev;
+    if (p.ev === 'disease') { s.R *= .25; kit.toast('🦠 Disease wipes out 75% of the rabbits!'); }
+    else { s.F += 30; kit.toast('🦊 30 foxes released onto the island!'); }
+    hist.G.push(s.G); hist.R.push(s.R); hist.F.push(s.F); draw();
+  });
+  $('#resetSim').onclick = () => { if (!running) reset(); };
+  reset(); showChallenge();
+  return new Promise(res => {
+    $('#run').onclick = async () => {
+      if (running) return; running = true; $('#run').disabled = true;
+      const C = CHALL[ci], counts = C && C.check(p);
+      for (let y = 0; y < 10; y++) { s = step(s, p); hist.G.push(s.G); hist.R.push(s.R); hist.F.push(s.F); year++; draw(); await wait(kit.REDUCED ? 0 : 280); }
+      running = false; $('#run').disabled = false;
+      if (!C) return;
+      if (!counts) { kit.toast('That run didn\'t match the challenge card. Check the set-up instructions!', 3000); return; }
+      const opts = shuffle(C.o.map((t, i) => ({t, ok: i === 0})));
+      $('#cq').innerHTML = `<div class="cq"><b style="font-family:var(--body);font-size:.95rem">❓ ${esc(C.q)}</b>${opts.map((o, i) => `<button class="opt" data-i="${i}">${esc(o.t)}</button>`).join('')}<div class="fb hidden" id="qfb"></div></div>`;
+      $('#cq').querySelectorAll('.opt').forEach(b => b.onclick = async () => {
+        const o = opts[+b.dataset.i], fb = $('#qfb'); fb.classList.remove('hidden');
+        if (o.ok) {
+          $('#cq').querySelectorAll('.opt').forEach(x => x.disabled = true); b.classList.add('right'); fb.className = 'fb good'; fb.textContent = '✓ ' + C.why;
+          await wait(kit.REDUCED ? 300 : 2600); ci++; reset(); p.ev = null; showChallenge();
+          if (ci >= CHALL.length && !res.done) { res.done = true; kit.say(`Island master! 🏆 You saw how <b>abiotic</b> factors (rain) and <b>biotic</b> factors (disease, predators, food) change <b>population size</b>, and how a change to one population ripples through the whole food web.`); res(); }
+        } else { b.disabled = true; b.classList.add('wrong'); kit.shake(b); fb.className = 'fb bad'; fb.textContent = '✗ Look carefully at the graphs and try again.'; }
+      });
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 3: SPECIES DIVERSITY
+   ================================================================ */
+const BUSH = [['🦘',3],['🦜',4],['🐨',2],['🦎',3],['🐸',3],['🦋',4],['🐝',5],['🌳',4],['🌸',5],['🍄',3],['🦉',1],['🐛',3]];
+const PADDOCK = [['🐄',6],['🌾',14],['🐇',9],['🦊',2]];
+const EVENTS = [
+  {e:'🔥', t:'A hot bushfire burns through the bushland', a:'down', f:'a', why:'Fire (abiotic) kills many organisms and destroys habitat, so diversity drops in the short term (though many Aussie plants regrow!).'},
+  {e:'🐸', t:'Cane toads are introduced', a:'down', f:'b', why:'Introduced species (biotic) poison or out-compete native animals, so diversity goes down.'},
+  {e:'🌱', t:'Volunteers plant many different native shrubs', a:'up', f:'b', why:'More types of plants means more food and shelter for many different animals, so diversity goes up.'},
+  {e:'🐈', t:'Feral cats are removed from the reserve', a:'up', f:'b', why:'Removing an introduced predator (biotic) lets small native animals recover.'},
+  {e:'🌧️', t:'A long drought dries up the creek', a:'down', f:'a', why:'Less water (abiotic) means species that need water, like frogs, can\'t survive there.'},
+  {e:'🧪', t:'Fertiliser runoff pollutes the wetland', a:'down', f:'a', why:'Pollution changes water quality (abiotic), and sensitive species die off.'}
+];
+function scatter(list){ const out = []; list.forEach(([e, n]) => { for (let i = 0; i < n; i++) out.push(e); }); return shuffle(out).map(e => `<span style="left:${6 + Math.random() * 88}%;top:${10 + Math.random() * 80}%;animation-delay:${Math.random() * .6}s">${e}</span>`).join(''); }
+async function mission3(body, kit){
+  kit.say(`<b>Species diversity</b> means how many <b>different kinds</b> of species live in an area, not just how many individuals. Let's survey two habitats. Count how many <b>different species</b> you can see in each!`);
+  body.innerHTML = `<div class="habitats">
+      <div class="hab glass"><h3>🌳 Native bushland</h3><div class="field" style="background:linear-gradient(160deg,#a7d98a,#5c9a45)">${scatter(BUSH)}</div>
+        <div class="cnt">Different species: <input class="num" id="nb" type="number" inputmode="numeric" aria-label="Bushland species count"><button class="btn small" id="cb">Check</button></div><div class="fb hidden" id="fb1"></div></div>
+      <div class="hab glass"><h3>🚜 Cleared paddock</h3><div class="field" style="background:linear-gradient(160deg,#e5d48a,#b8a656)">${scatter(PADDOCK)}</div>
+        <div class="cnt">Different species: <input class="num" id="np" type="number" inputmode="numeric" aria-label="Paddock species count"><button class="btn small" id="cp">Check</button></div><div class="fb hidden" id="fb2"></div></div></div>
+    <div class="lk-panel glass hidden" id="evp" style="margin-top:14px"><b style="font-family:var(--head);font-weight:400;font-size:1.3rem">🎴 Event cards: will diversity go UP or DOWN?</b>
+      <div class="events2">${shuffle(EVENTS).map((ev, i) => `<div class="ecard" data-a="${ev.a}" data-k="${EVENTS.indexOf(ev)}"><span class="e">${ev.e}</span><p>${esc(ev.t)} <span class="ftag ${ev.f}">${ev.f === 'b' ? 'BIOTIC' : 'ABIOTIC'}</span></p>
+        <div class="bt"><button data-v="up">⬆ Up</button><button data-v="down">⬇ Down</button></div><div class="why hidden">${esc(ev.why)}</div></div>`).join('')}</div></div>`;
+  const $ = s => body.querySelector(s), ok = {b:false, p:false};
+  return new Promise(res => {
+    const check = (inp, btn, fbId, answer, key, msg) => $(btn).onclick = () => {
+      const v = parseInt($(inp).value, 10), fb = $(fbId); fb.classList.remove('hidden');
+      if (v === answer) { $(inp).className = 'num ok'; fb.className = 'fb good'; fb.textContent = msg; ok[key] = true; if (ok.b && ok.p) next(); }
+      else { $(inp).className = 'num no'; kit.shake($(inp)); fb.className = 'fb bad'; fb.textContent = `Count the different kinds, not every animal. Two kangaroos = 1 species. (You said ${isNaN(v) ? 'nothing' : v}.)`; }
+    };
+    check('#nb', '#cb', '#fb1', BUSH.length, 'b', `✓ ${BUSH.length} species: high diversity! Lots of different plants means lots of food and shelter.`);
+    check('#np', '#cp', '#fb2', PADDOCK.length, 'p', `✓ Only ${PADDOCK.length} species: low diversity, even though there are lots of individuals.`);
+    function next(){
+      if (!$('#evp').classList.contains('hidden')) return;
+      $('#evp').classList.remove('hidden'); $('#evp').scrollIntoView({behavior:'smooth', block:'start'});
+      kit.say(`The bushland has much higher <b>species diversity</b>. Now predict how each event would change diversity in the bushland. Look out for whether it's a <b>biotic</b> or <b>abiotic</b> factor!`);
+      let left = EVENTS.length;
+      body.querySelectorAll('.ecard').forEach(c => c.querySelectorAll('button').forEach(b => b.onclick = () => {
+        if (b.dataset.v === c.dataset.a) {
+          c.querySelectorAll('button').forEach(x => x.disabled = true); b.classList.add('ok'); c.querySelector('.why').classList.remove('hidden');
+          if (--left === 0) { kit.say(`Excellent! Both <b>biotic</b> factors (introduced species, predators, planting) and <b>abiotic</b> factors (fire, drought, pollution) can change <b>species diversity</b>. Healthy ecosystems usually have high diversity.`); res(); }
+        } else { b.disabled = true; b.classList.add('no'); kit.shake(c); kit.toast('Think: does this help or harm the living things there?'); }
+      }));
+    }
+  });
+}
+
+/* ================================================================
+   SET UP THE PAGE
+   ================================================================ */
+LabKit.init({
+  id:'population-island', title:'Population Island', icon:'🏝️', theme:'#2f7d4f', kicker:"Mr Trichardt's Science Lab · Board game",
+  heroTitle:'Population <span class="g">Island</span>',
+  intro:'Set up the board, sort the factor tokens, then run an island ecosystem through droughts, diseases and fox invasions. Can you keep the populations balanced?',
+  guide:{name:'Game Master Mo', emoji:'🎲'},
+  certTitle:'Island Ecosystem Master', confetti:['🏝️','🐇','🦊','🌿','🎲','⭐'],
+  summary:'You can now define biotic and abiotic factors, give examples of each, and explain how they change population size and species diversity.',
+  missions:[
+    {icon:'🪙', title:'Biotic or abiotic?', short:'Factors', blurb:'Sort the factor tokens into living and non-living.', run:mission1,
+      gate:[
+        {q:'Biotic factors are…', o:['The living parts of an ecosystem, like predators, food and disease','The non-living parts, like rain and temperature','Only the plants in an ecosystem','Factors that only affect bacteria'],
+          ex:'"Bio" means life. Biotic factors are living things and their effects, like predation, competition and disease.', hint:'"Bio" = life.'},
+        {q:'Which of these is an ABIOTIC factor?', o:['Rainfall','Predators','Competition','Disease'],
+          ex:'Rainfall is non-living. The others all involve living things.', hint:'Which one isn\'t alive?'},
+        {q:'Two kangaroos competing for the same patch of grass is an example of…', o:['A biotic factor (competition)','An abiotic factor','Photosynthesis','Decomposition'],
+          ex:'Competition happens between living things, so it\'s a biotic factor.', hint:'Are kangaroos alive?'}
+      ],
+      bonus:{q:'Is a disease-causing bacterium a biotic or abiotic factor?', o:['Biotic, because bacteria are living organisms','Abiotic, because you can\'t see it','Neither','Abiotic, because it\'s a chemical'],
+        ex:'Bacteria are alive, so disease caused by them is a biotic factor.'}},
+    {icon:'🎲', title:'Run the island', short:'Simulate', blurb:'Change rainfall and trigger events to see populations change.', run:mission2,
+      gate:[
+        {q:'In a drought, why did the fox population eventually fall?', o:['Less grass meant fewer rabbits, so foxes had less food','Foxes need to drink lots of rain','The heat killed the foxes directly','Rabbits started eating foxes'],
+          ex:'An abiotic change (less rain) affected the producers first, then passed up the food chain to the predators.', hint:'Follow the food chain from grass to foxes.'},
+        {q:'Which change would most likely INCREASE the rabbit population?', o:['A wet year with plenty of grass and fewer foxes','A drought','Releasing more foxes','A rabbit disease outbreak'],
+          ex:'More food and fewer predators let a prey population grow.', hint:'What do rabbits need, and what kills them?'},
+        {q:'Population size is affected by…', o:['Both biotic factors (food, predators, disease) and abiotic factors (rain, temperature)','Only abiotic factors','Only biotic factors','Neither: populations never change'],
+          ex:'Both kinds of factors affect births and deaths in a population.', hint:'Think about all the dials and events you used.'}
+      ],
+      bonus:{q:'Why do predator and prey populations often rise and fall in a repeating pattern?', o:['More prey lets predators increase; then predators eat too many prey, so predators decrease, letting prey recover','They both depend on rainfall only','Predators and prey never affect each other','It is random'],
+        ex:'Predator–prey populations are linked: changes in one cause delayed changes in the other.'}},
+    {icon:'🌈', title:'Species diversity', short:'Diversity', blurb:'Survey two habitats and predict how events change diversity.', run:mission3,
+      gate:[
+        {q:'Species diversity means…', o:['The number of different species in an area','The total number of individual animals','How big the animals are','The number of predators'],
+          ex:'Diversity is about how many DIFFERENT kinds of species there are.', hint:'Remember the bushland vs the paddock.'},
+        {q:'Why do introduced species like cane toads often reduce diversity?', o:['They kill, poison or out-compete native species','They add new species, so diversity always goes up','They only eat weeds','They make the climate warmer'],
+          ex:'Introduced species often have no natural predators and harm native species, which lowers diversity.', hint:'What happens to the native animals?'},
+        {q:'The native bushland had more species than the cleared paddock because…', o:['Many different plants provide lots of different food and habitats','It had more cows','Paddocks have more rainfall','Bushland has no predators'],
+          ex:'A variety of plants supports a variety of animals, which means higher diversity.', hint:'What did the bushland have lots of?'}
+      ],
+      bonus:{q:'Why is high species diversity usually a sign of a healthy ecosystem?', o:['If one species declines, others can fill its role, so the ecosystem is more stable','Because more animals means more noise','It means there are no predators','It doesn\'t matter'],
+        ex:'Diverse ecosystems have many food chains and backups, so they cope better with change.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

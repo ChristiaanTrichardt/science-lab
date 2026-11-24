@@ -59,6 +59,62 @@ window.CATEGORIES = [
    --------------------------------------------------------------------- */
 window.RESOURCES = [
   {
+    id: "population-island",
+    title: "Population Island",
+    subtitle: "Biotic & abiotic factors",
+    description: "A board-game island where you sort factor tokens, run droughts, diseases and fox invasions, and see how populations and species diversity change.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/population-island/index.html",
+    years: "Year 9",
+    tags: ["biotic", "abiotic", "population", "predator", "prey", "species diversity", "introduced species", "ecosystem", "EQ5"],
+    added: "2026-11-24",
+    thumb: "resources/population-island/thumb.svg",
+    emoji: "🏝️"
+  },
+  {
+    id: "design-a-survivor",
+    title: "Design-a-Survivor",
+    subtitle: "Adaptations",
+    description: "Collect Aussie adaptation cards, hunt camouflaged beetles to see survival in action, then design a creature that survives the desert, the snow, the rainforest or the reef.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/design-a-survivor/index.html",
+    years: "Year 9",
+    tags: ["adaptations", "structural", "behavioural", "physiological", "camouflage", "survival", "environment", "EQ4"],
+    added: "2026-11-24",
+    thumb: "resources/design-a-survivor/thumb.svg",
+    emoji: "🦎"
+  },
+  {
+    id: "grow-box",
+    title: "Grow Box",
+    subtitle: "Plant tropisms",
+    description: "Run greenhouse experiments: move the light, cap the shoot tip, tip pots over and hide water in the soil to discover phototropism, gravitropism and hydrotropism.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/grow-box/index.html",
+    years: "Year 9",
+    tags: ["tropism", "phototropism", "gravitropism", "hydrotropism", "auxin", "plant hormones", "plants", "EQ3"],
+    added: "2026-11-24",
+    thumb: "resources/grow-box/thumb.svg",
+    emoji: "🌱"
+  },
+  {
+    id: "keep-me-steady",
+    title: "Keep Me Steady",
+    subtitle: "Stimuli & homeostasis",
+    description: "Run a body monitoring station: sort stimuli, match receptors, keep a patient's vitals in the green, and help a bearded dragon survive a desert day.",
+    category: "biology",
+    type: "interactive",
+    path: "resources/keep-me-steady/index.html",
+    years: "Year 9",
+    tags: ["stimulus", "receptors", "homeostasis", "endotherm", "ectotherm", "body temperature", "blood glucose", "EQ1"],
+    added: "2026-11-24",
+    thumb: "resources/keep-me-steady/thumb.svg",
+    emoji: "🩺"
+  },
+  {
     id: "signal-race",
     title: "Signal Race",
     subtitle: "Nerves vs hormones",

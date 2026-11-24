@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keep Me Steady</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: hospital vitals monitor ===== */
+:root{
+  --ink:#d9fbf4;--ink2:#93d9cc;--ink3:#5fa99c;--accent:#2dd4bf;--theme:#2dd4bf;--hair:rgba(45,212,191,.18);
+  --head:'Chakra Petch','Segoe UI',system-ui,sans-serif;--mono:'Share Tech Mono',ui-monospace,Consolas,monospace;
+  --ok:#4ade80;--warn:#facc15;--alarm:#fb7185;--panel:rgba(7,28,42,.86);--line:rgba(45,212,191,.35);
+  --g1:#2dd4bf;--g2:#4ade80;
+}
+body{background:#030d17;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;z-index:-2;
+  background:radial-gradient(1200px 700px at 50% -10%,rgba(45,212,191,.16),transparent 60%),
+    linear-gradient(rgba(45,212,191,.05) 1px,transparent 1px) 0 0/28px 28px,
+    linear-gradient(90deg,rgba(45,212,191,.05) 1px,transparent 1px) 0 0/28px 28px,#030d17}
+.lk-bg{display:none}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 0 0 1px rgba(45,212,191,.06),0 0 34px -12px rgba(45,212,191,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.lk-top{border-radius:14px}
+.lk-logo{border-radius:10px;background:#0b2b3b;box-shadow:inset 0 0 0 1px var(--line),0 0 16px rgba(45,212,191,.4)}
+.lk-step{background:#0a2232;border-color:var(--line);color:var(--ink2);border-radius:10px}
+.lk-step .n{background:#06202e;border-radius:8px}
+.lk-step.now{background:#0f3444;color:var(--ink);box-shadow:0 0 0 2px var(--accent),0 0 18px rgba(45,212,191,.5)}
+.lk-step.done .n{background:var(--ok);color:#052e16}
+.lk-chip,.chip{background:#0a2232;border-color:var(--line);color:var(--ink);border-radius:10px}
+.lk-hero h1,.lk-mhead h1{letter-spacing:.01em;text-transform:uppercase}
+.lk-mlist li{background:rgba(45,212,191,.06);border:1px solid var(--hair);border-radius:12px}
+.lk-mlist .ic{background:#0b2b3b;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line)}
+.lk-face{border-radius:12px;background:#0b2b3b;box-shadow:inset 0 0 0 1px var(--line),0 0 18px rgba(45,212,191,.35)}
+.lk-bubble{border-radius:14px}
+.lk-bubble small{font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.lk-kick{font-family:var(--mono);letter-spacing:.16em;color:var(--accent)}
+.lk-name input{background:#06202e;border-color:var(--line);color:var(--ink);border-radius:10px}
+.btn{background:#0a2232;color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:none;font-family:var(--head);letter-spacing:.04em}
+.btn:hover:not(:disabled){background:#0f3444;filter:none}
+.btn.primary,.btn.green{background:linear-gradient(180deg,#5eead4,#14b8a6);color:#022c27;border-color:#5eead4;box-shadow:0 0 22px -4px rgba(45,212,191,.8)}
+#lkModal{background:rgba(1,8,14,.7)}
+.lk-card{background:#061826;color:var(--ink);border-radius:16px}
+.opt{background:#0a2232;color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:none}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:rgba(74,222,128,.16);border-color:var(--ok)}
+.opt.wrong{background:rgba(251,113,133,.16);border-color:var(--alarm)}
+.qbar i{background:rgba(45,212,191,.15)}.qbar i.now{background:var(--accent)}
+.fb.good{background:rgba(74,222,128,.14);color:#bbf7d0;border:1px solid rgba(74,222,128,.4)}
+.fb.bad{background:rgba(251,113,133,.14);color:#fecdd3;border:1px solid rgba(251,113,133,.4)}
+.fb.info{background:rgba(45,212,191,.1);color:#ccfbf1;border:1px solid var(--line)}
+.tile{background:#0a2232;border:1px solid var(--line);box-shadow:none;border-radius:12px}
+.lk-cert{background:#061826;border-color:var(--accent)}
+.lk-stats div{background:#0a2232}
+#lkToast{background:#0f3444;color:var(--ink)}
+.ecg{position:fixed;left:0;right:0;top:66px;height:40px;z-index:-1;opacity:.55;pointer-events:none}
+.ecg path{fill:none;stroke:#2dd4bf;stroke-width:2;stroke-dasharray:1400;stroke-dashoffset:1400;animation:ecg 3.2s linear infinite;filter:drop-shadow(0 0 4px #2dd4bf)}
+@keyframes ecg{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.ecg path{animation:none;stroke-dashoffset:0}}
+.mono{font-family:var(--mono)}
+
+/* ===== sorting + matching ===== */
+.deck .sc{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;padding:12px 14px;border-radius:12px;background:#0a2232;border:1px solid var(--line);margin-bottom:8px;font-weight:800}
+.deck .sc .bt{display:flex;gap:6px}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media (max-width:640px){.bins{grid-template-columns:1fr}}
+.bin{border-radius:12px;padding:12px;min-height:90px;border:1px dashed var(--line)}
+.bin h4{margin:0 0 8px;font-family:var(--head);font-size:1.05rem;letter-spacing:.06em;text-transform:uppercase}
+.bin .placed{display:block;padding:6px 10px;margin:5px 0;border-radius:8px;background:#0f3444;font-weight:700;font-size:.88rem;animation:lkPop .3s}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.match .col{display:grid;gap:8px;align-content:start}
+.mbtn{text-align:left;padding:12px 14px;border-radius:12px;background:#0a2232;border:1px solid var(--line);font-weight:800;transition:all .2s;color:var(--ink)}
+.mbtn small{display:block;font-weight:600;color:var(--ink2);font-size:.8rem}
+.mbtn.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent),0 0 16px rgba(45,212,191,.4)}
+.mbtn.done{border-color:var(--ok);background:rgba(74,222,128,.12);color:#bbf7d0}
+.mbtn:disabled{cursor:default}
+
+/* ===== vitals monitor ===== */
+.monitor{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.monitor{grid-template-columns:1fr}}
+.vital{position:relative;padding:14px 16px;border-radius:14px;background:#020b13;border:1px solid var(--line);overflow:hidden}
+.vital .lbl{font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase}
+.vital .val{font-family:var(--mono);font-size:2.8rem;line-height:1.05;color:var(--ok);text-shadow:0 0 14px currentColor;transition:color .3s}
+.vital .val small{font-size:1rem;color:var(--ink3);text-shadow:none}
+.vital .st{font-family:var(--mono);font-size:.85rem;letter-spacing:.12em}
+.vital .bar{position:relative;height:10px;border-radius:5px;background:#0a2232;margin-top:8px}
+.vital .bar .zone{position:absolute;top:0;bottom:0;background:rgba(74,222,128,.25);border-left:1px solid var(--ok);border-right:1px solid var(--ok)}
+.vital .bar .pin{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:#fff;box-shadow:0 0 8px #fff;transition:left .9s cubic-bezier(.3,1.3,.5,1)}
+.vital.alarm{border-color:var(--alarm);animation:alarm 1s infinite}
+.vital.alarm .val{color:var(--alarm)}
+.vital.warn .val{color:var(--warn)}
+@keyframes alarm{50%{box-shadow:0 0 26px -4px var(--alarm),inset 0 0 30px -10px var(--alarm)}}
+.scenario{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:14px;margin:14px 0;border:1px solid var(--line);background:linear-gradient(90deg,rgba(250,204,21,.1),transparent)}
+.scenario .big{font-size:2.6rem}
+.scenario b{font-family:var(--head);font-size:1.2rem;letter-spacing:.04em}
+.resp{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.resp button{text-align:left;padding:10px 12px;border-radius:12px;background:#0a2232;border:1px solid var(--line);font-weight:800;color:var(--ink);font-size:.9rem;transition:all .2s}
+.resp button:hover:not(:disabled){border-color:var(--accent)}
+.resp button.ok{border-color:var(--ok);background:rgba(74,222,128,.14)}
+.resp button.no{border-color:var(--alarm);background:rgba(251,113,133,.14);opacity:.7}
+.loop{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin-top:12px}
+.loop div{flex:1;min-width:120px;padding:10px;border-radius:12px;background:#020b13;border:1px solid var(--line);font-size:.85rem;font-weight:700;color:var(--ink2)}
+.loop div b{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.loop .ar{flex:none;min-width:0;border:0;background:none;display:grid;place-items:center;color:var(--accent);font-size:1.3rem;padding:0}
+.systems{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.progress-dots{display:flex;gap:6px}
+.progress-dots i{width:12px;height:12px;border-radius:3px;background:#0a2232;border:1px solid var(--line)}
+.progress-dots i.d{background:var(--ok);border-color:var(--ok)}
+
+/* ===== ecto vs endo ===== */
+.animals{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.animals{grid-template-columns:1fr}}
+.ani{padding:14px;border-radius:14px;background:#020b13;border:1px solid var(--line)}
+.ani .head{display:flex;align-items:center;gap:10px}
+.ani .head .e{font-size:2.4rem}
+.ani .head b{font-family:var(--head);font-size:1.15rem}
+.ani .head small{display:block;font-family:var(--mono);color:var(--ink3);letter-spacing:.1em}
+.ani .temp{font-family:var(--mono);font-size:2.2rem;margin-top:6px}
+.slots{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+@media (max-width:640px){.slots{grid-template-columns:repeat(3,1fr)}}
+.slot{padding:8px 6px;border-radius:10px;background:#0a2232;border:1px solid var(--line);text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--ink2)}
+.slot b{display:block;font-size:1.05rem;color:var(--ink)}
+.slot.now{border-color:var(--warn);box-shadow:0 0 14px -2px rgba(250,204,21,.6)}
+.slot.ok{border-color:var(--ok)}.slot.bad{border-color:var(--alarm)}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+@media (max-width:560px){.choices{grid-template-columns:1fr}}
+.choices button{padding:12px;border-radius:12px;background:#0a2232;border:1px solid var(--line);font-weight:800;color:var(--ink);text-align:center}
+.choices button .e{display:block;font-size:1.8rem}
+.choices button small{display:block;font-family:var(--mono);color:var(--ink3)}
+.choices button:hover:not(:disabled){border-color:var(--accent)}
+.chart svg{display:block;width:100%;max-width:760px;height:auto;margin:12px auto 0}
+</style>
+</head>
+<body>
+<svg class="ecg" viewBox="0 0 1400 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 H220 l10 -4 l10 4 h20 l8 -16 l8 30 l8 -18 h30 l12 -6 l12 6 H640 l10 -4 l10 4 h20 l8 -16 l8 30 l8 -18 h30 l12 -6 l12 6 H1060 l10 -4 l10 4 h20 l8 -16 l8 30 l8 -18 h30 l12 -6 l12 6 H1400"/></svg>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+
+/* tap-two-buttons matcher */
+function matcher(root, pairs, onDone, kit){
+  let sel = null, left = pairs.length;
+  root.querySelectorAll('.mbtn').forEach(b => b.onclick = () => {
+    if (b.disabled) return;
+    if (!sel || sel.dataset.side === b.dataset.side) { root.querySelectorAll('.mbtn.sel').forEach(x => x.classList.remove('sel')); sel = b; b.classList.add('sel'); return; }
+    if (sel.dataset.k === b.dataset.k) {
+      [sel, b].forEach(x => { x.classList.remove('sel'); x.classList.add('done'); x.disabled = true; });
+      kit.toast('✓ ' + pairs.find(p => p.k === b.dataset.k).why, 3000); sel = null;
+      if (--left === 0) onDone();
+    } else { kit.shake(b); kit.toast('✗ Not a match. Think about what that receptor detects.'); sel.classList.remove('sel'); sel = null; }
+  });
+}
+
+/* ================================================================
+   MISSION 1: STIMULI + RECEPTORS
+   ================================================================ */
+const STIM = [
+  ['🔊 A loud bang','e'],['☀️ Bright sunlight','e'],['🥵 A 40 °C day','e'],['👃 The smell of pizza','e'],['🌬️ A cold wind','e'],
+  ['🩸 Low blood glucose','i'],['🌡️ Body temperature rising during exercise','i'],['💧 Not enough water in your blood','i'],['🫁 Too much CO₂ in your blood','i'],['🚽 A full bladder','i']
+];
+const RECEPTORS = [
+  {k:'thermo', r:'Thermoreceptors', s:'🌡️ Temperature', why:'Thermoreceptors detect hot and cold.'},
+  {k:'photo', r:'Photoreceptors', s:'💡 Light', why:'Photoreceptors (rods and cones in your eyes) detect light.'},
+  {k:'chemo', r:'Chemoreceptors', s:'🧪 Chemicals (taste, smell, blood CO₂)', why:'Chemoreceptors detect chemicals, like in your tongue, nose and blood.'},
+  {k:'mechano', r:'Mechanoreceptors', s:'👆 Touch, pressure and sound', why:'Mechanoreceptors detect pressure, touch and vibrations (sound).'},
+  {k:'pain', r:'Pain receptors', s:'⚠️ Damage to tissue', why:'Pain receptors (nociceptors) detect damage, which helps protect you.'}
+];
+async function mission1(body, kit){
+  kit.say(`Patient check-in! A <b>stimulus</b> is any change your body can detect. <b>External</b> stimuli come from outside your body; <b>internal</b> stimuli come from inside it.<br><br>Scan each reading and file it as <b>internal</b> or <b>external</b>.`);
+  body.innerHTML = `<div class="lk-panel glass"><div class="lk-kick">▸ Stimulus scanner</div>
+      <div class="deck" id="deck" style="margin-top:10px"></div>
+      <div class="bins"><div class="bin"><h4>🌍 External</h4><div id="be"></div></div><div class="bin"><h4>🫀 Internal</h4><div id="bi"></div></div></div>
+      <div class="fb hidden" id="sfb"></div></div>
+    <div class="lk-panel glass hidden" id="rec" style="margin-top:14px"><div class="lk-kick">▸ Receptor calibration</div>
+      <p style="margin:6px 0 12px;color:var(--ink2);font-weight:600">Your body detects stimuli with <b>receptors</b>. Tap a receptor, then tap the stimulus it detects.</p>
+      <div class="match"><div class="col">${shuffle(RECEPTORS).map(p => `<button class="mbtn" data-side="r" data-k="${p.k}">${p.r}</button>`).join('')}</div>
+        <div class="col">${shuffle(RECEPTORS).map(p => `<button class="mbtn" data-side="s" data-k="${p.k}">${p.s}</button>`).join('')}</div></div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    const cards = shuffle(STIM); let left = cards.length;
+    $('#deck').innerHTML = cards.map((c, i) => `<div class="sc" data-i="${i}"><span>${esc(c[0])}</span><span class="bt"><button class="btn small" data-to="e">🌍 External</button><button class="btn small" data-to="i">🫀 Internal</button></span></div>`).join('');
+    $('#deck').querySelectorAll('.sc').forEach(sc => sc.querySelectorAll('[data-to]').forEach(b => b.onclick = () => {
+      const c = cards[+sc.dataset.i], fb = $('#sfb'); fb.classList.remove('hidden');
+      if (b.dataset.to === c[1]) {
+        sc.remove(); $('#b' + c[1]).insertAdjacentHTML('beforeend', `<span class="placed">✓ ${esc(c[0])}</span>`);
+        fb.className = 'fb good'; fb.textContent = --left ? `✓ Filed. ${left} readings left.` : '✓ All stimuli filed!';
+        if (!left) { $('#rec').classList.remove('hidden'); $('#rec').scrollIntoView({behavior:'smooth', block:'center'});
+          kit.say(`Nice work. Now let's calibrate the <b>receptors</b>: special cells that detect each type of stimulus and send the message to your nervous system.`);
+          matcher($('#rec'), RECEPTORS, () => { kit.say(`All receptors online! 🟢 Remember: stimulus → <b>receptor</b> detects it → message sent on → body <b>responds</b>.`); res(); }, kit); }
+      } else { kit.shake(sc); fb.className = 'fb bad'; fb.textContent = c[1] === 'e' ? '✗ Does this change happen outside your body?' : '✗ Does this change happen inside your body?'; }
+    }));
+  });
+}
+
+/* ================================================================
+   MISSION 2: HOMEOSTASIS SIMULATOR
+   ================================================================ */
+const RESPONSES = {
+  sweat:'💦 Sweat', dilate:'🔴 Widen skin blood vessels (vasodilation)', shiver:'🥶 Shiver', constrict:'⚪ Narrow skin blood vessels (vasoconstriction)', goose:'🐔 Goosebumps (hairs stand up)',
+  insulin:'💉 Pancreas releases insulin', glucagon:'🧪 Pancreas releases glucagon', save:'🫘 Kidneys save water (less, darker urine)', drink:'🥤 Feel thirsty and drink', flush:'🚽 Kidneys release extra water'
+};
+const VITALS = {
+  temp:{lbl:'Body temp', unit:'°C', lo:36.5, hi:37.5, min:34, max:41, norm:37.0, dp:1},
+  glu:{lbl:'Blood glucose', unit:'mmol/L', lo:4, hi:6, min:2, max:11, norm:5.0, dp:1},
+  water:{lbl:'Blood water', unit:'%', lo:95, hi:100, min:80, max:100, norm:98, dp:0}
+};
+const SCEN = [
+  {e:'🏃', t:'Running a cross-country race on a 38 °C day', v:'temp', to:39.3, need:['sweat','dilate'], step:1.15,
+    wrongWhy:{shiver:'Shivering makes heat. That would make you even hotter!', constrict:'Narrowing skin blood vessels keeps heat IN. You need to lose heat.', goose:'Goosebumps trap warm air. Not helpful when overheating!'},
+    loop:['Body temperature rises','Thermoreceptors in skin and brain','Hypothalamus (in the brain)','Sweat glands and skin blood vessels','Sweat evaporates and more blood flows near the skin, so heat is lost'], sys:['Nervous','Circulatory','Integumentary (skin)']},
+  {e:'🌊', t:'Swimming in the ocean in winter', v:'temp', to:35.3, need:['shiver','constrict'], step:.85,
+    wrongWhy:{sweat:'Sweating cools you down, the opposite of what you need!', dilate:'Widening skin blood vessels loses heat. You need to keep it.', goose:'Goosebumps barely help humans because we have so little body hair. Try something more powerful!'},
+    loop:['Body temperature falls','Thermoreceptors in skin and brain','Hypothalamus (in the brain)','Skeletal muscles and skin blood vessels','Muscles shiver to make heat; less blood near the skin, so less heat is lost'], sys:['Nervous','Muscular','Circulatory']},
+  {e:'🍭', t:'Eating a giant bag of lollies', v:'glu', to:9.6, need:['insulin'], step:4.6,
+    wrongWhy:{glucagon:'Glucagon RAISES blood glucose. It\'s already too high!', sweat:'Sweating controls temperature, not glucose.'},
+    loop:['Blood glucose rises','Cells in the pancreas detect it','Pancreas','Liver and muscle cells','Glucose is taken out of the blood and stored as glycogen'], sys:['Endocrine','Digestive','Circulatory']},
+  {e:'🥣', t:'Skipping breakfast AND lunch', v:'glu', to:2.9, need:['glucagon'], step:2.1,
+    wrongWhy:{insulin:'Insulin LOWERS blood glucose. It\'s already too low!'},
+    loop:['Blood glucose falls','Cells in the pancreas detect it','Pancreas','Liver','The liver breaks down stored glycogen and releases glucose into the blood'], sys:['Endocrine','Circulatory']},
+  {e:'🏉', t:'Footy training with no water bottle', v:'water', to:86, need:['save','drink'], step:6,
+    wrongWhy:{flush:'Releasing extra water would make you even MORE dehydrated!', sweat:'Sweating loses even more water.'},
+    loop:['Water in the blood falls','Receptors in the brain detect it','Brain (hypothalamus) releases a hormone','Kidneys, plus you feel thirsty','Kidneys keep more water and you drink, so blood water goes back up'], sys:['Nervous','Endocrine','Excretory (kidneys)']}
+];
+function vitalHTML(k){ const V = VITALS[k]; return `<div class="vital" id="v_${k}"><div class="lbl">${V.lbl}</div><div class="val"><span>${V.norm.toFixed(V.dp)}</span> <small>${V.unit}</small></div>
+  <div class="st">● STABLE</div><div class="bar"><div class="zone" style="left:${(V.lo - V.min) / (V.max - V.min) * 100}%;right:${100 - (V.hi - V.min) / (V.max - V.min) * 100}%"></div><div class="pin"></div></div></div>`; }
+function setVital(body, k, v){
+  const V = VITALS[k], el = body.querySelector('#v_' + k), inR = v >= V.lo && v <= V.hi, far = v < V.lo - (V.hi - V.lo) || v > V.hi + (V.hi - V.lo);
+  el.querySelector('.val span').textContent = v.toFixed(V.dp);
+  el.querySelector('.pin').style.left = `calc(${Math.max(0, Math.min(1, (v - V.min) / (V.max - V.min))) * 100}% - 2px)`;
+  el.classList.toggle('alarm', !inR && far); el.classList.toggle('warn', !inR && !far);
+  el.querySelector('.st').textContent = inR ? '● STABLE' : (v < V.lo ? '▼ TOO LOW' : '▲ TOO HIGH');
+}
+async function mission2(body, kit){
+  kit.say(`<b>Homeostasis</b> means keeping the conditions inside your body (like temperature, blood glucose and water) stable, even when things change. Your body systems work together to do it.<br><br>Your patient is going about their day. When an alarm goes off, choose the <b>right responses</b> to bring them back into the green zone.`);
+  body.innerHTML = `<div class="lk-panel glass"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div class="lk-kick">▸ Patient monitor · Bed 9</div><div class="progress-dots" id="pd">${SCEN.map(() => '<i></i>').join('')}</div></div>
+      <div class="monitor" style="margin-top:10px">${Object.keys(VITALS).map(vitalHTML).join('')}</div>
+      <div id="stage"></div></div>`;
+  const $ = s => body.querySelector(s), cur = {temp:37, glu:5, water:98};
+  Object.keys(cur).forEach(k => setVital(body, k, cur[k]));
+  return new Promise(async res => {
+    for (let n = 0; n < SCEN.length; n++) {
+      const S = SCEN[n];
+      await wait(kit.REDUCED ? 0 : 400);
+      cur[S.v] = S.to; setVital(body, S.v, cur[S.v]);
+      await runScenario(S);
+      body.querySelectorAll('#pd i')[n].classList.add('d');
+    }
+    kit.say(`Patient stable on every challenge! 🟢 Notice the pattern: a change is detected by <b>receptors</b>, a <b>control centre</b> (brain or pancreas) decides, and <b>effectors</b> respond to undo the change. That's called <b>negative feedback</b>, and it needs several body systems working together.`);
+    res();
+  });
+  function runScenario(S){
+    return new Promise(done => {
+      const keys = shuffle(Object.keys(RESPONSES)), chosen = new Set();
+      $('#stage').innerHTML = `<div class="scenario"><span class="big">${S.e}</span><div><div class="lk-kick" style="color:var(--warn)">⚠ Alert</div><b>${esc(S.t)}</b>
+          <div style="color:var(--ink2);font-weight:700;font-size:.9rem">Choose ${S.need.length === 1 ? 'the response' : `the ${S.need.length} responses`} that will bring ${VITALS[S.v].lbl.toLowerCase()} back to normal.</div></div></div>
+        <div class="resp">${keys.map(k => `<button data-k="${k}">${RESPONSES[k]}</button>`).join('')}</div><div class="fb hidden" id="rfb"></div><div id="loopBox"></div>`;
+      const fb = $('#rfb');
+      $('#stage').querySelectorAll('.resp button').forEach(b => b.onclick = async () => {
+        const k = b.dataset.k; fb.classList.remove('hidden'); b.disabled = true;
+        if (S.need.includes(k)) {
+          b.classList.add('ok'); chosen.add(k);
+          const V = VITALS[S.v]; cur[S.v] += (cur[S.v] > V.norm ? -1 : 1) * Math.min(S.step, Math.abs(cur[S.v] - V.norm));
+          if (chosen.size === S.need.length) cur[S.v] = V.norm;
+          setVital(body, S.v, cur[S.v]);
+          fb.className = 'fb good'; fb.textContent = chosen.size < S.need.length ? '✓ Good, that helps! One more response will finish the job.' : '✓ Back in the green zone. Patient stable!';
+          if (chosen.size === S.need.length) {
+            $('#stage').querySelectorAll('.resp button').forEach(x => x.disabled = true);
+            const L = S.loop;
+            $('#loopBox').innerHTML = `<div class="loop">${[['Stimulus',L[0]],['Receptor',L[1]],['Control centre',L[2]],['Effector',L[3]],['Response',L[4]]].map((p, i) => `${i ? '<div class="ar">▸</div>' : ''}<div><b>${p[0]}</b>${esc(p[1])}</div>`).join('')}</div>
+              <div class="systems"><span class="chip">🤝 Systems working together:</span>${S.sys.map(s => `<span class="chip">${s}</span>`).join('')}</div>
+              <div class="row" style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" id="nextS">Next patient event ▸</button></div>`;
+            $('#nextS').onclick = done;
+          }
+        } else {
+          b.classList.add('no'); kit.shake(b);
+          const V = VITALS[S.v]; cur[S.v] += (cur[S.v] > V.norm ? 1 : -1) * S.step * .25; cur[S.v] = Math.max(V.min, Math.min(V.max, cur[S.v])); setVital(body, S.v, cur[S.v]);
+          fb.className = 'fb bad'; fb.textContent = '✗ ' + (S.wrongWhy[k] || 'That response doesn\'t control ' + VITALS[S.v].lbl.toLowerCase() + '. Try another.');
+        }
+      });
+    });
+  }
+}
+
+/* ================================================================
+   MISSION 3: ENDOTHERMS VS ECTOTHERMS
+   ================================================================ */
+const DAY = [
+  {t:'6 am', air:12, sun:true, k:'Fur traps a layer of warm air; muscles shiver a little.'},
+  {t:'9 am', air:24, sun:true, k:'Comfortable. Normal metabolism keeps it at 36 °C.'},
+  {t:'12 pm', air:42, sun:true, k:'Pants and licks its forearms so evaporation cools the blood, and rests in the shade.'},
+  {t:'3 pm', air:40, sun:true, k:'Still panting and resting in the shade.'},
+  {t:'6 pm', air:28, sun:true, k:'Comes out to graze as it cools down.'},
+  {t:'10 pm', air:13, sun:false, k:'Curls up; fur insulates it and metabolism keeps making heat.'}
+];
+const SPOT = {
+  sun:{e:'☀️🪨', n:'Bask on a sunny rock', f:d => d.sun ? d.air + 10 : d.air},
+  shade:{e:'🌳', n:'Rest in the shade', f:d => d.air - 4},
+  burrow:{e:'🕳️', n:'Hide in a burrow', f:() => 25}
+};
+function dayChart(dragon){
+  const X = i => 60 + i * 104, Y = t => 200 - (t - 0) * 3.4;
+  const line = (arr, col, w, dash) => `<polyline points="${arr.map((t, i) => `${X(i)},${Y(t)}`).join(' ')}" fill="none" stroke="${col}" stroke-width="${w}" ${dash ? 'stroke-dasharray="6 6"' : ''} stroke-linejoin="round"/>` + arr.map((t, i) => `<circle cx="${X(i)}" cy="${Y(t)}" r="5" fill="${col}"/>`).join('');
+  return `<svg viewBox="0 0 640 240" role="img" aria-label="Graph of air temperature, kangaroo and lizard body temperature through the day">
+    <rect x="60" y="${Y(40)}" width="520" height="${Y(20) - Y(40)}" fill="rgba(74,222,128,.08)"/>
+    <text x="66" y="${Y(20) - 6}" font-size="11" fill="#4ade80" font-family="Share Tech Mono">safe zone for the lizard (20–40 °C)</text>
+    ${[0,10,20,30,40,50].map(t => `<line x1="60" x2="580" y1="${Y(t)}" y2="${Y(t)}" stroke="rgba(45,212,191,.12)"/><text x="50" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="#5fa99c" font-family="Share Tech Mono">${t}°</text>`).join('')}
+    ${DAY.map((d, i) => `<text x="${X(i)}" y="226" text-anchor="middle" font-size="11" fill="#93d9cc" font-family="Share Tech Mono">${d.t}</text>`).join('')}
+    ${line(DAY.map(d => d.air), '#94a3b8', 2, true)}${line(DAY.map(() => 36), '#fb923c', 3)}${dragon ? line(dragon, '#4ade80', 3) : ''}
+    <g font-size="12" font-family="Share Tech Mono"><text x="70" y="18" fill="#94a3b8">- - air</text><text x="150" y="18" fill="#fb923c">● kangaroo</text><text x="260" y="18" fill="#4ade80">● bearded dragon</text></g>
+  </svg>`;
+}
+async function mission3(body, kit){
+  kit.say(`Two patients, one desert day! The <b>kangaroo</b> is an <b>endotherm</b>: it makes its own body heat from metabolism and keeps its temperature steady. The <b>bearded dragon</b> is an <b>ectotherm</b>: its body temperature depends on its surroundings.<br><br>Help the dragon survive the day by choosing where it goes at each time. Keep it between <b>20 °C and 40 °C</b>.`);
+  body.innerHTML = `<div class="animals">
+      <div class="ani"><div class="head"><span class="e">🦘</span><div><b>Red kangaroo</b><small>ENDOTHERM</small></div></div><div class="temp" style="color:#fb923c">36.0 °C</div><div style="color:var(--ink2);font-weight:700;font-size:.9rem" id="kNote">Waiting for sunrise…</div></div>
+      <div class="ani"><div class="head"><span class="e">🦎</span><div><b>Bearded dragon</b><small>ECTOTHERM</small></div></div><div class="temp" id="dT" style="color:#4ade80">-- °C</div><div style="color:var(--ink2);font-weight:700;font-size:.9rem" id="dNote">Where should the dragon go?</div></div></div>
+    <div class="lk-panel glass" style="margin-top:12px"><div class="slots" id="slots">${DAY.map(d => `<div class="slot"><b>${d.t}</b>air ${d.air}°</div>`).join('')}</div>
+      <div class="choices" id="choices">${Object.entries(SPOT).map(([k, s]) => `<button data-k="${k}"><span class="e">${s.e}</span>${s.n}<small id="pv_${k}"></small></button>`).join('')}</div>
+      <div class="fb hidden" id="efb"></div><div class="chart" id="chart">${dayChart(null)}</div></div>`;
+  const $ = s => body.querySelector(s);
+  return new Promise(res => {
+    let i = 0, temps = [], fails = 0;
+    const show = () => {
+      body.querySelectorAll('.slot').forEach((s, k) => s.classList.toggle('now', k === i));
+      Object.keys(SPOT).forEach(k => $('#pv_' + k).textContent = (k === 'sun' && !DAY[i].sun) ? 'no sun at night' : '');
+      $('#kNote').textContent = DAY[i].k;
+    };
+    show();
+    body.querySelectorAll('#choices button').forEach(b => b.onclick = () => {
+      if (i >= DAY.length) return;
+      const d = DAY[i], t = SPOT[b.dataset.k].f(d), ok = t >= 20 && t <= 40, fb = $('#efb'); fb.classList.remove('hidden');
+      $('#dT').textContent = t + ' °C'; $('#dT').style.color = ok ? '#4ade80' : '#fb7185';
+      body.querySelectorAll('.slot')[i].classList.add(ok ? 'ok' : 'bad');
+      temps.push(t);
+      if (ok) { fb.className = 'fb good'; fb.textContent = `✓ ${d.t}: the dragon's body is ${t} °C. Safe! ${t >= 30 ? 'Warm enough to hunt insects.' : 'A bit sluggish, but safe.'}`; }
+      else { fails++; fb.className = 'fb bad'; fb.textContent = t > 40 ? `✗ ${d.t}: ${t} °C, dangerously hot! Ectotherms can't sweat or pant well enough. It needed to move somewhere cooler.` : `✗ ${d.t}: ${t} °C, too cold to move. A predator could catch it! It needed somewhere warmer.`; }
+      i++;
+      if (i < DAY.length) { show(); return; }
+      body.querySelectorAll('.slot').forEach(s => s.classList.remove('now'));
+      $('#chart').innerHTML = dayChart(temps);
+      if (fails) {
+        fb.insertAdjacentHTML('afterend', `<div class="fb info" id="retryBox">The dragon had ${fails} dangerous moment${fails > 1 ? 's' : ''}. <button class="btn small" id="retry">↺ Try the day again</button></div>`);
+        $('#retry').onclick = () => { $('#retryBox').remove(); i = 0; temps = []; fails = 0; body.querySelectorAll('.slot').forEach(s => s.classList.remove('ok', 'bad')); $('#chart').innerHTML = dayChart(null); fb.classList.add('hidden'); show(); };
+      } else {
+        kit.say(`The dragon survived! 🦎 Look at the graph: the <b>kangaroo's</b> temperature stayed flat at 36 °C all day (endotherm, using <b>physiological</b> responses like panting). The <b>dragon's</b> temperature changed with where it went, so it relied on <b>behaviour</b> like basking and hiding. Endotherms need far more food to fuel all that heat-making!`);
+        res();
+      }
+    });
+  });
+}
+
+/* ================================================================
+   SET UP THE PAGE
+   ================================================================ */
+LabKit.init({
+  id:'keep-me-steady', title:'Keep Me Steady', icon:'🩺', theme:'#2dd4bf', kicker:"Mr Trichardt's Science Lab · Body monitor",
+  heroTitle:'Keep Me <span class="g">Steady</span>',
+  intro:'You\'re on duty at the body monitoring station. Detect stimuli, calibrate receptors, keep a patient stable through a crazy day, and help a kangaroo and a bearded dragon survive the desert heat.',
+  guide:{name:'Nurse Nova · Monitoring', emoji:'👩‍⚕️'},
+  certTitle:'Homeostasis Specialist', confetti:['🩺','💚','🌡️','⭐','✨','🦎'],
+  summary:'You can now define internal and external stimuli, name the receptors that detect them, explain homeostasis and how body systems coordinate a response, and compare how endotherms and ectotherms control their temperature.',
+  missions:[
+    {icon:'📡', title:'Stimuli and receptors', short:'Stimuli', blurb:'Sort internal and external stimuli and match receptors.', run:mission1,
+      gate:[
+        {q:'A stimulus is…', o:['A change in the environment (inside or outside the body) that an organism can detect','A muscle that moves the body','A hormone made by the pancreas','A type of neuron in the brain'],
+          ex:'A stimulus is any change that can be detected, like light, heat, sound, or a change in blood glucose.', hint:'It\'s what receptors detect.'},
+        {q:'Which of these is an INTERNAL stimulus?', o:['Low blood glucose','A loud bang','Bright sunlight','A cold wind'],
+          ex:'Low blood glucose is a change happening inside your body. The others come from outside.', hint:'Which change happens inside you?'},
+        {q:'Which receptors detect light?', o:['Photoreceptors','Thermoreceptors','Chemoreceptors','Mechanoreceptors'],
+          ex:'Photoreceptors (rods and cones in the retina) detect light. "Photo" means light.', hint:'Think of "photo": a picture taken with light.'}
+      ],
+      bonus:{q:'When you smell freshly baked bread, which receptors are detecting the stimulus?', o:['Chemoreceptors in your nose','Photoreceptors in your eyes','Thermoreceptors in your skin','Mechanoreceptors in your ears'],
+        ex:'Smells are chemicals floating in the air, so they are detected by chemoreceptors in your nose.'}},
+    {icon:'🩺', title:'Keep the patient steady', short:'Homeostasis', blurb:'Use the right responses to keep vitals in the green.', run:mission2,
+      gate:[
+        {q:'Homeostasis is…', o:['Keeping conditions inside the body stable even when the environment changes','Growing towards a light source','Changing body temperature to match the surroundings','The movement of food through the gut'],
+          ex:'Homeostasis is maintaining a stable internal environment: temperature, glucose, water and more.', hint:'Think about what you did with the patient\'s vitals.'},
+        {q:'When you are too hot, your body…', o:['Sweats and widens blood vessels near the skin','Shivers and narrows blood vessels near the skin','Releases insulin','Stops breathing'],
+          ex:'Sweating and vasodilation both help the body lose heat.', hint:'Remember the cross-country race.'},
+        {q:'Why do several body systems need to work together in homeostasis?', o:['Detecting a change, deciding on a response and carrying it out involve different organs and systems','Each system works on its own and never affects others','Only the digestive system controls homeostasis','So the body can grow faster'],
+          ex:'For example, the nervous system detects and coordinates, the endocrine system releases hormones, and the skin, muscles or kidneys respond.', hint:'Look at the "systems working together" chips.'}
+      ],
+      bonus:{q:'Why is homeostasis called a "negative feedback" system?', o:['The response reverses the change, bringing conditions back to normal','The response makes the change bigger and bigger','It only works when you feel negative emotions','It stops all body processes'],
+        ex:'In negative feedback, the response undoes the change: too hot leads to cooling, too much glucose leads to lowering it.'}},
+    {icon:'🦎', title:'Endotherms vs ectotherms', short:'Temperature', blurb:'Keep a bearded dragon safe through a desert day.', run:mission3,
+      gate:[
+        {q:'An endotherm is an animal that…', o:['Generates its own body heat and keeps its body temperature fairly constant','Gets its body heat from the environment','Only lives in hot places','Can\'t control its temperature at all'],
+          ex:'Endotherms like mammals and birds make heat through metabolism and keep their temperature steady.', hint:'Think of the kangaroo\'s flat line on the graph.'},
+        {q:'A bearded dragon basking on a sunny rock in the morning is an example of…', o:['A behavioural response by an ectotherm to warm up','A physiological response by an endotherm','Sweating','Homeostasis by shivering'],
+          ex:'Ectotherms use behaviour, like moving between sun, shade and burrows, to control their temperature.', hint:'Is moving to a rock something the dragon does, or something its body does inside?'},
+        {q:'Why do endotherms need to eat much more food than ectotherms of the same size?', o:['They use lots of energy from food to make their own body heat','They are always bigger','Ectotherms don\'t need energy','Endotherms can\'t store fat'],
+          ex:'Making body heat through metabolism uses a lot of energy, so endotherms need more food.', hint:'Where does the kangaroo\'s body heat come from?'}
+      ],
+      bonus:{q:'A kangaroo licking its forearms on a hot day cools down because…', o:['Saliva evaporates from the skin, taking heat away from blood vessels close to the surface','The saliva is cold','Licking makes the kangaroo shiver','It blocks sunlight'],
+        ex:'Evaporation of water (saliva) takes heat with it. Kangaroos have lots of blood vessels close to the skin on their forearms.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

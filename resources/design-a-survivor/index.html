@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design-a-Survivor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/lab-kit.css">
+<style>
+/* ===== THEME: holo trading cards / comic book ===== */
+:root{
+  --ink:#141414;--ink2:#3a3a3a;--ink3:#6b6b6b;--accent:#ff3e88;--theme:#ff3e88;--hair:#141414;
+  --head:'Bangers','Impact',system-ui,sans-serif;--g1:#ff3e88;--g2:#19c6ff;
+  --pink:#ff3e88;--cyan:#19c6ff;--yel:#ffd23f;--lime:#a3e635;--edge2:3px solid #141414;--pop:5px 5px 0 #141414;
+}
+body{background:var(--yel);color:var(--ink);font-weight:700}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(rgba(20,20,20,.16) 22%,transparent 24%) 0 0/16px 16px,linear-gradient(135deg,#ffe066,#ffc93c)}
+.lk-bg{display:none}
+.glass{background:#fff;border:var(--edge2);border-radius:16px;box-shadow:var(--pop);-webkit-backdrop-filter:none;backdrop-filter:none}
+.lk-top{border-radius:16px}
+.lk-logo{border:var(--edge2);background:var(--pink);box-shadow:3px 3px 0 #141414}
+.lk-brand b,.lk-hero h1,.lk-mhead h1,.lk-card h2{font-family:var(--head);letter-spacing:.04em;font-weight:400}
+.lk-brand b{font-size:1.35rem}
+.lk-hero h1{font-size:clamp(3rem,8vw,5.4rem);text-shadow:4px 4px 0 #fff,7px 7px 0 #141414}
+.lk-hero h1 .g{background:none;-webkit-text-fill-color:initial;color:var(--pink)}
+.lk-mhead h1{font-size:clamp(2.2rem,5vw,3.2rem);text-shadow:3px 3px 0 #fff}
+.lk-card h2{font-size:2rem}
+.lk-kick{color:#141414;background:var(--cyan);display:inline-block;padding:3px 10px;border:2px solid #141414;border-radius:6px;transform:rotate(-2deg)}
+.lk-step{border:2px solid #141414;background:#fff;box-shadow:2px 2px 0 #141414;color:#141414}
+.lk-step .n{background:var(--yel);border:2px solid #141414}
+.lk-step.now{background:var(--pink);color:#fff;box-shadow:3px 3px 0 #141414}
+.lk-step.done .n{background:var(--lime);color:#141414}
+.lk-chip,.chip{border:2px solid #141414;background:#fff;box-shadow:2px 2px 0 #141414;color:#141414}
+.lk-mlist{background:var(--cyan)}
+.lk-mlist li{background:#fff;border:2px solid #141414;box-shadow:3px 3px 0 #141414}
+.lk-mlist .ic{border:2px solid #141414;background:var(--yel)}
+.lk-face{border:var(--edge2);background:#fff;box-shadow:3px 3px 0 #141414}
+.lk-bubble{border-radius:18px}
+.lk-bubble::before{content:'';position:absolute;left:-14px;top:22px;border:10px solid transparent;border-right:14px solid #141414}
+.lk-bubble small{font-family:var(--head);font-size:1.2rem;letter-spacing:.06em;color:var(--pink)}
+.btn{border:var(--edge2);background:#fff;color:#141414;box-shadow:3px 3px 0 #141414;border-radius:12px;font-weight:900;transition:transform .1s,box-shadow .1s}
+.btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:5px 5px 0 #141414;filter:none}
+.btn:active:not(:disabled){transform:translate(2px,2px);box-shadow:1px 1px 0 #141414}
+.btn.primary,.btn.green{background:var(--pink);color:#fff;border-color:#141414}
+.lk-name input{border:var(--edge2);border-radius:12px;box-shadow:3px 3px 0 #141414;background:#fff}
+.lk-card{background:#fff;border:var(--edge2);box-shadow:8px 8px 0 #141414}
+#lkModal{background:rgba(20,20,20,.45)}
+.opt{border:var(--edge2);box-shadow:3px 3px 0 #141414;border-radius:12px;background:#fff}
+.opt:hover:not(:disabled){border-color:#141414;transform:translate(-1px,-1px)}
+.opt.right{background:var(--lime);border-color:#141414}
+.opt.wrong{background:#ffb3cf;border-color:#141414}
+.fb{border:2px solid #141414}
+.tile{border:var(--edge2);box-shadow:3px 3px 0 #141414}
+.lk-cert{background:#fff;border:4px dashed #141414}
+#lkToast{background:#fff;border:var(--edge2);box-shadow:3px 3px 0 #141414;border-radius:12px}
+
+/* holo shimmer */
+.holo{position:relative;overflow:hidden}
+.holo::after{content:'';position:absolute;inset:-50%;pointer-events:none;mix-blend-mode:color-dodge;opacity:.22;
+  background:conic-gradient(from 0deg,#ff3e88,#ffd23f,#a3e635,#19c6ff,#a78bfa,#ff3e88);animation:holo 6s linear infinite}
+@keyframes holo{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.holo::after{animation:none}}
+
+/* mission 1 cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.tcard{border:var(--edge2);border-radius:16px;background:#fff;box-shadow:var(--pop);padding:10px;display:flex;flex-direction:column;gap:8px;transition:transform .2s}
+.tcard .art{height:96px;border-radius:10px;border:2px solid #141414;display:grid;place-items:center;font-size:3.2rem;background:linear-gradient(135deg,#19c6ff,#a78bfa)}
+.tcard .nm{font-family:var(--head);font-size:1.3rem;letter-spacing:.04em;line-height:1}
+.tcard p{margin:0;font-size:.88rem;font-weight:700;color:var(--ink2)}
+.tcard .bt{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:auto}
+.tcard .bt button{padding:7px 2px;border-radius:8px;border:2px solid #141414;font-weight:900;font-size:.72rem;background:#fff}
+.tcard .bt button.no{background:#ffb3cf;opacity:.6}
+.tcard.gone{transform:scale(.5) rotate(8deg);opacity:0}
+.binders{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media (max-width:760px){.binders{grid-template-columns:1fr}}
+.binder{border:var(--edge2);border-radius:14px;padding:10px;box-shadow:3px 3px 0 #141414;min-height:90px}
+.binder h4{margin:0 0 4px;font-family:var(--head);font-size:1.4rem;letter-spacing:.05em;font-weight:400}
+.binder small{display:block;font-weight:800;color:var(--ink2);margin-bottom:6px}
+.binder .mini{display:inline-flex;align-items:center;gap:4px;margin:3px;padding:3px 8px;border:2px solid #141414;border-radius:8px;background:#fff;font-size:.78rem;font-weight:900;animation:lkPop .35s}
+.b-s{background:#bfefff}.b-b{background:#ffd1e3}.b-p{background:#e2f7b5}
+
+/* mission 2 camouflage */
+.arena{position:relative;height:340px;border:var(--edge2);border-radius:14px;overflow:hidden;cursor:crosshair;
+  background:radial-gradient(circle at 20% 30%,#c9a35a 0 3px,transparent 4px) 0 0/23px 19px,radial-gradient(circle at 70% 60%,#e8cd8c 0 2px,transparent 3px) 0 0/17px 21px,radial-gradient(circle at 40% 80%,#b8924c 0 4px,transparent 5px) 0 0/31px 27px,#d9b86e}
+.beetle{position:absolute;width:26px;height:34px;border-radius:50% 50% 45% 45%;transform:translate(-50%,-50%) rotate(var(--r));cursor:crosshair;border:none;padding:0}
+.beetle::before{content:'';position:absolute;left:50%;top:4px;bottom:4px;width:2px;background:rgba(0,0,0,.25);transform:translateX(-50%)}
+.beetle::after{content:'';position:absolute;left:50%;top:-6px;width:12px;height:10px;border-radius:50%;transform:translateX(-50%);background:inherit;filter:brightness(.8)}
+.beetle.sand{background:#cfab62}.beetle.dark{background:#2f3d2a}
+.beetle.eaten{transform:translate(-50%,-50%) scale(0);transition:transform .2s}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.hud .big{font-family:var(--head);font-size:2rem;letter-spacing:.05em}
+.gens{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.gen{border:2px solid #141414;border-radius:12px;padding:8px;background:#fff;text-align:center}
+.gen b{font-family:var(--head);font-size:1.15rem;letter-spacing:.04em;font-weight:400}
+.gen .bar{display:flex;height:22px;border:2px solid #141414;border-radius:6px;overflow:hidden;margin-top:6px}
+.gen .bar i{display:block;height:100%}
+.gen small{font-weight:800;font-size:.75rem}
+
+/* mission 3 builder */
+.envs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:760px){.envs{grid-template-columns:repeat(2,1fr)}}
+.env{border:var(--edge2);border-radius:14px;padding:12px;box-shadow:3px 3px 0 #141414;text-align:center;font-weight:900;background:#fff}
+.env .e{font-size:2.2rem;display:block}
+.env small{display:block;font-weight:700;color:var(--ink2);font-size:.78rem}
+.env.on{background:var(--cyan);transform:translate(-2px,-2px);box-shadow:5px 5px 0 #141414}
+.env.won::after{content:' 🏆'}
+.builder{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:18px;align-items:start;margin-top:16px}
+@media (max-width:860px){.builder{grid-template-columns:1fr}}
+.cat h4{font-family:var(--head);font-size:1.35rem;letter-spacing:.05em;margin:12px 0 6px;font-weight:400}
+.cat h4 span{font-family:var(--body);font-size:.8rem;font-weight:800;color:var(--ink2);letter-spacing:0}
+.picks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.pick{text-align:left;border:2px solid #141414;border-radius:10px;padding:8px 10px;background:#fff;font-weight:800;font-size:.86rem;display:flex;gap:8px;align-items:center}
+.pick .e{font-size:1.4rem}
+.pick.on{background:var(--yel);box-shadow:3px 3px 0 #141414}
+.creature{border:4px solid #141414;border-radius:18px;padding:12px;box-shadow:8px 8px 0 #141414;background:#fff}
+.creature .art{height:170px;border-radius:12px;border:3px solid #141414;display:grid;place-items:center;font-size:5rem;position:relative}
+.creature .art .stk{position:absolute;font-size:1.6rem}
+.creature .nm{font-family:var(--head);font-size:1.8rem;letter-spacing:.04em;line-height:1;margin:10px 0 4px}
+.creature .traits{display:grid;gap:4px;font-size:.82rem;font-weight:800}
+.creature .traits div{border:2px solid #141414;border-radius:8px;padding:4px 8px;background:#fff}
+.report{display:grid;gap:8px;margin-top:12px}
+.report div{border:2px solid #141414;border-radius:10px;padding:8px 10px;font-weight:700;font-size:.88rem}
+.report .y{background:#e2f7b5}.report .n{background:#ffd1e3}
+.stamp{font-family:var(--head);font-size:2.2rem;letter-spacing:.06em;text-align:center;transform:rotate(-4deg);margin-top:10px}
+</style>
+</head>
+<body>
+<script src="../../assets/lab-kit.js"></script>
+<script>
+(function(){
+const {esc, shuffle, wait} = LabKit;
+
+/* ================================================================
+   MISSION 1: COLLECT THE ADAPTATION TYPES
+   ================================================================ */
+const ADAPT = [
+  {e:'🦔', n:'Echidna', d:'Sharp spines protect it from predators.', t:'s'},
+  {e:'🐭', n:'Bilby', d:'Huge, thin ears release body heat in the desert.', t:'s'},
+  {e:'🦎', n:'Thorny devil', d:'Spiky, sand-coloured skin for camouflage and defence.', t:'s'},
+  {e:'🦤', n:'Emu', d:'Long, powerful legs to run fast across open plains.', t:'s'},
+  {e:'🦘', n:'Red kangaroo', d:'Licks its forearms on hot days to cool down.', t:'b'},
+  {e:'🌙', n:'Bilby (again!)', d:'Stays in its burrow by day and comes out at night.', t:'b'},
+  {e:'🐦', n:'Magpie', d:'Swoops at intruders to defend its nest in spring.', t:'b'},
+  {e:'🐸', n:'Water-holding frog', d:'Digs underground to wait out droughts.', t:'b'},
+  {e:'🐁', n:'Spinifex hopping mouse', d:'Makes very concentrated urine to save water.', t:'p'},
+  {e:'🐍', n:'Inland taipan', d:'Produces powerful venom to catch prey.', t:'p'},
+  {e:'🐀', n:'Fat-tailed dunnart', d:'Goes into torpor (lowers its body temperature) to save energy.', t:'p'},
+  {e:'🦘', n:'Kangaroo mum', d:'Can pause her embryo\'s development during a drought.', t:'p'}
+];
+const TNAME = {s:'Structural', b:'Behavioural', p:'Physiological'};
+async function mission1(body, kit){
+  kit.say(`Welcome, creature designer! An <b>adaptation</b> is a feature that helps an organism survive and reproduce in its environment. There are 3 types:<br>🦴 <b>Structural</b> = body parts and shape · 🏃 <b>Behavioural</b> = things it does · ⚗️ <b>Physiological</b> = chemical processes inside its body.<br><br>File every card in the right binder!`);
+  body.innerHTML = `<div class="binders">
+      <div class="binder b-s"><h4>🦴 Structural</h4><small>Body parts, shape, colour</small><div id="bs"></div></div>
+      <div class="binder b-b"><h4>🏃 Behavioural</h4><small>Actions the animal does</small><div id="bb"></div></div>
+      <div class="binder b-p"><h4>⚗️ Physiological</h4><small>Processes inside the body</small><div id="bp"></div></div></div>
+    <div class="cards" id="cards"></div>`;
+  return new Promise(res => {
+    const list = shuffle(ADAPT); let left = list.length;
+    body.querySelector('#cards').innerHTML = list.map((a, i) => `<div class="tcard holo" data-i="${i}"><div class="art">${a.e}</div><div class="nm">${esc(a.n)}</div><p>${esc(a.d)}</p>
+      <div class="bt"><button data-t="s">🦴 Struct.</button><button data-t="b">🏃 Behav.</button><button data-t="p">⚗️ Physio.</button></div></div>`).join('');
+    body.querySelectorAll('.tcard').forEach(c => c.querySelectorAll('button').forEach(b => b.onclick = async () => {
+      const a = list[+c.dataset.i];
+      if (b.dataset.t === a.t) {
+        c.classList.add('gone'); body.querySelector('#b' + a.t).insertAdjacentHTML('beforeend', `<span class="mini">${a.e} ${esc(a.n)}</span>`);
+        kit.toast(`✓ ${TNAME[a.t]}! ${left - 1} cards left`, 1600);
+        await wait(kit.REDUCED ? 0 : 250); c.remove();
+        if (--left === 0) { kit.say(`Collection complete! 🏆 Tip: ask yourself "Is it a <b>body part</b>? Something it <b>does</b>? Or something happening <b>inside</b> its body?"`); res(); }
+      } else {
+        b.classList.add('no'); b.disabled = true; kit.shake(c);
+        kit.toast(a.t === 's' ? 'Hint: is it a body part you could see or touch?' : a.t === 'b' ? 'Hint: is it something the animal chooses to DO?' : 'Hint: is it a process happening inside the body?', 2600);
+      }
+    }));
+  });
+}
+
+/* ================================================================
+   MISSION 2: SURVIVAL OF THE SNEAKIEST
+   ================================================================ */
+async function mission2(body, kit){
+  kit.say(`Adaptations help organisms <b>survive</b> AND <b>reproduce</b>. Let's prove it! You're a hungry bird 🐦 hunting beetles on the sand. Some beetles are <b>sand-coloured</b>, some are <b>dark</b>.<br><br>You get <b>8 seconds</b> per round. Click as many beetles as you can! Survivors have babies the same colour as them.`);
+  body.innerHTML = `<div class="lk-panel glass"><div class="hud"><div><span class="lk-kick">Generation <span id="gn">1</span> of 3</span></div><div class="big">⏱ <span id="tm">8.0</span>s</div><div class="big">🐦 <span id="eat">0</span> eaten</div></div>
+    <div class="arena" id="arena"></div>
+    <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn primary" id="hunt">🐦 Start hunting!</button></div>
+    <div class="gens" id="gens"></div><div class="fb hidden" id="cfb"></div></div>`;
+  const $ = s => body.querySelector(s), arena = $('#arena');
+  let pop = Array.from({length:20}, (_, i) => i % 2 ? 'sand' : 'dark'), gen = 0;
+  const genBox = (label, p) => { const s = p.filter(x => x === 'sand').length, d = p.length - s; return `<div class="gen"><b>${label}</b><div class="bar"><i style="width:${s / p.length * 100}%;background:#cfab62"></i><i style="width:${d / p.length * 100}%;background:#2f3d2a"></i></div><small>${s} sand · ${d} dark</small></div>`; };
+  $('#gens').innerHTML = genBox('Start', pop);
+  const place = () => {
+    arena.innerHTML = '';
+    pop.forEach((c, i) => { const b = document.createElement('button'); b.className = 'beetle ' + c; b.setAttribute('aria-label', 'beetle');
+      b.style.left = (5 + Math.random() * 90) + '%'; b.style.top = (8 + Math.random() * 84) + '%'; b.style.setProperty('--r', Math.round(Math.random() * 360) + 'deg'); b.dataset.c = c; arena.appendChild(b); });
+  };
+  place();
+  return new Promise(res => {
+    $('#hunt').onclick = () => {
+      $('#hunt').disabled = true; let eaten = 0, live = true; $('#eat').textContent = 0; place();
+      arena.querySelectorAll('.beetle').forEach(b => b.onclick = () => { if (!live || b.classList.contains('eaten')) return; b.classList.add('eaten'); eaten++; $('#eat').textContent = eaten; });
+      const t0 = performance.now(), dur = 8000;
+      (function tick(){ const left = Math.max(0, dur - (performance.now() - t0)); $('#tm').textContent = (left / 1000).toFixed(1);
+        if (left > 0) return requestAnimationFrame(tick);
+        live = false; gen++;
+        const survivors = [...arena.querySelectorAll('.beetle:not(.eaten)')].map(b => b.dataset.c);
+        let next = []; survivors.forEach(c => next.push(c, c)); next = shuffle(next).slice(0, 20);
+        while (next.length < 20 && survivors.length) next.push(survivors[next.length % survivors.length]);
+        if (!next.length) next = ['sand','sand'];
+        pop = next;
+        $('#gens').insertAdjacentHTML('beforeend', genBox('Gen ' + gen, pop));
+        const fb = $('#cfb'); fb.classList.remove('hidden'); fb.className = 'fb info';
+        fb.textContent = `${survivors.length} beetles survived and had babies. Next generation: ${pop.filter(x => x === 'sand').length} sand-coloured, ${pop.filter(x => x === 'dark').length} dark.`;
+        if (gen < 3) { $('#gn').textContent = gen + 1; $('#hunt').disabled = false; $('#hunt').textContent = '🐦 Hunt the next generation!'; place(); }
+        else {
+          $('#hunt').textContent = 'Done!';
+          kit.say(`Look at the bars! 📊 The <b>dark</b> beetles were easy to spot, so more of them got eaten. The <b>sand-coloured</b> ones were camouflaged, so they <b>survived</b>, <b>reproduced</b> and passed on their colour. Over generations, the camouflage adaptation became more common.`);
+          res();
+        }
+      })();
+    };
+  });
+}
+
+/* ================================================================
+   MISSION 3: DESIGN-A-SURVIVOR
+   ================================================================ */
+const ENVS = {
+  desert:{e:'🏜️', n:'Outback desert', d:'Very hot days, cold nights, almost no water', bg:'linear-gradient(160deg,#ffd27a,#f08a4b)', ani:'🦎'},
+  alpine:{e:'🏔️', n:'Snowy Mountains', d:'Freezing winters, snow, little food in winter', bg:'linear-gradient(160deg,#e0f2fe,#93c5fd)', ani:'🐾'},
+  rain:{e:'🌴', n:'Tropical rainforest', d:'Warm, wet, tall trees, lots of predators', bg:'linear-gradient(160deg,#86efac,#15803d)', ani:'🐸'},
+  reef:{e:'🪸', n:'Coral reef', d:'Salty water, coral hiding spots, hungry fish', bg:'linear-gradient(160deg,#67e8f9,#2563eb)', ani:'🐠'}
+};
+const CATS = [
+  {k:'cover', n:'Body covering', type:'Structural', opts:[
+    {e:'🧥', n:'Thick, fluffy fur', best:'alpine', why:{alpine:'Thick fur traps warm air in the freezing cold.', _:'Thick fur would make it overheat or get waterlogged here.'}},
+    {e:'🛡️', n:'Tough, waterproof scales', best:'desert', why:{desert:'Waterproof scales stop precious water escaping from the body.', _:'Tough scales don\'t help much with the main challenge here.'}},
+    {e:'💦', n:'Thin, moist skin', best:'rain', why:{rain:'Moist skin can take in oxygen, and it\'s fine in humid air.', _:'Thin moist skin would dry out or freeze here.'}},
+    {e:'🐟', n:'Smooth, streamlined scales', best:'reef', why:{reef:'A smooth, streamlined body slips easily through the water.', _:'Streamlining is mostly useful for swimming.'}}]},
+  {k:'part', n:'Body feature', type:'Structural', opts:[
+    {e:'👂', n:'Huge thin ears to lose heat', best:'desert', why:{desert:'Big ears full of blood vessels release heat into the air.', _:'Big ears would lose precious heat or just get in the way here.'}},
+    {e:'🤏', n:'Tiny ears and short legs', best:'alpine', why:{alpine:'Small ears and short limbs mean less surface to lose heat from.', _:'Tiny ears and short legs don\'t solve this habitat\'s main problem.'}},
+    {e:'🐒', n:'Gripping toes and a long tail', best:'rain', why:{rain:'Perfect for climbing through tall rainforest trees.', _:'There aren\'t many trees to climb here!'}},
+    {e:'🫧', n:'Fins and gills', best:'reef', why:{reef:'Gills take oxygen from water and fins steer between the coral.', _:'Gills only work underwater!'}}]},
+  {k:'beh', n:'Behaviour', type:'Behavioural', opts:[
+    {e:'🌙', n:'Nocturnal: hides in a burrow by day', best:'desert', why:{desert:'Avoiding the midday heat saves water and stops overheating.', _:'Hiding all day doesn\'t solve this habitat\'s main problem.'}},
+    {e:'💤', n:'Hibernates through winter', best:'alpine', why:{alpine:'Sleeping through winter saves energy when food is buried under snow.', _:'There\'s no freezing winter here to sleep through.'}},
+    {e:'🌳', n:'Climbs high to find fruit', best:'rain', why:{rain:'The canopy is full of fruit, and up high it\'s safe from ground predators.', _:'There isn\'t a fruity canopy to climb here.'}},
+    {e:'🕳️', n:'Hides in crevices from predators', best:'reef', why:{reef:'Coral crevices are perfect hiding spots from hungry fish.', _:'This habitat has no coral crevices to hide in.'}}]},
+  {k:'phys', n:'Body process', type:'Physiological', opts:[
+    {e:'🫘', n:'Makes very concentrated urine', best:'desert', why:{desert:'Saving water by making less, stronger urine is vital in the desert.', _:'Water is easy to find here, so this isn\'t needed.'}},
+    {e:'🍔', n:'Stores lots of body fat', best:'alpine', why:{alpine:'Fat is an energy store for winter and adds insulation.', _:'Extra fat would just cause overheating here.'}},
+    {e:'☠️', n:'Produces toxins in its skin', best:'rain', why:{rain:'Toxins (like poison dart frogs have) protect it from the many rainforest predators.', _:'Toxins help a bit, but they don\'t solve this habitat\'s main challenge.'}},
+    {e:'🧂', n:'Gets rid of extra salt', best:'reef', why:{reef:'Living in salty seawater means getting rid of extra salt is essential.', _:'There\'s no salty water to deal with here.'}}]}
+];
+const ADJ = {cover:['Fluffy','Scaly','Slimy','Slick'], part:['Big-Eared','Stubby','Swinging','Finned']}, NOUN = {desert:'Sand-Dasher', alpine:'Snow-Snoozer', rain:'Canopy-Creeper', reef:'Reef-Rascal'};
+async function mission3(body, kit){
+  kit.say(`Final challenge! Pick a habitat, then design a creature by choosing one of each adaptation. Release it into the wild and see if it survives. You need at least <b>3 out of 4</b> good adaptations to win! Try to beat more than one habitat. 🏆`);
+  body.innerHTML = `<div class="envs" id="envs">${Object.entries(ENVS).map(([k, v]) => `<button class="env" data-e="${k}"><span class="e">${v.e}</span>${v.n}<small>${v.d}</small></button>`).join('')}</div>
+    <div class="builder"><div class="lk-panel glass" id="cats">${CATS.map(c => `<div class="cat"><h4>${c.n} <span>(${c.type})</span></h4><div class="picks">${c.opts.map((o, i) => `<button class="pick" data-c="${c.k}" data-i="${i}"><span class="e">${o.e}</span>${esc(o.n)}</button>`).join('')}</div></div>`).join('')}
+      <div style="display:flex;justify-content:center;margin-top:16px"><button class="btn primary" id="release" disabled>🚀 Release into the wild!</button></div></div>
+      <div><div class="creature holo" id="card"></div><div id="report"></div></div></div>`;
+  const $ = s => body.querySelector(s), sel = {}, won = new Set(); let env = 'desert';
+  const draw = () => {
+    const E = ENVS[env], chosen = CATS.map(c => sel[c.k] !== undefined ? c.opts[sel[c.k]] : null);
+    const name = `The ${sel.cover !== undefined ? ADJ.cover[sel.cover] : '???'} ${sel.part !== undefined ? ADJ.part[sel.part] : ''} ${NOUN[env]}`.replace(/\s+/g, ' ');
+    $('#card').innerHTML = `<div class="art" style="background:${E.bg}">${E.ani}${chosen.map((o, i) => o ? `<span class="stk" style="${['top:8px;left:10px','top:8px;right:10px','bottom:8px;left:10px','bottom:8px;right:10px'][i]}">${o.e}</span>` : '').join('')}</div>
+      <div class="nm">${esc(name)}</div><div style="font-weight:800;font-size:.85rem;color:var(--ink2)">Habitat: ${E.e} ${E.n}</div>
+      <div class="traits" style="margin-top:8px">${CATS.map((c, i) => `<div>${c.type === 'Structural' ? '🦴' : c.type === 'Behavioural' ? '🏃' : '⚗️'} ${chosen[i] ? esc(chosen[i].n) : '<span style="color:#999">choose a ' + c.n.toLowerCase() + '…</span>'}</div>`).join('')}</div>`;
+    $('#release').disabled = CATS.some(c => sel[c.k] === undefined);
+    body.querySelectorAll('.env').forEach(b => b.classList.toggle('on', b.dataset.e === env));
+  };
+  body.querySelectorAll('.env').forEach(b => b.onclick = () => { env = b.dataset.e; $('#report').innerHTML = ''; draw(); });
+  body.querySelectorAll('.pick').forEach(b => b.onclick = () => { sel[b.dataset.c] = +b.dataset.i; body.querySelectorAll(`.pick[data-c="${b.dataset.c}"]`).forEach(x => x.classList.toggle('on', x === b)); $('#report').innerHTML = ''; draw(); });
+  draw();
+  return new Promise(res => {
+    $('#release').onclick = () => {
+      const picks = CATS.map(c => c.opts[sel[c.k]]), good = picks.filter(o => o.best === env).length, win = good >= 3;
+      $('#report').innerHTML = `<div class="report">${picks.map(o => `<div class="${o.best === env ? 'y' : 'n'}">${o.best === env ? '✅' : '❌'} <b>${esc(o.n)}</b>: ${esc(o.why[env] || o.why._)}</div>`).join('')}</div>
+        <div class="stamp" style="color:${win ? '#16a34a' : '#e11d48'}">${win ? `SURVIVED! ${good}/4` : `DIDN'T MAKE IT… ${good}/4`}</div>`;
+      $('#report').scrollIntoView({behavior:'smooth', block:'center'});
+      if (win) {
+        won.add(env); body.querySelector(`.env[data-e="${env}"]`).classList.add('won');
+        kit.toast(`🏆 Your creature survived the ${ENVS[env].n}!`, 2600);
+        if (!res.done) { res.done = true; kit.say(`It survived! 🎉 Every adaptation matched a <b>challenge</b> in the environment: heat, cold, water, predators or salt. Want a bigger challenge? Pick another habitat and design a new creature. Each one needs different adaptations!`); res(); }
+      } else kit.say(`Not this time! Read the report. Each ❌ trait didn't match the habitat's challenges. Change some choices and release it again.`);
+    };
+  });
+}
+
+/* ================================================================
+   SET UP THE PAGE
+   ================================================================ */
+LabKit.init({
+  id:'design-a-survivor', title:'Design-a-Survivor', icon:'🦎', theme:'#ff3e88', kicker:"Mr Trichardt's Science Lab · Creature Lab",
+  heroTitle:'Design-a-<span class="g">Survivor</span>',
+  intro:'Collect adaptation cards, hunt beetles to see natural camouflage in action, then design your own creature to survive Australia\'s toughest habitats!',
+  guide:{name:'Captain Claw', emoji:'🦖'},
+  certTitle:'Master Creature Designer', confetti:['🦎','🦘','🐸','🐠','⭐','💥'],
+  summary:'You can now define structural, behavioural and physiological adaptations, give examples of each, explain how adaptations improve survival and reproduction, and link adaptations to the challenges of specific environments.',
+  missions:[
+    {icon:'🃏', title:'Collect the adaptation cards', short:'Cards', blurb:'Sort Aussie animal adaptations into 3 types.', run:mission1,
+      gate:[
+        {q:'A STRUCTURAL adaptation is…', o:['A physical feature of the body, like spines, big ears or body shape','Something the animal does, like migrating','A chemical process inside the body, like making venom','A change in the weather'],
+          ex:'Structural adaptations are body parts and features you could see or touch.', hint:'Think of the echidna\'s spines.'},
+        {q:'A kangaroo licking its forearms to cool down is which type of adaptation?', o:['Behavioural','Structural','Physiological','It isn\'t an adaptation'],
+          ex:'Licking is something the kangaroo DOES, which makes it a behavioural adaptation.', hint:'Is it a body part, an action, or a process inside the body?'},
+        {q:'Which is a PHYSIOLOGICAL adaptation?', o:['A snake producing venom','A bird flying north for winter','An echidna\'s sharp spines','A frog burrowing underground'],
+          ex:'Producing venom is a chemical process inside the body, so it\'s physiological.', hint:'Which one happens INSIDE the body?'}
+      ],
+      bonus:{q:'The bilby has huge ears AND stays in its burrow by day. Which types of adaptation are these?', o:['Structural (ears) and behavioural (burrowing by day)','Both behavioural','Both physiological','Physiological (ears) and structural (burrowing)'],
+        ex:'One animal often has several types of adaptation working together.'}},
+    {icon:'🐦', title:'Survival of the sneakiest', short:'Camouflage', blurb:'Be a bird and see how camouflage helps beetles survive and reproduce.', run:mission2,
+      gate:[
+        {q:'Why did MORE sand-coloured beetles survive?', o:['They were camouflaged against the sand, so they were harder for the bird to find','They were faster runners','Birds don\'t like the taste of sand-coloured beetles','They were bigger'],
+          ex:'Camouflage made them harder to spot, so they survived.', hint:'Which beetles were hardest for you to see?'},
+        {q:'Why did the sand-coloured beetles become more common over generations?', o:['Survivors reproduced and passed their colour on to their offspring','Dark beetles changed colour to sand','The bird turned beetles sand-coloured','New beetles arrived from somewhere else'],
+          ex:'An adaptation that helps an organism survive also helps it reproduce, so more offspring inherit it.', hint:'Who had the babies?'},
+        {q:'Camouflage colouring is which type of adaptation?', o:['Structural','Behavioural','Physiological','Not an adaptation'],
+          ex:'Body colour is a physical feature, so it\'s structural.', hint:'Is colour a body feature, an action, or an inside process?'}
+      ],
+      bonus:{q:'What would happen if the beetles moved to a habitat of dark soil?', o:['Dark beetles would become better camouflaged and more common','Sand beetles would still always win','Neither colour would survive','The beetles would all turn green'],
+        ex:'Whether an adaptation is helpful depends on the environment. On dark soil, dark beetles would be harder to spot.'}},
+    {icon:'🧬', title:'Design-a-Survivor', short:'Design', blurb:'Build a creature that survives a tough Australian habitat.', run:mission3,
+      gate:[
+        {q:'Which adaptation would best help an animal survive in a hot, dry desert?', o:['Producing very concentrated urine to save water','Thick fluffy fur','Gills and fins','Hibernating through winter'],
+          ex:'In the desert, saving water is one of the biggest challenges.', hint:'What is the desert\'s biggest problem?'},
+        {q:'Why do animals in the Snowy Mountains often have small ears and short legs?', o:['Less surface area means less heat is lost to the cold air','It helps them climb trees','It makes them faster swimmers','It helps them find water'],
+          ex:'Small extremities reduce heat loss, which is very useful in freezing conditions.', hint:'Think about heat loss in the cold.'},
+        {q:'An adaptation helps an organism to…', o:['Survive and reproduce in its environment','Change into a different species straight away','Live in every environment equally well','Stop needing food'],
+          ex:'Adaptations suit an organism to the conditions and challenges of its particular environment.', hint:'Remember the beetle mission.'}
+      ],
+      bonus:{q:'A creature designed perfectly for the desert would probably struggle on a coral reef. Why?', o:['Adaptations suit a particular environment, and the reef\'s challenges are different','Desert animals can\'t see underwater','Coral reefs have no food','It would be too cold'],
+        ex:'Each environment has different challenges, so different adaptations are needed.'}}
+  ]
+});
+})();
+</script>
+</body>
+</html>

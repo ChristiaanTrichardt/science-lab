@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#030d17"/>
+  <g stroke="rgba(45,212,191,.12)"><path d="M0 50H640M0 100H640M0 150H640M0 200H640M0 250H640M0 300H640M0 350H640M80 0V400M160 0V400M240 0V400M320 0V400M400 0V400M480 0V400M560 0V400"/></g>
+  <path d="M0 120 H170 l14 -6 l14 6 h24 l12 -50 l12 90 l12 -55 h40 l16 -10 l16 10 H640" fill="none" stroke="#2dd4bf" stroke-width="5" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px #2dd4bf)"/>
+  <g font-family="Consolas,monospace">
+    <rect x="40" y="220" width="170" height="130" rx="12" fill="#06202e" stroke="#2dd4bf" stroke-width="2"/>
+    <text x="56" y="250" font-size="16" fill="#5fa99c">BODY TEMP</text><text x="56" y="310" font-size="56" fill="#4ade80">37.0</text>
+    <rect x="235" y="220" width="170" height="130" rx="12" fill="#06202e" stroke="#2dd4bf" stroke-width="2"/>
+    <text x="251" y="250" font-size="16" fill="#5fa99c">GLUCOSE</text><text x="251" y="310" font-size="56" fill="#facc15">9.6</text>
+    <rect x="430" y="220" width="170" height="130" rx="12" fill="#06202e" stroke="#fb7185" stroke-width="3"/>
+    <text x="446" y="250" font-size="16" fill="#5fa99c">WATER</text><text x="446" y="310" font-size="56" fill="#fb7185">86%</text>
+  </g>
+  <g font-family="Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif" font-size="54" text-anchor="middle"><text x="560" y="90">🦎</text><text x="480" y="90">🩺</text></g>
+</svg>
