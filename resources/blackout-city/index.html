@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blackout City</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b1f;--panel:rgba(16,22,52,.9);--line:rgba(120,140,255,.28);--ink:#eef1ff;--ink2:#a9b1dd;--ink3:#7079a8;
+  --volt:#ffd60a;--cyan:#38e1ff;--hot:#ff4d6d;--ok:#4ade80;--head:'Righteous',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.hidden{display:none!important}
+.sky{position:fixed;inset:0;z-index:-2;background:radial-gradient(1200px 600px at 70% -10%,#22296b,transparent 60%),radial-gradient(900px 500px at 0% 100%,#3b1d5a,transparent 60%),var(--bg)}
+.sky i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.7;animation:tw 3s ease-in-out infinite alternate}
+@keyframes tw{to{opacity:.15}}
+@media (prefers-reduced-motion:reduce){.sky i{animation:none}}
+.wrap{max-width:1220px;margin:0 auto;padding:14px 16px 60px}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 20px 40px -24px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.top{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;position:sticky;top:10px;z-index:10;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--head);font-size:1.15rem;cursor:pointer}
+.bolt{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff7b0,var(--volt) 55%,#f59e0b);color:#3b2a00;font-size:1.2rem;box-shadow:0 0 18px rgba(255,214,10,.6)}
+.top .sp{flex:1}
+@media (max-width:560px){.top{border-radius:20px}.brand{font-size:1rem}.bolt{width:32px;height:32px}.chip{height:32px;padding:0 10px;font-size:.78rem}.chip .long{display:none}}
+.chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-weight:800;font-size:.86rem;white-space:nowrap}
+button.chip:hover{background:rgba(255,255,255,.12)}
+.chip.e{border-color:rgba(56,225,255,.6);color:#bff6ff}
+.chip.c{border-color:rgba(255,214,10,.6);color:#fff1a8}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 20px;border-radius:14px;font-weight:900;background:rgba(255,255,255,.07);border:1px solid var(--line);transition:transform .12s,filter .2s;white-space:nowrap}
+.btn:hover:not(:disabled){filter:brightness(1.2)}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn.volt{background:linear-gradient(180deg,#ffe45c,#ffc300);color:#2b1d00;border-color:#ffe45c;box-shadow:0 0 22px -4px rgba(255,214,10,.8)}
+.btn.small{height:38px;padding:0 14px;font-size:.9rem}
+h1,h2,h3{font-family:var(--head);font-weight:400;margin:0}
+/* title */
+.hero{text-align:center;padding:30px 10px 6px}
+.hero h1{font-size:clamp(2.8rem,9vw,5.6rem);line-height:1;letter-spacing:.02em}
+.hero h1 .off{color:#2a3166}
+.hero h1 .on{color:var(--volt);text-shadow:0 0 18px rgba(255,214,10,.8),0 0 50px rgba(255,214,10,.4)}
+.hero p{max-width:660px;margin:12px auto 16px;color:var(--ink2);font-weight:700;font-size:1.05rem}
+/* city overview */
+.citybox{padding:10px;border-radius:24px;overflow:hidden;position:relative}
+.citybox svg{display:block;width:100%;height:auto}
+.cityhud{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.meter{display:flex;align-items:center;gap:8px;font-weight:900}
+.meter .bar{width:140px;height:12px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden}
+.meter .bar i{display:block;height:100%;background:linear-gradient(90deg,#ff4d6d,#ffd60a,#4ade80);transition:width .6s}
+.plate{cursor:pointer}
+.plate:hover .pl-top{filter:brightness(1.25)}
+.plate.lock{cursor:not-allowed;opacity:.55}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.daynight{animation:dn 24s ease-in-out infinite}
+@keyframes dn{0%,100%{opacity:.85}50%{opacity:.35}}
+.dusk{opacity:.1;animation:dusk 24s ease-in-out infinite}
+@keyframes dusk{50%{opacity:.4}}
+@media (prefers-reduced-motion:reduce){.pulse,.daynight,.dusk{animation:none}}
+/* game */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px;align-items:start}
+@media (max-width:920px){.game{grid-template-columns:minmax(0,1fr)}}
+.board{padding:6px;border-radius:22px;overflow:hidden}
+.board svg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.side{display:grid;gap:12px}
+.side .glass{padding:14px}
+.story h2{font-size:1.4rem}
+.story p{margin:6px 0 0;color:var(--ink2);font-weight:700;line-height:1.45}
+.stats2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats2 div{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-weight:800;font-size:.8rem;color:var(--ink2)}
+.stats2 b{display:block;font-family:var(--head);font-weight:400;font-size:1.3rem;color:var(--ink)}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tool{padding:10px 4px;border-radius:14px;border:2px solid var(--line);background:rgba(255,255,255,.04);font-weight:900;font-size:.82rem;text-align:center}
+.tool .e{display:block;font-size:1.5rem}
+.tool.on{border-color:var(--volt);background:rgba(255,214,10,.12);box-shadow:0 0 16px -4px rgba(255,214,10,.7)}
+.tool small{display:block;color:var(--ink3);font-size:.72rem}
+.goals{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.goals li{display:flex;gap:8px;align-items:flex-start;font-weight:800;font-size:.9rem;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.goals li.ok{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1)}
+.msg{padding:10px 12px;border-radius:12px;font-weight:800;font-size:.9rem;line-height:1.4}
+.msg.bad{background:rgba(255,77,109,.14);border:1px solid rgba(255,77,109,.5);color:#ffd1da}
+.msg.info{background:rgba(56,225,255,.1);border:1px solid rgba(56,225,255,.4);color:#d2f7ff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+/* svg bits */
+.cable{stroke:#3b4aa8;stroke-width:9;stroke-linecap:round}
+.cable.live{stroke:#5f7cff}
+.flow{stroke-width:4;stroke-linecap:round;stroke-dasharray:2 13;fill:none;animation:flow .6s linear infinite}
+.flow.e{stroke:#7df9ff}.flow.c{stroke:var(--volt)}
+.flow.rev{animation-direction:reverse}
+@keyframes flow{to{stroke-dashoffset:-15}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+.hover{stroke:rgba(255,214,10,.5);stroke-width:14;stroke-linecap:round}
+.spark{animation:spark .25s steps(2) infinite}
+@keyframes spark{50%{opacity:.2}}
+.bubble{animation:bub .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes bub{from{opacity:0;transform:translateY(8px)}}
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(3,5,15,.7)}
+.card{max-width:540px;width:100%;padding:24px;border-radius:24px;text-align:center;animation:pop .45s cubic-bezier(.2,1.3,.4,1);max-height:calc(100vh - 32px);overflow:auto}
+@keyframes pop{from{opacity:0;transform:scale(.9)}}
+.card h2{font-size:2rem;color:var(--volt);text-shadow:0 0 16px rgba(255,214,10,.6)}
+.card .stars{font-size:2.6rem;letter-spacing:6px;margin:8px 0}
+.card .note{text-align:left;padding:12px 14px;border-radius:14px;background:rgba(56,225,255,.08);border:1px solid rgba(56,225,255,.3);font-weight:700;color:#d2f7ff;line-height:1.5;margin:12px 0}
+.card .note b{color:#fff}
+/* sprint */
+.sprint{max-width:620px;margin:14px auto 0;padding:16px;border-radius:24px}
+.shud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.shud .big{font-family:var(--head);font-size:1.6rem}
+.shud .t{color:var(--volt)}
+.tbar{height:10px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:12px}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,var(--hot),var(--volt));transition:width .25s linear}
+.tiles{display:grid;gap:4px;margin:0 auto;max-width:520px}
+.tile{aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);padding:0;position:relative;overflow:hidden}
+.tile svg{width:100%;height:100%;display:block;transition:transform .18s ease}
+.tile.lit{background:rgba(255,214,10,.14);border-color:rgba(255,214,10,.6)}
+.tile.lit .ln{stroke:var(--volt)}
+.ln{stroke:#5b6bd6;stroke-width:16;stroke-linecap:round;fill:none}
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+<div class="wrap">
+  <header class="top glass"><div class="brand" id="home"><span class="bolt">⚡</span>Blackout City</div><span class="sp"></span>
+    <button class="chip" id="flowChip" title="Change what the moving dots show"></button><span class="chip" id="starChip">⭐ 0</span></header>
+  <main id="main"></main>
+</div>
+<div class="modal hidden" id="modal"></div>
+
+<script>
+(function(){
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const KEY = 'blackout-city-v2';
+let save = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } })();
+save.stars = save.stars || {}; save.best = save.best || 0; if (!save.flow) save.flow = 'e';
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
+const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
+const updChip = () => {
+  $('#starChip').textContent = `⭐ ${totalStars()} · 🏁 ${save.best}`;
+  const f = $('#flowChip'); f.className = 'chip ' + save.flow;
+  f.innerHTML = save.flow === 'e' ? '🔵 <span class="long">Showing:</span> electrons (− → +)' : '🟡 <span class="long">Showing:</span> conventional (+ → −)';
+};
+$('#flowChip').onclick = () => {
+  save.flow = save.flow === 'e' ? 'c' : 'e'; persist(); updChip();
+  if (G && $('#sv')) render();
+  toast(save.flow === 'e' ? '🔵 Electrons are negative, so they flow from the − terminal, around the circuit, to the + terminal.' : '🟡 Conventional current is the direction scientists agreed on before electrons were discovered: from + to −. Circuit diagrams still use it!');
+};
+function toast(t){ let el = $('#toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'glass'; el.style.cssText = 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:70;padding:12px 18px;border-radius:16px;font-weight:800;width:min(560px,calc(100% - 32px));text-align:center;transition:opacity .3s'; document.body.appendChild(el); }
+  el.textContent = t; el.style.opacity = 1; clearTimeout(toast.t); toast.t = setTimeout(() => el.style.opacity = 0, 4200); }
+$('#sky').innerHTML = Array.from({length:70}, () => `<i style="left:${Math.random() * 100}%;top:${Math.random() * 60}%;animation-delay:${-Math.random() * 3}s"></i>`).join('');
+
+/* =================================================================
+   CIRCUIT SOLVER (nodal analysis on the grid)
+   Wires/closed switches ≈ 0.01 Ω, buildings (bulbs) 10 Ω, power station 6 V with 0.2 Ω inside.
+   ================================================================= */
+const COLS = 9, ROWS = 6;
+const V_BATT = 6, R_INT = 0.2, R_BULB = 10, R_WIRE = 0.01, SHORT_A = 5;
+const nid = (x, y) => y * COLS + x;
+const ends = e => { const [x, y, d] = e.split(','); return [[+x, +y], d === 'h' ? [+x + 1, +y] : [+x, +y + 1]]; };
+function solve(parts, swState){
+  const N = COLS * ROWS, bat = Object.entries(parts).find(([, p]) => p.t === 'battery');
+  if (!bat) return null;
+  const [, bn] = ends(bat[0]).map(([x, y]) => nid(x, y)), gnd = bn;
+  const idx = i => i < gnd ? i : i - 1, n = N - 1;
+  const A = Array.from({length:n}, () => new Float64Array(n + 1));
+  const stamp = (a, b, g) => { if (a !== gnd) A[idx(a)][idx(a)] += g; if (b !== gnd) A[idx(b)][idx(b)] += g; if (a !== gnd && b !== gnd) { A[idx(a)][idx(b)] -= g; A[idx(b)][idx(a)] -= g; } };
+  for (let i = 0; i < n; i++) A[i][i] += 1e-7;
+  const cond = {};
+  for (const [e, p] of Object.entries(parts)) {
+    const [a, b] = ends(e).map(([x, y]) => nid(x, y)); let g = 0;
+    if (p.t === 'wire') g = 1 / R_WIRE;
+    else if (p.t === 'bulb') g = 1 / R_BULB;
+    else if (p.t === 'switch') g = (swState && e in swState ? swState[e] : p.on) ? 1 / R_WIRE : 0;
+    else if (p.t === 'battery') { g = 1 / R_INT; if (a !== gnd) A[idx(a)][n] += V_BATT / R_INT; }
+    if (g) stamp(a, b, g); cond[e] = g;
+  }
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; const d = A[c][c]; if (Math.abs(d) < 1e-14) continue;
+    for (let r = c + 1; r < n; r++) { const f = A[r][c] / d; if (f) for (let k = c; k <= n; k++) A[r][k] -= f * A[c][k]; }
+  }
+  const x = new Float64Array(n);
+  for (let r = n - 1; r >= 0; r--) { let s = A[r][n]; for (let k = r + 1; k < n; k++) s -= A[r][k] * x[k]; x[r] = Math.abs(A[r][r]) < 1e-14 ? 0 : s / A[r][r]; }
+  const V = i => i === gnd ? 0 : x[idx(i)];
+  const out = {cur:{}, bright:{}, Ibatt:0, short:false};
+  for (const [e, p] of Object.entries(parts)) {
+    const [a, b] = ends(e).map(([x, y]) => nid(x, y)), dv = V(a) - V(b);
+    if (p.t === 'battery') { out.Ibatt = (V_BATT - dv) / R_INT; out.cur[e] = -out.Ibatt; } else out.cur[e] = dv * cond[e]; // + = conventional current from first end to second end
+    if (p.t === 'bulb') out.bright[e] = Math.min(1.2, (dv / V_BATT) ** 2);
+  }
+  out.short = out.Ibatt > SHORT_A;
+  if (out.short) for (const k in out.bright) out.bright[k] = 0;
+  return out;
+}
+
+/* =================================================================
+   DISTRICTS (levels)
+   ================================================================= */
+const BAT = '0,2,v';
+const LEVELS = [
+  {name:'Maple Street', story:'The whole city is dark! Start with one home: connect the power station to Mia\'s house.',
+   hint:'Lay cable from the + side of the power station, through Mia\'s house, and back to the − side. Electricity needs a complete loop.',
+   bulbs:[{e:'4,0,h', kind:'house', label:'Mia\'s house', mode:'on', col:'#f4a261'}], bright:false, switches:0, par:14,
+   note:'A circuit must be a <b>complete loop</b> from one terminal of the power source back to the other. Any gap, and no current flows.'},
+  {name:'Twin Cottages', story:'Two cottages on the same street. Light them both up!',
+   hint:'Run one cable path through BOTH houses, one after the other.',
+   bulbs:[{e:'3,0,h', kind:'house', label:'Blue cottage', mode:'on', col:'#60a5fa'}, {e:'6,0,h', kind:'house', label:'Green cottage', mode:'on', col:'#4ade80'}], bright:false, switches:0, par:17,
+   note:'Both houses on ONE path are in <b>series</b>. They were <b>dim</b>: in series the buildings share the voltage, so each gets less energy.'},
+  {name:'Bright Lane', story:'The residents are complaining it\'s too dim! Both homes must glow at FULL brightness.',
+   hint:'Give each house its own path: one cable along the top and one along the bottom, with each house as a "rung" between them.',
+   bulbs:[{e:'3,2,v', kind:'house', label:'Rosa\'s house', mode:'on', col:'#f472b6'}, {e:'6,2,v', kind:'house', label:'Kai\'s house', mode:'on', col:'#a78bfa'}], bright:true, switches:0, par:12,
+   note:'Each house now has its own branch: a <b>parallel circuit</b>. Each gets the full voltage, so both glow brightly. Real homes are wired like this!'},
+  {name:'Okafor Court', story:'Mr Okafor wants to switch his lights off at bedtime. Build his circuit with a switch.',
+   hint:'Use the switch tool to place a switch somewhere in the loop. Tap it to open and close it!',
+   bulbs:[{e:'5,2,v', kind:'house', label:'Okafor house', mode:'sw', col:'#fbbf24'}], bright:true, switches:1, par:10,
+   note:'An <b>open</b> switch makes a gap, so no current flows. A <b>closed</b> switch completes the loop.'},
+  {name:'Neighbour Row', story:'Two neighbours, two switches. Each family must control ONLY their own lights.',
+   hint:'Top and bottom cables, with each switch in its own house\'s branch, not in the shared cable.',
+   bulbs:[{e:'4,1,v', kind:'house', label:'Lee house', mode:'sw', col:'#60a5fa'}, {e:'7,1,v', kind:'house', label:'Patel house', mode:'sw', col:'#f97316'}], bright:true, switches:2, par:17,
+   note:'A switch in a <b>branch</b> only controls that branch. A switch in the main line controls everything!'},
+  {name:'Substation Fix', story:'Someone wired the substation wrong and it\'s overheating! Fix it and power all three houses brightly.',
+   hint:'Find the cable that joins + to − with nothing in between. Erase it!',
+   pre:['0,2,h', '1,2,v', '0,3,h'],
+   bulbs:[{e:'3,2,v', kind:'house', label:'House 1', mode:'on', col:'#f4a261'}, {e:'5,2,v', kind:'house', label:'House 2', mode:'on', col:'#4ade80'}, {e:'7,2,v', kind:'house', label:'House 3', mode:'on', col:'#60a5fa'}], bright:true, switches:0, par:16,
+   note:'A <b>short circuit</b> is an easy path with almost no resistance. A huge current rushes through it, skipping the buildings, and can overheat wires and start fires. That\'s why homes have <b>fuses</b> and <b>circuit breakers</b>.'},
+  {name:'Hospital Hill', story:'The hospital must NEVER lose power. The corner shop needs its own switch.',
+   hint:'Connect the hospital straight between the cables. Give the shop a switch in its own branch.',
+   bulbs:[{e:'3,1,v', kind:'hospital', label:'Hospital', mode:'on', col:'#f8fafc'}, {e:'6,1,v', kind:'shop', label:'Corner shop', mode:'sw', col:'#f87171'}], bright:true, switches:1, par:15,
+   note:'Parallel circuits let some buildings stay on while others are switched off. If one branch is off, the others keep working.'},
+  {name:'Downtown', story:'The grand finale! Three homes with their own switches, and a street light that stays on all night.',
+   hint:'Long top and bottom cables, four branches. A switch in each home\'s branch; the street light gets plain cable.',
+   bulbs:[{e:'2,1,v', kind:'house', label:'Home A', mode:'sw', col:'#f472b6'}, {e:'4,1,v', kind:'house', label:'Home B', mode:'sw', col:'#60a5fa'}, {e:'6,1,v', kind:'house', label:'Home C', mode:'sw', col:'#4ade80'}, {e:'8,1,v', kind:'lamp', label:'Street light', mode:'on'}], bright:true, switches:3, par:21,
+   note:'You wired a whole city like a real electrician! Homes use <b>parallel circuits</b> so every room gets full voltage and can be switched on its own.'}
+];
+const COST = 10; // $ per cable or switch
+const budgetOf = L => Math.round(L.par * 1.4) * COST;
+
+/* =================================================================
+   ISOMETRIC DRAWING HELPERS
+   ================================================================= */
+const TW = 56, TH = 28, OX = 60 + (ROWS - 1) * TW, OY = 120;
+const VBW = OX + (COLS - 1) * TW + 120, VBH = OY + (COLS + ROWS - 2) * TH + 70;
+const P = (x, y) => [OX + (x - y) * TW, OY + (x + y) * TH];
+const toGrid = (px, py) => { const u = (px - OX) / TW, v = (py - OY) / TH; return [(u + v) / 2, (v - u) / 2]; };
+const diamond = (x, y, fill, extra) => { const pts = [P(x, y), P(x + 1, y), P(x + 1, y + 1), P(x, y + 1)].map(p => p.join(',')).join(' '); return `<polygon points="${pts}" fill="${fill}" ${extra || ''}/>`; };
+function isoBox(cx, cy, w, d, h, top, left, right, win, glow){
+  // cx,cy = ground centre; w,d = half sizes along iso axes
+  const ax = w * TW / 28, ay = w * TH / 28, bx = d * TW / 28, by = d * TH / 28;
+  const g = [[cx - ax + bx, cy - ay - by], [cx + ax + bx, cy + ay - by], [cx + ax - bx, cy + ay + by], [cx - ax - bx, cy - ay + by]]; // ground corners (N,E,S,W)
+  const up = p => [p[0], p[1] - h];
+  const poly = (pts, f) => `<polygon points="${pts.map(p => p.join(',')).join(' ')}" fill="${f}"/>`;
+  let s = poly([g[3], g[2], up(g[2]), up(g[3])], left) + poly([g[2], g[1], up(g[1]), up(g[2])], right) + poly([up(g[0]), up(g[1]), up(g[2]), up(g[3])], top);
+  if (win) { // windows on both visible faces
+    const rows = Math.max(1, Math.floor(h / 18));
+    for (let r = 0; r < rows; r++) for (let k = 0; k < 2; k++) {
+      const t = (k + .5) / 2, yy = h * (r + .55) / (rows + .2);
+      [[g[3], g[2]], [g[2], g[1]]].forEach(([p1, p2]) => { const x = p1[0] + (p2[0] - p1[0]) * t, y = p1[1] + (p2[1] - p1[1]) * t - yy;
+        s += `<rect x="${x - 4}" y="${y - 5}" width="8" height="9" rx="1.5" fill="${win}" ${glow ? 'style="filter:drop-shadow(0 0 4px #ffe066)"' : ''}/>`; });
+    }
+  }
+  return s;
+}
+const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; r = Math.round(r * f); g = Math.round(g * f); b = Math.round(b * f); return `rgb(${Math.min(255, r)},${Math.min(255, g)},${Math.min(255, b)})`; };
+
+/* =================================================================
+   SCREENS
+   ================================================================= */
+let G = null;
+function title(){
+  stopSprint(); G = null;
+  const done = Object.keys(save.stars).length, happy = Math.round(done / LEVELS.length * 100);
+  $('#main').innerHTML = `<section class="hero"><h1><span class="${done ? 'on' : 'off'}">BLACKOUT</span> <span class="on">CITY</span></h1>
+    <p>The power's out and the whole city is dark. Wire up each district with real circuits, and watch your city come back to life, one street at a time.</p></section>
+    <div class="cityhud"><span class="chip meter">😊 City happiness <span class="bar"><i style="width:${happy}%"></i></span> ${happy}%</span><span class="chip">🏘️ Districts powered: ${done}/${LEVELS.length}</span>
+      <button class="btn small volt" id="mSprint">🔄 Circuit Sprint</button></div>
+    <div class="citybox glass">${citySVG()}</div>
+    <p style="text-align:center;color:var(--ink2);font-weight:800;margin-top:10px">Tap a glowing district to restore its power. 🔒 districts unlock as the city grows.</p>`;
+  $('#mSprint').onclick = sprint;
+  document.querySelectorAll('.plate:not(.lock)').forEach(p => p.onclick = () => play(+p.dataset.i));
+  updChip();
+}
+function citySVG(){
+  // 8 districts on one isometric island (4 across, 2 deep)
+  const PW = 120, PH = 60, ox = 470, oy = 120, Wv = 960, Hv = 470;
+  const C = (gx, gy) => [ox + (gx - gy) * PW, oy + (gx + gy) * PH];
+  const unlocked = i => i === 0 || save.stars[i - 1];
+  let s = `<svg viewBox="0 0 ${Wv} ${Hv}" role="img" aria-label="Map of the city districts">
+    <defs><radialGradient id="cg"><stop offset="0" stop-color="#ffe066" stop-opacity=".8"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>
+      <linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1030"/><stop offset="1" stop-color="#1a1f4a"/></linearGradient></defs>
+    <rect width="${Wv}" height="${Hv}" fill="url(#night)"/>
+    <circle cx="860" cy="60" r="26" fill="#fff8d6" opacity=".9"/><circle cx="870" cy="52" r="24" fill="#0b1030"/>`;
+  // water + island
+  s += `<polygon points="${[C(-.35, -.35), C(4.35, -.35), C(4.35, 2.35), C(-.35, 2.35)].map(p => p.join(',')).join(' ')}" fill="#1d3b6b"/>`;
+  const order = [], labels = [];
+  for (let gy = 0; gy < 2; gy++) for (let gx = 0; gx < 4; gx++) order.push([gx, gy, gy * 4 + gx]);
+  order.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+  order.forEach(([gx, gy, i]) => {
+    const L = LEVELS[i], lit = !!save.stars[i], ok = unlocked(i), cur = ok && !lit;
+    const pts = [C(gx, gy), C(gx + 1, gy), C(gx + 1, gy + 1), C(gx, gy + 1)].map(([x, y]) => [x, y + 0]);
+    const [cx, cy] = C(gx + .5, gy + .5);
+    s += `<g class="plate${ok ? '' : ' lock'}" data-i="${i}">
+      <polygon points="${[pts[3], pts[2], [pts[2][0], pts[2][1] + 14], [pts[3][0], pts[3][1] + 14]].map(p => p.join(',')).join(' ')}" fill="#2f4a1f"/>
+      <polygon points="${[pts[2], pts[1], [pts[1][0], pts[1][1] + 14], [pts[2][0], pts[2][1] + 14]].map(p => p.join(',')).join(' ')}" fill="#22381a"/>
+      <polygon class="pl-top" points="${pts.map(p => p.join(',')).join(' ')}" fill="${lit ? '#3f7a34' : ok ? '#2e5a2a' : '#203a22'}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      ${cur ? `<polygon class="pulse" points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#ffd60a" stroke-width="4" pointer-events="none"/>` : ''}
+      <path d="M${C(gx + .15, gy + .85).join(' ')} L${C(gx + .85, gy + .85).join(' ')}" stroke="#4b5563" stroke-width="10" stroke-linecap="round"/>`;
+    // buildings
+    L.bulbs.forEach((b, k) => {
+      const t = (k + 1) / (L.bulbs.length + 1), [bx, by] = C(gx + .15 + t * .7, gy + .35), col = b.col || '#94a3b8';
+      if (lit) s += `<circle cx="${bx}" cy="${by - 20}" r="34" fill="url(#cg)" class="daynight"/>`;
+      if (b.kind === 'lamp') s += `<line x1="${bx}" y1="${by}" x2="${bx}" y2="${by - 40}" stroke="#94a3b8" stroke-width="3"/><circle cx="${bx}" cy="${by - 42}" r="6" fill="${lit ? '#ffe066' : '#334155'}"/>`;
+      else s += isoBox(bx, by, 11, 11, b.kind === 'hospital' ? 52 : b.kind === 'shop' ? 30 : 36, lit ? shade(col, 1.05) : shade(col, .45), lit ? shade(col, .8) : shade(col, .3), lit ? shade(col, .65) : shade(col, .25), lit ? '#ffe066' : '#1b2147', lit);
+    });
+    if (lit) s += `<text font-size="16"><tspan>🚶</tspan><animateMotion dur="${9 + i}s" repeatCount="indefinite" path="M${C(gx + .15, gy + .85).join(' ')} L${C(gx + .85, gy + .85).join(' ')} L${C(gx + .15, gy + .85).join(' ')}"/></text>`;
+    s += `</g>`;
+    const lab = `${i + 1}. ${L.name}`, sub = lit ? '⭐'.repeat(save.stars[i]) : ok ? '⚡ Tap to restore power!' : '🔒 Locked', w = Math.max(lab.length * 8.4, sub.length * 7) + 22;
+    labels.push(`<g class="plate${ok ? '' : ' lock'}" data-i="${i}"><rect x="${cx - w / 2}" y="${cy + 10}" width="${w}" height="40" rx="12" fill="rgba(7,11,31,.82)" stroke="${cur ? '#ffd60a' : 'rgba(255,255,255,.18)'}"/>
+      <text x="${cx}" y="${cy + 27}" text-anchor="middle" font-family="Righteous" font-size="14" fill="${lit ? '#ffe98a' : ok ? '#fff' : '#7079a8'}">${esc(lab)}</text>
+      <text x="${cx}" y="${cy + 43}" text-anchor="middle" font-size="11" font-weight="900" fill="${lit ? '#ffd60a' : '#a9b1dd'}">${sub}</text></g>`);
+  });
+  s += labels.join('');
+  s += `<rect width="${Wv}" height="${Hv}" fill="#020414" class="dusk" pointer-events="none"/></svg>`;
+  return s;
+}
+
+/* =================================================================
+   PLAY A DISTRICT
+   ================================================================= */
+function play(li){
+  stopSprint();
+  const L = LEVELS[li];
+  const parts = {[BAT]:{t:'battery', lock:true}};
+  L.bulbs.forEach(b => parts[b.e] = {t:'bulb', lock:true, b});
+  (L.pre || []).forEach(e => parts[e] = {t:'wire'});
+  G = {li, L, parts, tool:'wire', readings:false, won:false, prev:{}, bubbles:{}, deco:makeDeco(L)};
+  $('#main').innerHTML = `<div class="game"><div class="board glass"><svg viewBox="0 0 ${VBW} ${VBH}" id="sv"></svg></div>
+    <div class="side"><div class="glass story"><div style="color:var(--volt);font-weight:900;font-size:.8rem;letter-spacing:.1em">DISTRICT ${li + 1} OF ${LEVELS.length}</div><h2>${esc(L.name)}</h2><p>${esc(L.story)}</p></div>
+      <div class="glass"><div class="stats2"><div>😊 Happiness<b id="hap">0%</b></div><div>💰 Budget left<b id="bud"></b></div></div></div>
+      <div class="glass"><div class="tools">
+        <button class="tool on" data-t="wire"><span class="e">〰️</span>Cable<small>drag to lay · $${COST}</small></button>
+        <button class="tool" data-t="switch" ${L.switches ? '' : 'disabled style="opacity:.35"'}><span class="e">🔘</span>Switch<small id="swLeft"></small></button>
+        <button class="tool" data-t="erase"><span class="e">🧽</span>Remove<small>tap a part</small></button></div>
+        <div class="row" style="margin-top:10px"><button class="btn small" id="rd">🔍 Meter readings</button></div></div>
+      <div class="glass"><b>🎯 Goals</b><ul class="goals" id="goals"></ul><div id="msg" style="margin-top:8px"></div>
+        <div class="row" style="margin-top:10px"><button class="btn small" id="hint">💡 Hint</button><button class="btn small" id="reset">↺ Reset</button><button class="btn small" id="toMap">🗺️ City</button></div></div></div></div>`;
+  document.querySelectorAll('.tool').forEach(b => b.onclick = () => { if (b.disabled) return; G.tool = b.dataset.t; document.querySelectorAll('.tool').forEach(x => x.classList.toggle('on', x === b)); });
+  $('#rd').onclick = () => { G.readings = !G.readings; $('#rd').classList.toggle('volt', G.readings); render(); };
+  $('#hint').onclick = () => { $('#msg').innerHTML = `<div class="msg info">💡 ${esc(L.hint)}</div>`; };
+  $('#reset').onclick = () => play(li);
+  $('#toMap').onclick = title;
+  bindBoard(); render();
+}
+function makeDeco(L){
+  // trees and cars on empty ground (deterministic per level)
+  let seed = L.name.length * 97; const R = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  const trees = [];
+  for (let i = 0; i < 14; i++) { const x = Math.floor(R() * (COLS - 1)), y = 3 + Math.floor(R() * 2); if (y === 4) continue; trees.push([x + .5, y + .5]); }
+  return {trees};
+}
+const userParts = () => Object.values(G.parts).filter(p => !p.lock).length;
+const swUsed = () => Object.values(G.parts).filter(p => p.t === 'switch').length;
+
+function bindBoard(){
+  const sv = $('#sv'); let drawing = false, last = null;
+  const toEdge = ev => {
+    const r = sv.getBoundingClientRect(), k = VBW / r.width;
+    const [fx, fy] = toGrid((ev.clientX - r.left) * k, (ev.clientY - r.top) * k);
+    const c = [];
+    const hy = Math.round(fy), hx = Math.floor(fx); if (hx >= 0 && hx < COLS - 1 && hy >= 0 && hy < ROWS) c.push({e:`${hx},${hy},h`, d:Math.abs(fy - hy)});
+    const vx = Math.round(fx), vy = Math.floor(fy); if (vy >= 0 && vy < ROWS - 1 && vx >= 0 && vx < COLS) c.push({e:`${vx},${vy},v`, d:Math.abs(fx - vx)});
+    c.sort((a, b) => a.d - b.d);
+    return c[0] && c[0].d < .34 ? c[0].e : null;
+  };
+  const act = (e, first) => {
+    if (!e) return;
+    const p = G.parts[e];
+    if (G.tool === 'erase') { if (p && !p.lock) { delete G.parts[e]; render(); } return; }
+    if (p) { if (first && p.t === 'switch') { p.on = !p.on; render(); } return; }
+    if (G.tool === 'wire') G.parts[e] = {t:'wire'};
+    else if (G.tool === 'switch') { if (!first) return; if (swUsed() >= G.L.switches) { $('#msg').innerHTML = '<div class="msg info">You\'ve used all your switches. Remove one to move it.</div>'; return; } G.parts[e] = {t:'switch', on:true}; }
+    render();
+  };
+  sv.addEventListener('pointerdown', ev => { ev.preventDefault(); drawing = true; try { sv.setPointerCapture(ev.pointerId); } catch (err) {} last = toEdge(ev); act(last, true); });
+  sv.addEventListener('pointermove', ev => { const e = toEdge(ev); showHover(e); if (!drawing || e === last) return; last = e; if (G.tool !== 'switch') act(e, false); });
+  const stop = () => { drawing = false; last = null; };
+  sv.addEventListener('pointerup', stop); sv.addEventListener('pointercancel', stop); sv.addEventListener('pointerleave', () => showHover(null));
+}
+function showHover(e){
+  const h = $('#hov'); if (!h) return;
+  if (!e) { h.setAttribute('d', ''); return; }
+  const [[x1, y1], [x2, y2]] = ends(e).map(([x, y]) => P(x, y)); h.setAttribute('d', `M${x1} ${y1} L${x2} ${y2}`);
+}
+
+/* the resident speech bubbles */
+const SAY = {
+  bright:['Lights are back! 🎉','Finally I can charge my phone!','Thank you, engineer!','Movie night is ON! 🍿','So bright! 😍'],
+  dim:['Hmm… it\'s so dim in here 😕','I can barely read my book…','Is that all the power we get?','Brownout! 🕯️'],
+  off:['Who turned off my lights?! 😠','It\'s dark again…','Hello? Power?'],
+  short:['😱 SPARKS!','Something\'s burning!','Call an electrician!'],
+  hospital:['The patients are safe! 🏥','Life support back online!'],
+  switched:['Night night! 😴','Saving power! 🌍']
+};
+function render(){
+  const res = solve(G.parts), now = Date.now();
+  // decide bubbles when a building's state changes
+  G.L.bulbs.forEach(b => {
+    const br = res.short ? -1 : (res.bright[b.e] || 0), st = br < 0 ? 'short' : br >= .75 ? 'bright' : br > .04 ? 'dim' : 'off';
+    const prev = G.prev[b.e];
+    if (prev !== undefined && prev !== st) {
+      let pool = SAY[st];
+      if (st === 'bright' && b.kind === 'hospital') pool = SAY.hospital;
+      if (st === 'off' && prev === 'bright' && b.mode === 'sw') pool = SAY.switched;
+      G.bubbles[b.e] = {t:pick(pool), until:now + 3200};
+      setTimeout(() => { if (G && $('#sv')) render(); }, 3300);
+    }
+    G.prev[b.e] = st;
+  });
+  let s = `<defs><radialGradient id="glow"><stop offset="0" stop-color="#ffe066" stop-opacity=".85"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient></defs>`;
+  // ground
+  for (let y = 0; y < ROWS - 1; y++) for (let x = 0; x < COLS - 1; x++) s += diamond(x, y, y === 4 ? '#2b3140' : ((x + y) % 2 ? '#1d3a22' : '#21422a'), 'stroke="rgba(0,0,0,.25)" stroke-width="1"');
+  const [ra, rb] = [P(0, 4.5), P(COLS - 1, 4.5)];
+  s += `<path d="M${ra.join(' ')} L${rb.join(' ')}" stroke="#facc15" stroke-width="2" stroke-dasharray="10 12" opacity=".6"/>`;
+  s += `<text font-size="22"><tspan>🚗</tspan><animateMotion dur="9s" repeatCount="indefinite" path="M${P(-.3, 4.3).join(' ')} L${P(COLS - .7, 4.3).join(' ')}"/></text>`;
+  s += `<text font-size="18"><tspan>🚶</tspan><animateMotion dur="16s" repeatCount="indefinite" path="M${P(COLS - 1.2, 4.8).join(' ')} L${P(.2, 4.8).join(' ')} L${P(COLS - 1.2, 4.8).join(' ')}"/></text>`;
+  // grid points (connection posts)
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) { const [cx, cy] = P(x, y); s += `<ellipse cx="${cx}" cy="${cy}" rx="4" ry="2.5" fill="rgba(200,210,255,.35)"/>`; }
+  s += `<path id="hov" class="hover" d=""/>`;
+  // drawables sorted back-to-front by depth (x + y)
+  const items = [];
+  G.deco.trees.forEach(([x, y]) => { if (Object.keys(G.parts).some(e => { const [[a, b], [c, d]] = ends(e); return Math.abs((a + c) / 2 - x) < .6 && Math.abs((b + d) / 2 - y) < .6; })) return;
+    const [tx, ty] = P(x, y); items.push({z:x + y, s:`<ellipse cx="${tx}" cy="${ty + 2}" rx="12" ry="5" fill="rgba(0,0,0,.3)"/><text x="${tx}" y="${ty}" text-anchor="middle" font-size="26">🌳</text>`}); });
+  for (const [e, p] of Object.entries(G.parts)) { const [[a, b], [c, d]] = ends(e); items.push({z:(a + b + c + d) / 2 + (p.t === 'wire' || p.t === 'switch' ? -.6 : .3), s:compSVG(e, p, res)}); }
+  items.sort((a, b) => a.z - b.z).forEach(it => s += it.s);
+  // speech bubbles on top
+  G.L.bulbs.forEach(b => { const bb = G.bubbles[b.e]; if (!bb || bb.until < now) return;
+    const [[x1, y1], [x2, y2]] = ends(b.e).map(([x, y]) => P(x, y)), mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - 96, w = Math.min(220, bb.t.length * 7.2 + 24);
+    s += `<g class="bubble"><rect x="${mx - w / 2}" y="${my - 20}" width="${w}" height="30" rx="15" fill="#fff"/><path d="M${mx - 6} ${my + 9} L${mx} ${my + 20} L${mx + 6} ${my + 9}Z" fill="#fff"/>
+      <text x="${mx}" y="${my}" text-anchor="middle" font-size="13" font-weight="900" fill="#1c2242">${esc(bb.t)}</text></g>`; });
+  if (G.readings && res) { const [x, y] = P(0, 2); s += `<text x="${x - 60}" y="${y + 92}" font-size="13" font-weight="900" fill="#38e1ff">${Math.max(0, res.Ibatt).toFixed(2)} A from station</text>`; }
+  $('#sv').innerHTML = s;
+  // HUD
+  const vals = G.L.bulbs.map(b => res.short ? 0 : Math.min(1, (res.bright[b.e] || 0) / .75));
+  $('#hap').textContent = (res.short ? '😱 ' : '') + Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 100) + '%';
+  const left = budgetOf(G.L) - userParts() * COST; $('#bud').textContent = '$' + left; $('#bud').style.color = left < 0 ? '#ff4d6d' : '';
+  if (G.L.switches) $('#swLeft').textContent = `${G.L.switches - swUsed()} left · $${COST}`;
+  check(res);
+}
+
+function compSVG(e, p, res){
+  const [[x1, y1], [x2, y2]] = ends(e).map(([x, y]) => P(x, y)), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+  const I = res ? Math.abs(res.cur[e] || 0) : 0, live = I > .02;
+  let flow = '';
+  if (res && live && !(p.t === 'switch' && !p.on)) {
+    const conv = (res.cur[e] || 0) > 0, fwd = save.flow === 'e' ? !conv : conv; // electrons go the opposite way to conventional current
+    flow = `<path class="flow ${save.flow}${fwd ? '' : ' rev'}" d="M${x1} ${y1} L${x2} ${y2}" style="animation-duration:${Math.max(.15, .9 / Math.min(6, I * 2 + .3))}s;${res.short ? 'stroke:#ff4d6d' : ''}"/>`;
+  }
+  const cable = `<line class="cable${live ? ' live' : ''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  if (p.t === 'wire') return cable + flow;
+  if (p.t === 'switch') {
+    const on = p.on;
+    return `<line class="cable${live ? ' live' : ''}" x1="${x1}" y1="${y1}" x2="${x1 + (x2 - x1) * .32}" y2="${y1 + (y2 - y1) * .32}"/><line class="cable${live ? ' live' : ''}" x1="${x1 + (x2 - x1) * .68}" y1="${y1 + (y2 - y1) * .68}" x2="${x2}" y2="${y2}"/>
+      <rect x="${mx - 16}" y="${my - 34}" width="32" height="30" rx="6" fill="#2a3166" stroke="${on ? '#4ade80' : '#ff4d6d'}" stroke-width="3"/>
+      <line x1="${mx}" y1="${my - 8}" x2="${mx + (on ? 0 : 9)}" y2="${my - 28}" stroke="${on ? '#4ade80' : '#ff4d6d'}" stroke-width="5" stroke-linecap="round"/>
+      <line x1="${mx}" y1="${my - 4}" x2="${mx}" y2="${my}" stroke="#a9b1dd" stroke-width="3"/>
+      <text x="${mx}" y="${my - 40}" text-anchor="middle" font-size="11" font-weight="900" fill="${on ? '#4ade80' : '#ff4d6d'}">${on ? 'ON' : 'OFF'}</text>${flow}`;
+  }
+  if (p.t === 'battery') {
+    const sh = res && res.short;
+    return cable + isoBox(mx, my, 20, 16, 54, sh ? '#ff4d6d' : '#3a4a8a', sh ? '#b4233b' : '#27326a', sh ? '#8f1d30' : '#1e2754', '#38e1ff', false) +
+      `<text x="${mx}" y="${my - 64}" text-anchor="middle" font-size="22" class="${sh ? 'spark' : ''}">${sh ? '💥' : '⚡'}</text>
+      <text x="${mx - 56}" y="${my - 34}" text-anchor="middle" font-size="12" font-weight="900" fill="#ffd60a">POWER STATION 6 V</text>
+      <circle cx="${x1}" cy="${y1}" r="11" fill="#ffd60a"/><text x="${x1}" y="${y1 + 5}" text-anchor="middle" font-size="15" font-weight="900" fill="#2b1d00">+</text>
+      <circle cx="${x2}" cy="${y2}" r="11" fill="#38e1ff"/><text x="${x2}" y="${y2 + 5}" text-anchor="middle" font-size="17" font-weight="900" fill="#06232b">−</text>${flow}`;
+  }
+  if (p.t === 'bulb') {
+    const b = p.b, br = res ? Math.min(1, res.bright[e] || 0) : 0, on = br > .04, col = b.col || '#94a3b8';
+    const win = on ? `rgba(255,${200 + br * 50},${90 + br * 100},${.35 + br * .65})` : '#1b2147';
+    let bld;
+    if (b.kind === 'lamp') bld = `<line x1="${mx}" y1="${my}" x2="${mx}" y2="${my - 58}" stroke="#94a3b8" stroke-width="5"/><path d="M${mx} ${my - 58} q 14 -6 22 4" stroke="#94a3b8" stroke-width="4" fill="none"/><circle cx="${mx + 22}" cy="${my - 50}" r="8" fill="${on ? '#ffe066' : '#334155'}" ${on ? 'style="filter:drop-shadow(0 0 10px #ffe066)"' : ''}/>`;
+    else { const h = b.kind === 'hospital' ? 66 : b.kind === 'shop' ? 40 : 48;
+      bld = isoBox(mx, my, 15, 15, h, on ? shade(col, 1.05) : shade(col, .45), on ? shade(col, .8) : shade(col, .32), on ? shade(col, .62) : shade(col, .25), win, br > .5);
+      // roof
+      if (b.kind === 'house') { const a = 15 * TW / 28, c = 15 * TH / 28, top = my - h, ap = [mx, top - 30];
+        const N = [mx, top - 2 * c], E = [mx + 2 * a, top], S = [mx, top + 2 * c], W = [mx - 2 * a, top];
+        bld += `<polygon points="${W} ${S} ${ap}" fill="${on ? '#c2410c' : '#3f2a1a'}"/><polygon points="${S} ${E} ${ap}" fill="${on ? '#9a3412' : '#2e1f14'}"/>`; }
+      if (b.kind === 'hospital') bld += `<text x="${mx}" y="${my - h - 4}" text-anchor="middle" font-size="20">🏥</text>`;
+      if (b.kind === 'shop') bld += `<rect x="${mx - 18}" y="${my - h - 16}" width="36" height="12" rx="3" fill="${on ? '#f87171' : '#3b1d1d'}"/><text x="${mx}" y="${my - h - 7}" text-anchor="middle" font-size="9" font-weight="900" fill="#fff">SHOP</text>`; }
+    const top = b.kind === 'hospital' ? 90 : b.kind === 'lamp' ? 74 : 82;
+    return cable + (on ? `<ellipse cx="${mx}" cy="${my - 20}" rx="${40 + br * 30}" ry="${30 + br * 22}" fill="url(#glow)" opacity="${br}"/>` : '') + bld +
+      `<text x="${mx}" y="${my - top}" text-anchor="middle" font-size="12" font-weight="900" fill="${on ? '#ffe98a' : '#8b93c4'}" stroke="#070b1f" stroke-width="3" paint-order="stroke">${esc(b.label)}${b.mode === 'sw' ? ' 🔘' : ''}</text>
+      ${G.readings && res ? `<text x="${mx}" y="${my + 22}" text-anchor="middle" font-size="12" font-weight="900" fill="#38e1ff" stroke="#070b1f" stroke-width="3" paint-order="stroke">${Math.abs(res.cur[e] || 0).toFixed(2)} A · ${Math.round(br * 100)}%</text>` : ''}${flow}`;
+  }
+  return '';
+}
+
+/* =================================================================
+   GOAL CHECKING (tests every switch combination)
+   ================================================================= */
+function check(res){
+  const L = G.L, minB = L.bright ? .75 : .04;
+  const sws = Object.entries(G.parts).filter(([, p]) => p.t === 'switch').map(([e]) => e);
+  const combos = [];
+  for (let m = 0; m < (1 << sws.length); m++) { const st = {}; sws.forEach((e, i) => st[e] = !!(m & (1 << i))); combos.push(st); }
+  const runs = combos.map(st => ({st, r:solve(G.parts, st)}));
+  const goals = [{t:'No short circuits', ok:!(runs.some(x => x.r.short) || res.short), i:'🔌'}];
+  const used = new Set();
+  L.bulbs.forEach(b => {
+    const ico = b.kind === 'hospital' ? '🏥' : b.kind === 'shop' ? '🏪' : b.kind === 'lamp' ? '💡' : '🏠';
+    if (b.mode === 'on') goals.push({t:`${b.label} has power${L.bright ? ' at full brightness' : ''}${sws.length ? ' (with every switch on or off)' : ''}`, ok:runs.every(x => (x.r.bright[b.e] || 0) >= minB), i:ico});
+    else {
+      const sw = sws.find(s => !used.has(s) && runs.every(x => x.st[s] ? (x.r.bright[b.e] || 0) >= minB : (x.r.bright[b.e] || 0) < .02));
+      if (sw) used.add(sw);
+      goals.push({t:`${b.label} has its OWN switch${L.bright ? ' and glows brightly when on' : ''}`, ok:!!sw, i:ico});
+    }
+  });
+  $('#goals').innerHTML = goals.map(g => `<li class="${g.ok ? 'ok' : ''}"><span>${g.ok ? '✅' : g.i}</span><span>${esc(g.t)}</span></li>`).join('');
+  const msg = $('#msg');
+  if (res.short) msg.innerHTML = '<div class="msg bad">💥 SHORT CIRCUIT! The current is taking a shortcut straight between the + and − terminals without going through any buildings. The station is overheating! Find the shortcut cable and remove it.</div>';
+  else if (L.bright && L.bulbs.some(b => { const v = res.bright[b.e] || 0; return v > .04 && v < .75; })) msg.innerHTML = '<div class="msg info">🔅 Some buildings have power but are <b>dim</b>. Buildings on one path (series) share the voltage. Try giving each its own branch.</div>';
+  else if (msg.textContent.startsWith('🔅') || msg.textContent.startsWith('💥')) msg.innerHTML = '';
+  if (goals.every(g => g.ok) && !G.won) { G.won = true; const g0 = G; setTimeout(() => { if (G === g0 && $('#sv')) win(); }, REDUCED ? 100 : 1100); }
+}
+function win(){
+  const spent = userParts() * COST, par = G.L.par * COST, stars = spent <= par ? 3 : spent <= budgetOf(G.L) ? 2 : 1;
+  save.stars[G.li] = Math.max(save.stars[G.li] || 0, stars); persist(); updChip();
+  const last = G.li === LEVELS.length - 1;
+  modal(`<h2>${last ? 'THE CITY IS ALIVE!' : 'DISTRICT POWERED!'}</h2><div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+    <div style="font-weight:800;color:var(--ink2)">You spent $${spent} (an expert would spend $${par}).${stars < 3 ? ' Use fewer parts for more stars!' : ' Perfect efficiency!'}</div>
+    <div class="note">🔬 <b>Engineer's note:</b> ${G.L.note}</div>
+    <div class="row" style="justify-content:center"><button class="btn" data-a="stay">🔦 Keep exploring</button><button class="btn" data-a="map">🏙️ See the city</button>${last ? '<button class="btn volt" data-a="sprint">🔄 Circuit Sprint</button>' : '<button class="btn volt" data-a="next">Next district ▸</button>'}</div>`,
+    a => a === 'stay' ? null : a === 'map' ? title() : a === 'sprint' ? sprint() : play(G.li + 1));
+  confetti();
+}
+function modal(html, cb){
+  const m = $('#modal'); m.innerHTML = `<div class="card glass">${html}</div>`; m.classList.remove('hidden');
+  m.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { m.classList.add('hidden'); cb(b.dataset.a); });
+}
+function confetti(){
+  if (REDUCED) return;
+  for (let i = 0; i < 30; i++) { const s = document.createElement('span'); s.textContent = ['⚡','💡','✨','⭐','🎉'][i % 5];
+    s.style.cssText = `position:fixed;z-index:60;left:${Math.random() * 100}vw;top:-30px;font-size:1.6rem;pointer-events:none;transition:transform ${2 + Math.random() * 2}s linear`;
+    document.body.appendChild(s); requestAnimationFrame(() => { s.style.transform = `translateY(110vh) rotate(${Math.random() * 600}deg)`; }); setTimeout(() => s.remove(), 4200); }
+}
+
+/* =================================================================
+   CIRCUIT SPRINT (tile-rotation arcade)
+   ================================================================= */
+const N_ = 1, E_ = 2, S_ = 4, W_ = 8;
+const rotM = (m, k) => { for (let i = 0; i < ((k % 4) + 4) % 4; i++) m = ((m << 1) | (m >> 3)) & 15; return m; };
+const DIR = {U:[0,-1], D:[0,1], R:[1,0], L:[-1,0]};
+const LAYOUTS = [
+  {n:5, s:[0,2], m:'UURRRRDDDDLLLLUU', bulbs:[4,9,12]},
+  {n:5, s:[0,3], m:'UUURDDRRUURDDDDLLLLU', bulbs:[5,13,17]},
+  {n:6, s:[0,3], m:'UUURRDDRRUURDDDDDLLLLLUU', bulbs:[6,14,19]},
+  {n:6, s:[0,3], m:'UUURRRRRDDLLLLDDRRRRDLLLLLUU', bulbs:[5,12,18,24]}
+];
+let SP = null;
+function stopSprint(){ if (SP) { clearInterval(SP.timer); SP = null; } }
+function makePuzzle(level){
+  const Lo = LAYOUTS[level < 2 ? level % 2 : 2 + (level % 2)], n = Lo.n;
+  let pos = [Lo.s.slice()];
+  for (const c of Lo.m.slice(0, -1)) { const [dx, dy] = DIR[c], p = pos[pos.length - 1]; pos.push([p[0] + dx, p[1] + dy]); }
+  const t = Math.floor(Math.random() * 8);
+  pos = pos.map(([x, y]) => { for (let k = 0; k < t % 4; k++) [x, y] = [n - 1 - y, x]; if (t >= 4) x = n - 1 - x; return [x, y]; });
+  const dirTo = (a, b) => b[0] > a[0] ? E_ : b[0] < a[0] ? W_ : b[1] > a[1] ? S_ : N_;
+  const grid = Array.from({length:n * n}, () => null);
+  pos.forEach((p, i) => { const prev = pos[(i - 1 + pos.length) % pos.length], next = pos[(i + 1) % pos.length];
+    grid[p[1] * n + p[0]] = {base:dirTo(p, prev) | dirTo(p, next), path:true, kind:i === 0 ? 'bat' : Lo.bulbs.includes(i) ? 'bulb' : ''}; });
+  const extras = [N_ | S_, N_ | E_, N_ | E_ | S_, N_ | E_ | S_ | W_];
+  grid.forEach((g, i) => { if (!g) grid[i] = {base:extras[Math.floor(Math.random() * extras.length)], path:false, kind:''}; });
+  grid.forEach(g => { const straight = g.base === (N_ | S_) || g.base === (E_ | W_); g.rot = g.path ? (straight ? [1, 3][Math.floor(Math.random() * 2)] : 1 + Math.floor(Math.random() * 3)) : Math.floor(Math.random() * 4); });
+  return {n, grid};
+}
+function tileSVG(g){
+  const m = g.base, seg = [];
+  if (m & N_) seg.push('M50 50 L50 0'); if (m & E_) seg.push('M50 50 L100 50'); if (m & S_) seg.push('M50 50 L50 100'); if (m & W_) seg.push('M50 50 L0 50');
+  let mid = '';
+  if (g.kind === 'bat') mid = '<rect x="30" y="34" width="40" height="32" rx="6" fill="#1e2a5e" stroke="#ffd60a" stroke-width="4"/><text x="50" y="57" text-anchor="middle" font-size="18" font-weight="900" fill="#ffd60a">⚡</text>';
+  else if (g.kind === 'bulb') mid = '<circle cx="50" cy="50" r="18" class="bulbc" fill="#151b3f" stroke="#3a4380" stroke-width="4"/>';
+  else if (seg.length) mid = '<circle cx="50" cy="50" r="9" fill="#5b6bd6"/>';
+  return `<svg viewBox="0 0 100 100" style="transform:rotate(${g.rot * 90}deg)"><path class="ln" d="${seg.join(' ')}"/>${mid}</svg>`;
+}
+function sprint(){
+  stopSprint(); G = null;
+  SP = {level:0, score:0, time:60, timer:null, puzzle:null, busy:false};
+  $('#main').innerHTML = `<div class="sprint glass"><div class="shud"><button class="btn small" id="back">← City</button><span class="big">🏁 <span id="sc">0</span></span><span class="big t">⏱ <span id="tm">60</span>s</span></div>
+    <div class="tbar"><i id="tb" style="width:100%"></i></div><div class="tiles" id="tiles"></div>
+    <p style="text-align:center;color:var(--ink2);font-weight:800;margin:12px 0 0" id="sh">Tap tiles to spin them. Connect the ⚡ battery through every 💡 bulb and back in one loop!</p>
+    <div style="text-align:center;margin-top:10px"><button class="btn volt" id="go">▶ Start</button></div></div>`;
+  $('#back').onclick = title;
+  const draw = () => {
+    const Pz = SP.puzzle; $('#tiles').style.gridTemplateColumns = `repeat(${Pz.n},1fr)`;
+    $('#tiles').innerHTML = Pz.grid.map((g, i) => `<button class="tile" data-i="${i}" aria-label="tile">${tileSVG(g)}</button>`).join('');
+    $('#tiles').querySelectorAll('.tile').forEach(b => b.onclick = () => spin(+b.dataset.i, b));
+  };
+  const complete = Pz => {
+    const n = Pz.n, eff = i => rotM(Pz.grid[i].base, Pz.grid[i].rot), opp = {1:4, 4:1, 2:8, 8:2}, step = {1:[0,-1], 2:[1,0], 4:[0,1], 8:[-1,0]};
+    const start = Pz.grid.findIndex(t => t.kind === 'bat'), seen = new Set([start]), stack = [start];
+    while (stack.length) {
+      const i = stack.pop(), x = i % n, y = Math.floor(i / n), m = eff(i);
+      for (const d of [1, 2, 4, 8]) { if (!(m & d)) continue;
+        const nx = x + step[d][0], ny = y + step[d][1]; if (nx < 0 || ny < 0 || nx >= n || ny >= n) return false;
+        const j = ny * n + nx; if (!(eff(j) & opp[d])) return false;
+        if (!seen.has(j)) { seen.add(j); stack.push(j); } }
+    }
+    return Pz.grid.every((t, i) => t.kind !== 'bulb' || seen.has(i));
+  };
+  const spin = (i, b) => {
+    if (!SP || SP.busy || SP.time <= 0) return;
+    const g = SP.puzzle.grid[i]; g.rot++;
+    b.querySelector('svg').style.transform = `rotate(${g.rot * 90}deg)`;
+    if (complete(SP.puzzle)) solved();
+  };
+  const solved = async () => {
+    const bonus = Math.max(4, 12 - SP.level * 2);
+    SP.busy = true; SP.score++; SP.time = Math.min(90, SP.time + bonus); $('#sc').textContent = SP.score;
+    SP.puzzle.grid.forEach((g, i) => { if (g.path) { const t = $('#tiles').children[i]; t.classList.add('lit'); const c = t.querySelector('.bulbc'); if (c) { c.setAttribute('fill', '#ffe066'); c.setAttribute('stroke', '#ffd60a'); c.style.filter = 'drop-shadow(0 0 10px #ffd60a)'; } } });
+    $('#sh').textContent = `⚡ Circuit complete! +${bonus} seconds`;
+    await new Promise(r => setTimeout(r, REDUCED ? 200 : 900));
+    if (!SP) return;
+    SP.level++; SP.puzzle = makePuzzle(SP.level); SP.busy = false; draw();
+    $('#sh').textContent = SP.level >= 2 ? 'Bigger grid! Ignore the spare tiles. Only the loop matters.' : 'Next circuit!';
+  };
+  $('#go').onclick = () => {
+    $('#go').classList.add('hidden'); SP.puzzle = makePuzzle(0); draw();
+    SP.timer = setInterval(() => {
+      if (!SP) return; SP.time = Math.max(0, SP.time - .25);
+      $('#tm').textContent = Math.ceil(SP.time); $('#tb').style.width = Math.min(100, SP.time / 60 * 100) + '%';
+      if (SP.time <= 0) {
+        clearInterval(SP.timer); const newBest = SP.score > save.best; if (newBest) { save.best = SP.score; persist(); updChip(); }
+        modal(`<h2>TIME'S UP!</h2><div class="stars">🏁 ${SP.score}</div><div style="font-weight:800;color:var(--ink2)">${SP.score === 1 ? 'circuit' : 'circuits'} powered${newBest ? ' · <span style="color:#ffd60a">NEW BEST!</span>' : ` · best ${save.best}`}</div>
+          <div class="note">🔬 <b>Engineer's note:</b> Every puzzle was a <b>series circuit</b>: one single loop. If even one tile is turned the wrong way, the loop is broken and <b>nothing</b> lights up. That's why old-style Christmas lights all went out when one bulb failed!</div>
+          <div class="row" style="justify-content:center"><button class="btn" data-a="menu">🏙️ City</button><button class="btn volt" data-a="again">↺ Play again</button></div>`, a => a === 'again' ? sprint() : title());
+      }
+    }, 250);
+  };
+}
+
+$('#home').onclick = title;
+window.__sprintState = () => SP; // used only for automated testing
+updChip(); title();
+})();
+</script>
+</body>
+</html>

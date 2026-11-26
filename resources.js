@@ -58,6 +58,12 @@ window.CATEGORIES = [
    - emoji:       optional icon for the card
    --------------------------------------------------------------------- */
 window.RESOURCES = [
+  /* ---------- Physics ---------- */
+  {id:"blackout-city", title:"Blackout City", subtitle:"Circuit-building game", category:"physics", type:"interactive", years:"Year 9–10",
+    description:"The city has lost power! Wire up a living isometric town district by district. Real circuit physics, happy (or grumpy) residents, a budget, and electron flow you can switch to conventional current. Then race the clock in Circuit Sprint.",
+    path:"resources/blackout-city/index.html", thumb:"resources/blackout-city/thumb.svg", emoji:"⚡", added:"2026-11-26",
+    tags:["electricity","circuits","series","parallel","switch","short circuit","current","game"]},
+
   /* ---------- Chemistry: atoms, reactions and bonding ---------- */
   {id:"chemical-tycoon", title:"Chemical Tycoon", subtitle:"Uses of reactions", category:"chemistry", type:"interactive", years:"Year 9–10",
     description:"Run a chemical company: build fertiliser, medicine and plastics plants, survive surprise events, and balance profit, people and the planet.",

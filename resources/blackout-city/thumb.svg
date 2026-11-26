@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs><radialGradient id="sky" cx="70%" cy="0%" r="90%"><stop offset="0" stop-color="#22296b"/><stop offset="1" stop-color="#070b1f"/></radialGradient>
+  <radialGradient id="g"><stop offset="0" stop-color="#ffe066" stop-opacity=".9"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient></defs>
+  <rect width="640" height="400" fill="url(#sky)"/>
+  <g fill="#fff" opacity=".6"><circle cx="60" cy="40" r="1.5"/><circle cx="180" cy="70" r="1.5"/><circle cx="300" cy="30" r="1.5"/><circle cx="520" cy="60" r="1.5"/><circle cx="430" cy="90" r="1.5"/><circle cx="590" cy="30" r="1.5"/></g>
+  <g fill="#0d1236"><rect x="0" y="290" width="90" height="110"/><rect x="90" y="250" width="70" height="150"/><rect x="520" y="260" width="120" height="140"/><rect x="460" y="300" width="60" height="100"/></g>
+  <g stroke="#7fa6ff" stroke-width="7" fill="none" stroke-linecap="round"><path d="M110 150 H560 M110 250 H560 M110 150 V250"/><path d="M230 150 V250 M350 150 V250 M470 150 V250"/></g>
+  <g stroke="#ffd60a" stroke-width="3" stroke-dasharray="3 12" fill="none"><path d="M110 150 H560 M110 250 H560"/></g>
+  <rect x="88" y="172" width="44" height="56" rx="8" fill="#1e2a5e" stroke="#ffd60a" stroke-width="3"/><text x="110" y="196" font-family="Arial" font-weight="900" font-size="18" fill="#ffd60a" text-anchor="middle">+</text><text x="110" y="220" font-family="Arial" font-weight="900" font-size="18" fill="#ffd60a" text-anchor="middle">−</text>
+  <g font-family="Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif" font-size="30" text-anchor="middle">
+    <circle cx="230" cy="200" r="70" fill="url(#g)"/><circle cx="230" cy="200" r="26" fill="#ffe066" stroke="#ffd60a" stroke-width="4"/><text x="230" y="211">🏠</text>
+    <circle cx="350" cy="200" r="70" fill="url(#g)"/><circle cx="350" cy="200" r="26" fill="#ffe066" stroke="#ffd60a" stroke-width="4"/><text x="350" y="211">🏥</text>
+    <circle cx="470" cy="200" r="26" fill="#151b3f" stroke="#3a4380" stroke-width="4"/><text x="470" y="211">🏪</text>
+  </g>
+  <text x="320" y="95" font-family="Impact,Arial Black,sans-serif" font-size="48" text-anchor="middle" fill="#2a3166">BLACKOUT <tspan fill="#ffd60a">CITY</tspan></text>
+</svg>
